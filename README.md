@@ -132,3 +132,20 @@ prototype's `T` table.
 
 Copy `.env.example` to `.env.local` for Supabase credentials. The V1 app makes zero
 PostgREST calls; the DB is a mirror (see the migration plan).
+
+### Feature flags
+
+Flags are build-time only: `NEXT_PUBLIC_*` values are inlined by Next during the build, so
+what is switched on is settled before a byte is served and the two sides of the app cannot
+disagree about it. They live in `src/lib/flags.ts`.
+
+| Flag | Default | Effect |
+|---|---|---|
+| `NEXT_PUBLIC_FLAG_DEBT` | on in `dev`, **off in production builds** | `1` shows the Deuda / Debt mode; `0` hides it. While off, the tab is not rendered and `/[locale]/debt` returns 404 — no tab that leads nowhere, and no route reachable by guessing the URL. |
+
+The debt screen's figures are real and its port is scheduled for M3; the flag keeps it out
+of a production build until then. Turning it on is one env var and a rebuild:
+
+```bash
+NEXT_PUBLIC_FLAG_DEBT=1 npm run build
+```

@@ -20,8 +20,8 @@
 
   --color-ink: #c9dce5;
   --color-ink2: #8fa9b6;
-  --color-mute: #5a7280;
-  --color-dim: #3e525e;
+  --color-mute: #849aa6;
+  --color-dim: #788f9c;
 
   --color-cy: #3fc8dc;
   --color-cy-hi: #7beeff;
@@ -119,8 +119,8 @@ body {
   color: #04181d;
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 10.5px;
-  letter-spacing: 0.28em;
+  font-size: 11px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   text-align: center;
   padding: 3px 8px;
@@ -129,7 +129,7 @@ body {
 }
 .class-bar.bottom {
   background: var(--rule2);
-  color: var(--ink2);
+  color: var(--ink);
 }
 
 /* ---------- shell ---------- */
@@ -173,8 +173,8 @@ body {
 }
 .codename {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.24em;
+  font-size: 11px;
+  letter-spacing: 0.16em;
   color: var(--am);
   border: 1px solid var(--am-dim);
   padding: 3px 7px;
@@ -198,8 +198,8 @@ body {
   cursor: pointer;
   text-decoration: none;
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   padding: 5px 9px;
   text-transform: uppercase;
 }
@@ -238,8 +238,8 @@ body {
 }
 .stat .k {
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.2em;
+  font-size: 11px;
+  letter-spacing: 0.14em;
   color: var(--mute);
   text-transform: uppercase;
   display: block;
@@ -265,7 +265,7 @@ body {
 }
 .stat .s {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--dim);
   margin-top: 4px;
   letter-spacing: 0.06em;
@@ -343,14 +343,14 @@ body {
 }
 .pane-h .t {
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.2em;
+  font-size: 11px;
+  letter-spacing: 0.14em;
   color: var(--ink2);
   text-transform: uppercase;
 }
 .pane-h .x {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 11px;
   color: var(--dim);
   letter-spacing: 0.1em;
 }
@@ -383,4 +383,950 @@ button:focus-visible,
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* ============================================================================
+   M2 — revenue console. Every rule below is the prototype's
+   (prototype/console.tpl.html <style>), ported value-for-value with the font
+   stacks read from the theme tokens. Plain CSS on purpose: these are the
+   console's own surfaces, and they stay diffable against the reference.
+   ========================================================================= */
+
+/* ---------- year picker: fused into the mode bar ---------- */
+/* One <select> holds any number of years — the list grows without touching the
+   layout. */
+.yearpick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+}
+.ylbl {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.ysel {
+  appearance: none;
+  color-scheme: dark;
+  cursor: pointer;
+  background-color: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--rule2);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
+  padding: 5px 26px 5px 9px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6' fill='none' stroke='%238FA9B6' stroke-width='1.4'%3E%3Cpath d='M1 1.5 4.5 4.5 8 1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+}
+.ysel:hover {
+  border-color: var(--cy-dim);
+  color: var(--cy);
+}
+.ysel:focus-visible {
+  outline: 1px solid var(--cy);
+  outline-offset: 1px;
+}
+
+/* ---------- main grid ---------- */
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 348px;
+  gap: 12px;
+  margin-top: 12px;
+  align-items: start;
+}
+@media (max-width: 1180px) {
+  .main {
+    grid-template-columns: minmax(0, 1fr) 310px;
+  }
+}
+@media (max-width: 860px) {
+  .main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- map ---------- */
+.mapwrap {
+  position: relative;
+  overflow-x: auto;
+  background: radial-gradient(ellipse at 42% 34%, #0d1b24 0%, #070d12 62%, #050a0d 100%);
+}
+svg.map {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Text inside an SVG scales with the canvas. Below this width the labels drop
+     under the readable minimum, so the map keeps its size and the panel scrolls
+     sideways instead. */
+  min-width: 880px;
+}
+.reg {
+  fill: var(--cy-dim);
+  stroke: #0a1419;
+  stroke-width: 0.9;
+  cursor: pointer;
+  transition:
+    fill 0.18s ease,
+    stroke 0.18s ease;
+}
+.reg:hover {
+  stroke: var(--cy-hi) !important;
+  stroke-width: 1.8 !important;
+}
+.reg.sel {
+  stroke: var(--am) !important;
+  stroke-width: 2.2 !important;
+}
+.reg.nodata {
+  fill: #12202a;
+}
+.reg-lbl {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  fill: var(--ink2);
+  pointer-events: none;
+  text-anchor: middle;
+  opacity: 1;
+}
+.reg-val {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  fill: #dff6fb;
+  pointer-events: none;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #04121a;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+/* Every region carries its label at rest. The crowded northern band and the two
+   cities in Africa take a size down and a nudge rather than disappearing until
+   hovered — a figure you have to hunt for is a figure most readers never see. */
+.reg-lbl.tight {
+  font-size: 12px;
+}
+.reg-val.tight {
+  font-size: 13px;
+}
+.lbl.on .reg-lbl {
+  fill: var(--ink);
+}
+.lbl.on .reg-val {
+  fill: #eafaff;
+}
+.mgrid line {
+  stroke: #0e1d26;
+  stroke-width: 0.6;
+}
+.inset-box {
+  fill: none;
+  stroke: var(--rule2);
+  stroke-width: 0.9;
+  stroke-dasharray: 3 3;
+}
+.inset-lbl {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  fill: var(--dim);
+}
+.retic {
+  pointer-events: none;
+}
+.retic line {
+  stroke: var(--am);
+  stroke-width: 0.8;
+  opacity: 0.85;
+}
+.retic circle {
+  fill: none;
+  stroke: var(--am);
+  stroke-width: 0.9;
+}
+.brk {
+  pointer-events: none;
+  stroke: var(--am);
+  stroke-width: 1.3;
+  fill: none;
+}
+.sweep {
+  pointer-events: none;
+}
+.flag {
+  pointer-events: none;
+}
+.flag circle {
+  fill: var(--am);
+  stroke: #0a1419;
+  stroke-width: 1;
+}
+.flag text {
+  font-family: var(--font-mono);
+  font-size: 7px;
+  font-weight: 700;
+  fill: #04181d;
+  text-anchor: middle;
+}
+
+/* map footer bar */
+.mapbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--rule);
+  padding: 7px 10px;
+  background: var(--panel2);
+}
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.legend .ramp {
+  width: 130px;
+  height: 8px;
+  border: 1px solid var(--rule2);
+}
+.legend span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mute);
+  letter-spacing: 0.1em;
+}
+
+/* ---------- dossier ---------- */
+.dossier .name {
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0 0 2px;
+}
+.dossier .sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--mute);
+  text-transform: uppercase;
+}
+.big {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+  font-family: var(--font-cond);
+  font-weight: 800;
+  font-size: 42px;
+  line-height: 1;
+  color: var(--cy);
+  font-variant-numeric: tabular-nums;
+  margin: 10px 0 0;
+}
+/* The figure never breaks mid-number; the share beside it wraps instead. */
+.bigv {
+  white-space: nowrap;
+}
+.big.neg {
+  color: var(--rd);
+}
+/* The share of the national total, beside the figure it is a share of. */
+.bigpct {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ink2);
+  white-space: nowrap;
+}
+.big.neg .bigpct {
+  color: var(--ink2);
+}
+.bigsub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  margin-top: 3px;
+}
+.kv {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 10px;
+  margin-top: 12px;
+  border-top: 1px solid var(--rule);
+  padding-top: 9px;
+}
+.kv .k {
+  font-size: 12.5px;
+  color: var(--ink2);
+}
+.kv .v {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--ink);
+  text-align: right;
+}
+.bars {
+  margin-top: 12px;
+  border-top: 1px solid var(--rule);
+  padding-top: 10px;
+}
+.bar {
+  margin-bottom: 7px;
+}
+.bar .r {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--ink2);
+  margin-bottom: 2px;
+}
+.bar .r b {
+  font-family: var(--font-mono);
+  color: var(--ink);
+  font-weight: 500;
+}
+.bar .pctline {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--dim);
+  text-align: right;
+  margin-top: 1px;
+}
+.track {
+  height: 5px;
+  background: #0d1920;
+  border: 1px solid var(--rule);
+}
+.fill {
+  height: 100%;
+  background: var(--cy);
+}
+.fill.t1 {
+  background: var(--cy);
+}
+.fill.t2 {
+  background: #2fa8c4;
+}
+.fill.t3 {
+  background: var(--am);
+}
+.fill.t4 {
+  background: #c77a2e;
+}
+.fill.t5 {
+  background: var(--mag);
+}
+
+/* A named caveat about the figure above it, never a judgement about it. */
+.advisory {
+  border: 1px solid var(--am-dim);
+  background: #1a1305;
+  padding: 8px 10px;
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 8px;
+}
+.advisory .tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--am);
+  text-transform: uppercase;
+}
+.advisory p {
+  grid-column: 1/-1;
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: #d9c79a;
+  line-height: 1.45;
+}
+.advisory.mag {
+  border-color: #3e2a55;
+  background: #150e1d;
+}
+.advisory.mag .tag {
+  color: var(--mag);
+}
+.advisory.mag p {
+  color: #cdb6e0;
+}
+
+footer.foot {
+  margin-top: 16px;
+  padding: 12px 2px;
+  border-top: 1px solid var(--rule2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ---------- headline + breakdown, one block ----------
+   The prototype declares `.comp` twice; the second declaration wins on every
+   property they share, so this is that rule. */
+.comp {
+  border: 1px solid var(--rule);
+  background: var(--panel);
+  padding: 16px 14px 14px;
+  margin-top: 14px;
+}
+.modebar + .comp {
+  margin-top: 0;
+}
+.head-k {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  color: var(--mute);
+  text-transform: uppercase;
+}
+.head-s {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+  margin: 3px 0 18px;
+}
+.head-s b {
+  color: var(--ink2);
+  font-weight: 500;
+}
+
+/* ---------- composition: every euro, in one ring ---------- */
+.cwrap {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.donut {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(200px, 23vw, 286px);
+}
+.donut svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: rotate(-90deg);
+}
+.dseg {
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.dseg:hover {
+  filter: brightness(1.45);
+}
+.dseg.dim {
+  filter: brightness(0.4) saturate(0.5);
+}
+.donut-c {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15%;
+  text-align: center;
+  pointer-events: none;
+}
+.donut-v {
+  font-family: var(--font-cond);
+  font-weight: 800;
+  font-size: clamp(25px, 3.1vw, 40px);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  color: var(--cy);
+  font-variant-numeric: tabular-nums;
+}
+.clegend {
+  flex: 1 1 300px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(292px, 1fr));
+  gap: 2px 16px;
+}
+.cli {
+  display: grid;
+  grid-template-columns: 9px 1fr auto auto;
+  gap: 7px;
+  align-items: start;
+  background: transparent;
+  border: 0;
+  padding: 3px 2px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.cli:hover {
+  background: var(--raise);
+}
+.cli[aria-pressed="true"] {
+  background: var(--raise);
+}
+.cli.dim {
+  opacity: 0.42;
+}
+/* Swatch anchors to the FIRST line of a (possibly wrapped) label, not the block
+   centre — centering on the whole block pulls the dot away from where the eye
+   starts reading, which looks disconnected the moment a label wraps to 2+ lines.
+   The offset is (line-height - swatch height)/2. */
+.cli .sw {
+  width: 9px;
+  height: 9px;
+  border-radius: 1px;
+  margin-top: 3.6px;
+}
+.cli .nm {
+  font-size: 12.5px;
+  color: var(--ink2);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.cli[aria-pressed="true"] .nm {
+  color: var(--ink);
+  font-weight: 600;
+}
+.cli .vv {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.cli .pp {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--dim);
+  min-width: 46px;
+  text-align: right;
+}
+.cli-total {
+  grid-column: 1/-1;
+  display: grid;
+  grid-template-columns: 9px 1fr auto auto;
+  gap: 7px;
+  align-items: baseline;
+  padding: 8px 2px 2px;
+  margin-top: 7px;
+  border-top: 1px solid var(--rule2);
+}
+.cli-total .nm {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.cli-total .vv {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cy);
+}
+.cli-total .pp {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--mute);
+  min-width: 46px;
+  text-align: right;
+}
+
+/* ---------- off-map coins: revenue with no territory ----------
+   They live inside the map SVG, in a rail to the left of the country, because
+   they are part of the same number: the regions on the map plus these coins are
+   the national total. Amber throughout — these are the attention items. */
+.coin {
+  cursor: pointer;
+}
+.coin-face {
+  fill: #1a1305;
+  stroke: var(--am-dim);
+  stroke-width: 1.4;
+  transition:
+    fill 0.15s ease,
+    stroke 0.15s ease;
+}
+.coin-gl {
+  stroke: var(--am);
+  color: var(--am);
+  pointer-events: none;
+}
+/* Seguridad Social keeps a generic shield rather than an imitation of the
+   official mark, but takes that institution's red-and-ochre palette so the coin
+   is not read as a third amber item. */
+.coin-gl.ss {
+  stroke: #e0384b;
+  color: #e0384b;
+}
+.coin-gl.ss path + path {
+  stroke: #eeb03c;
+}
+.eu-emblem {
+  pointer-events: none;
+}
+.coin-t {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  fill: var(--ink2);
+  text-anchor: middle;
+  pointer-events: none;
+}
+.coin-v {
+  font-family: var(--font-mono);
+  font-size: 16.5px;
+  font-weight: 700;
+  fill: var(--am);
+  text-anchor: middle;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.coin:hover .coin-face {
+  fill: #241a06;
+  stroke: var(--am);
+}
+.coin:hover .coin-t {
+  fill: var(--ink);
+}
+.coin.on .coin-face {
+  fill: #2a1e06;
+  stroke: var(--am);
+  stroke-width: 2.6;
+}
+.coin.on .coin-t {
+  fill: var(--ink);
+}
+.coin:focus {
+  outline: none;
+}
+.coin:focus-visible .coin-face {
+  stroke: var(--cy-hi);
+  stroke-width: 3;
+}
+
+/* ---------- explainer ---------- */
+.expl {
+  position: relative;
+  border: 1px solid var(--rule2);
+  background: var(--panel2);
+  margin-top: 12px;
+  padding: 12px 13px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 12px;
+}
+.expl .swatch {
+  width: 5px;
+  border-radius: 2px;
+  grid-row: 1/3;
+}
+.expl h4 {
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 19px;
+  margin: 0 0 1px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.expl .amt {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--cy);
+  margin-bottom: 6px;
+}
+.expl p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.5;
+  max-width: 74ch;
+}
+/* The close control sits in the corner of the panel. */
+.expl .close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: 1px solid var(--rule2);
+  color: var(--mute);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 3px 9px;
+  cursor: pointer;
+  text-transform: uppercase;
+  margin: 0;
+  margin-top: 2px;
+}
+.expl .close:hover {
+  color: var(--ink);
+}
+
+/* ---------- sub-function breakdown ---------- */
+.subs {
+  grid-column: 2;
+  margin-top: 11px;
+  border-top: 1px solid var(--rule);
+  padding-top: 9px;
+}
+.subs-h {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--mute);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 7px;
+}
+.subrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 56px 90px;
+  gap: 10px;
+  align-items: baseline;
+  padding: 3px 0;
+}
+.subrow .sn {
+  font-size: 12.5px;
+  color: var(--ink2);
+  min-width: 0;
+}
+.subrow .sn i {
+  display: block;
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--dim);
+  line-height: 1.35;
+}
+.subrow .sv {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--ink);
+  text-align: right;
+}
+.subrow .sp {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--mute);
+  text-align: right;
+}
+.subrow .sbar {
+  height: 5px;
+  background: #0d1920;
+  border: 1px solid var(--rule);
+  align-self: center;
+}
+.subrow .sbar i {
+  display: block;
+  height: 100%;
+}
+.subs-src {
+  font-size: 11.5px;
+  color: var(--dim);
+  line-height: 1.4;
+  margin: 8px 0 0;
+}
+@media (max-width: 760px) {
+  .subrow {
+    grid-template-columns: minmax(0, 1fr) 90px 54px;
+  }
+  .subrow .sbar {
+    display: none;
+  }
+}
+
+/* ---------- who pays ---------- */
+.who {
+  grid-column: 2;
+  margin-top: 12px;
+  border-top: 1px solid var(--rule);
+  padding-top: 10px;
+}
+.who-h {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--mute);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+}
+.who-note {
+  font-size: 12.5px;
+  color: var(--ink2);
+  line-height: 1.5;
+  margin: 0 0 7px;
+  max-width: 80ch;
+}
+.who-note + .who-note {
+  color: var(--dim);
+}
+.wtabs {
+  display: flex;
+  gap: 2px;
+  margin: 2px 0 11px;
+  border-bottom: 1px solid var(--rule);
+}
+.wtb {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  color: var(--mute);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 11px 7px;
+}
+.wtb:hover {
+  color: var(--ink2);
+}
+.wtb[aria-pressed="true"] {
+  color: var(--cy);
+  border-bottom-color: var(--cy);
+}
+.wtab {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  margin-top: 4px;
+}
+.wtab th {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mute);
+  text-align: right;
+  padding: 0 0 5px;
+  font-weight: 500;
+  border-bottom: 1px solid var(--rule);
+}
+.wtab th:first-child {
+  text-align: left;
+}
+.wtab td {
+  padding: 3.5px 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink2);
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+.wtab td:first-child {
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--ink2);
+}
+.wtab th.grp,
+.wtab td.grp {
+  text-align: left;
+  white-space: nowrap;
+}
+.wtab td.grp {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--dim);
+}
+.wtab th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.wtab th.sortable:hover {
+  color: var(--ink2);
+}
+.wtab th.sortable.on {
+  color: var(--cy);
+}
+.wtab .sar {
+  margin-left: 5px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+.wtab tr.tot td {
+  border-top: 1px solid var(--rule2);
+  border-bottom: 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+.wtab td b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.wbar {
+  display: inline-block;
+  height: 5px;
+  background: var(--cy);
+  vertical-align: middle;
+  min-width: 1px;
+}
+.wgap {
+  border-left: 2px solid var(--rule2);
+  padding: 6px 0 6px 10px;
+  margin-top: 9px;
+  font-size: 12.5px;
+  color: var(--mute);
+  line-height: 1.45;
+  max-width: 80ch;
+}
+.wgap b {
+  color: var(--ink2);
+  font-weight: 600;
+}
+
+/* ---------- full-width footnote: a gap, stated in place ---------- */
+.infonote {
+  grid-column: 1/-1;
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 0 10px;
+  align-items: start;
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: var(--panel2);
+  border: 1px solid var(--rule);
+  border-left: 2px solid var(--rule2);
+}
+.infonote .ico {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--mute);
+  color: var(--mute);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  margin-top: 1px;
+}
+.infonote p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--mute);
+  line-height: 1.5;
+  max-width: none;
+}
+.infonote p b {
+  color: var(--ink2);
+  font-weight: 600;
 }

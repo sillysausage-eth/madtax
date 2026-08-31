@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { Saira_Condensed, Barlow, JetBrains_Mono } from "next/font/google";
 import { LOCALES, dict, isLocale, type Locale } from "@/i18n";
 import ModeFrame from "@/components/console/ModeFrame";
-import ModeTabs from "@/components/console/ModeTabs";
 import LangSwitch from "@/components/console/LangSwitch";
 import "../globals.css";
 
@@ -84,17 +83,9 @@ export default async function LocaleLayout({
               </div>
             </header>
 
-            <div className="modebar">
-              <ModeTabs
-                locale={locale}
-                labels={{
-                  revenue: t.modeRev,
-                  spending: t.modeExp,
-                  debt: t.modeDebt,
-                }}
-              />
-            </div>
-
+            {/* The mode bar is rendered by each mode, not here: it carries the
+                control that mode owns — the year picker for revenue and
+                spending, nothing for debt, which is a stock on one date. */}
             {children}
           </div>
 

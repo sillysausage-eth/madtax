@@ -142,6 +142,11 @@ export const en = {
   omSoc:'Social Security · no territorial split',
   omEu:'European Union · paid to the State',
   omRest:'Rest with no regional split',
+  // Short forms for the coins beside the map. The map has room for a name, not
+  // for a sentence; the sentence is in the dossier the coin opens.
+  coinSoc:'Social Security',
+  coinEu:'EU Funding',
+  coinRest:'Other revenues',
   pt:{
     social:['Social contributions','Employer and employee payments into Social Security'],
     irpf:['Personal income tax','Tax on wages, pensions, self-employment and savings income'],

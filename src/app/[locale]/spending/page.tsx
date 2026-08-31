@@ -3,6 +3,8 @@ import { LOCALES, dict, isLocale } from "@/i18n";
 import { eur } from "@/lib/format";
 import { meta, latestGgYear } from "@/data/meta";
 import HeroStat from "@/components/console/HeroStat";
+import ModeBar from "@/components/console/ModeBar";
+import ConsoleFooter from "@/components/console/ConsoleFooter";
 import PendingConsole from "@/components/console/PendingConsole";
 
 export function generateStaticParams() {
@@ -26,6 +28,10 @@ export default async function SpendingPage({
 
   return (
     <>
+      <ModeBar
+        locale={locale}
+        labels={{ revenue: t.modeRev, spending: t.modeExp, debt: t.modeDebt }}
+      />
       <div className="hero">
         <HeroStat
           k={t.tiers.S13[0]}
@@ -35,6 +41,11 @@ export default async function SpendingPage({
         />
       </div>
       <PendingConsole locale={locale} title={t.mapExp} />
+      <ConsoleFooter
+        source={t.footExp1}
+        perimeter={t.footExp2}
+        build={t.foot3}
+      />
     </>
   );
 }

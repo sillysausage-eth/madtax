@@ -21,6 +21,14 @@ export const nf = (locale: Locale, v: number, d = 1): string =>
     useGrouping: "always",
   }).format(v);
 
+/**
+ * The fiscal year as this locale writes it. "FY" is an English accounting
+ * habit — in Spanish the ejercicio is simply the year, and prefixing it with
+ * two English initials says nothing to a Spanish reader.
+ */
+export const fy = (locale: Locale, year: string): string =>
+  locale === "es" ? year : `FY${year}`;
+
 /** The prototype's `nf0()` — no decimals, always grouped. */
 export const nf0 = (locale: Locale, v: number): string =>
   new Intl.NumberFormat(intlLocale(locale), {

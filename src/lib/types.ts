@@ -92,17 +92,48 @@ export type NatPartsYear = Record<PartKey, number | boolean> & {
 };
 export type NatParts = Record<YearKey, NatPartsYear>;
 
-/** Per-region revenue payload. Tightened in M2 when the map and dossier are ported. */
+/**
+ * Per-region revenue payload.
+ *
+ * A part is `null` when no territorial figure is published for it — absent, not
+ * zero. The console renders `—`, never a filled-in number.
+ */
 export interface RegionRevenue {
   gdp: number;
   pop: number;
-  /** AEAT tax heads by year, ordered as `revTaxes`. */
+  /** AEAT tax heads by year, ordered as `revTaxes`. Unused by the console. */
   rev: Record<YearKey, number[]>;
   rev2: unknown;
-  /** Unified revenue by `PARTS` key, by year. */
-  parts: Record<YearKey, Record<PartKey, number>>;
+  /** Unified revenue by `PARTS` key, by year, plus the region's `total`. */
+  parts: Record<YearKey, Record<PartKey, number | null>>;
   /** Economic-transaction split by year, ordered as `econKeys`. */
   econ: Record<YearKey, number[]>;
+}
+
+/**
+ * How much of a component has a territorial split and how much does not.
+ * `mapped + offmap = nat` by construction; nothing here is rescaled to close.
+ */
+export interface MapAggEntry {
+  mapped: Millions;
+  offmap: Millions;
+  nat: Millions;
+}
+
+/** `[ESA code, amount]` — the official children of one revenue component. */
+export type SubRow = [string, Millions];
+
+/** The AEAT cash-basis national tally. `complete` marks a full year; `(P)` if not. */
+export interface National2Year {
+  st: Millions;
+  rg: Millions;
+  lt: Millions;
+  ibi: Millions;
+  lf: Millions;
+  eu: Millions;
+  euUnassigned: Millions;
+  total: Millions;
+  complete: boolean;
 }
 
 /** Coverage windows per source. `social` is `null` — absent by territory, not zero. */
@@ -124,13 +155,14 @@ export interface RevenueSection {
   natRev: Record<YearKey, unknown>;
   PARTS: PartKey[];
   natParts: NatParts;
-  natSub: Record<YearKey, unknown>;
+  /** Official ESA children per component, per year. Absent where not published. */
+  natSub: Record<YearKey, Record<PartKey, SubRow[]>>;
   subLab: { es: Record<string, string>; en: Record<string, string> };
   subSrc: Record<string, unknown>;
-  mapAgg: Record<YearKey, unknown>;
+  mapAgg: Record<YearKey, Record<PartKey | "total", MapAggEntry>>;
   coverage: Coverage;
   euNote: string;
-  national2: Record<YearKey, unknown>;
+  national2: Record<YearKey, National2Year>;
   econKeys: string[];
   econES: Record<string, string>;
   econEN: Record<string, string>;
@@ -246,9 +278,84 @@ export interface DebtSection {
 
 /* --------------------------------------------------------------------- who -- */
 
-/** AEAT administrative detail. Its own totals, its own gaps — tightened in M2. */
+/**
+ * AEAT administrative detail: who generates each revenue component.
+ *
+ * Each block is published on its own basis and with its own total, which is not
+ * the ESA figure in the headline. The console states the gap in words; nothing
+ * here is ever rescaled to make the two agree.
+ */
+
+/** One income band. `limit` is its upper bound in €; `null` on the top row. */
+export interface DecileRow {
+  limit: number | null;
+  /** Taxpayers. Absolute units — euros here, not millions. */
+  n: number;
+  income: number;
+  tax: number;
+  rate: number;
+  src: Record<string, number>;
+}
+
+/** Deciles D01–D10, AEAT's published percentile cuts, and the total. */
+export type DecileYear = Record<string, DecileRow | undefined> & {
+  TOT?: DecileRow;
+};
+
+export interface CorpEntry {
+  profit: Millions;
+  base: Millions;
+  tax: Millions;
+  rateBase: number | null;
+  rateProfit: number | null;
+  exempt: Millions;
+  losses: Millions;
+}
+export interface CorpYear {
+  total?: CorpEntry;
+  groups?: CorpEntry;
+  standalone?: CorpEntry;
+}
+
+/** Social contributions by payer, ESA D61 codes. `D61` is the published total. */
+export type PayerYear = Record<string, number | undefined> & { D61?: Millions };
+
+/** AEAT accrued state basis, by product. `prov` marks a provisional year. */
+export interface AeatYear {
+  total: Millions;
+  prov?: boolean;
+  rows: CodedRow[];
+}
+
+/** VAT by rate. The general regime only; the rest is named, not folded in. */
+export interface VatYear extends AeatYear {
+  accrued: Millions;
+  special: Millions;
+  foral: Millions;
+  adjOther: Millions;
+}
+
+export type WhoBlock =
+  | { kind: "brackets"; deciles: Record<YearKey, DecileYear>; brackets: unknown }
+  | { kind: "company"; years: Record<YearKey, CorpYear> }
+  | { kind: "payer"; years: Record<YearKey, PayerYear> }
+  | {
+      kind: "product";
+      years: Record<YearKey, AeatYear>;
+      labES: Record<string, string>;
+      labEN: Record<string, string>;
+    }
+  | {
+      kind: "rate";
+      years: Record<YearKey, VatYear>;
+      labES: Record<string, string>;
+      labEN: Record<string, string>;
+    };
+
 export interface WhoSection {
-  who: Record<string, unknown>;
+  /** Keyed by the `PARTS` component the block explains: irpf, corp, social… */
+  who: Record<PartKey, WhoBlock | undefined>;
+  /** Statutory scale tables. Carried by the bundle; the console does not read them. */
   irpfScale: Record<string, unknown>;
   madridScale: Record<string, unknown>;
 }

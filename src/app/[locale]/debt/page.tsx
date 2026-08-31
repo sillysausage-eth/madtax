@@ -2,11 +2,16 @@ import { notFound } from "next/navigation";
 import { LOCALES, dict, isLocale } from "@/i18n";
 import { eur, nf } from "@/lib/format";
 import { debt } from "@/data/debt";
+import { DEBT_ENABLED } from "@/lib/flags";
 import HeroStat from "@/components/console/HeroStat";
+import ModeBar from "@/components/console/ModeBar";
+import ConsoleFooter from "@/components/console/ConsoleFooter";
 import PendingConsole from "@/components/console/PendingConsole";
 
+/* Nothing is prerendered while the screen is switched off, and the page itself
+   404s, so the route cannot be reached by guessing the URL either. */
 export function generateStaticParams() {
-  return LOCALES.map((locale) => ({ locale }));
+  return DEBT_ENABLED ? LOCALES.map((locale) => ({ locale })) : [];
 }
 
 export default async function DebtPage({
@@ -15,7 +20,7 @@ export default async function DebtPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  if (!isLocale(locale) || !DEBT_ENABLED) notFound();
   const t = dict(locale);
   const X = t.dbt;
 
@@ -27,8 +32,15 @@ export default async function DebtPage({
   const pcGdp = debt.pcGdp[ref];
   const interest = debt.interest[ref];
 
+  /* Debt is a stock on a reference date, not a fiscal-year flow: the mode bar
+     carries no year picker, because it would be a control with nothing to
+     control. */
   return (
     <>
+      <ModeBar
+        locale={locale}
+        labels={{ revenue: t.modeRev, spending: t.modeExp, debt: t.modeDebt }}
+      />
       <div className="hero">
         <HeroStat
           k={X.heroK}
@@ -48,6 +60,7 @@ export default async function DebtPage({
         />
       </div>
       <PendingConsole locale={locale} title={X.secShape} />
+      <ConsoleFooter source={X.foot1} perimeter={X.foot2} build={t.foot3} />
     </>
   );
 }

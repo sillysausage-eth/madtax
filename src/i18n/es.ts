@@ -140,6 +140,11 @@ export const es = {
   omSoc:'Seguridad Social · sin reparto territorial',
   omEu:'Unión Europea · se paga al Estado',
   omRest:'Resto sin reparto regional',
+  // Short forms for the coins beside the map. The map has room for a name, not
+  // for a sentence; the sentence is in the dossier the coin opens.
+  coinSoc:'Seguridad Social',
+  coinEu:'Fondos UE',
+  coinRest:'Otros ingresos',
   pt:{
     social:['Cotizaciones sociales','Cuotas de empresas y trabajadores a la Seguridad Social'],
     irpf:['IRPF · Renta de las personas','Impuesto sobre la renta de nóminas, pensiones, autónomos y ahorro'],
