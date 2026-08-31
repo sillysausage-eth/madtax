@@ -1,0 +1,1698 @@
+<title>MadTax // Fuente Abierta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+:root{
+  --bg:#070B0E; --panel:#0B1218; --panel2:#0F1A22; --raise:#142230;
+  --grid:#12212B; --rule:#1B2E3A; --rule2:#274150;
+  --ink:#C9DCE5; --ink2:#8FA9B6; --mute:#5A7280; --dim:#3E525E;
+  --cy:#3FC8DC; --cy-hi:#7BEEFF; --cy-dim:#1B5C6B;
+  --am:#F0A82E; --am-dim:#6B4A12;
+  --rd:#E8455F; --rd-dim:#5E1C27;
+  --gn:#5FD08A;
+  --mag:#B47BE8;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:Barlow,system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:64px 64px,64px 64px;
+  background-position:-1px -1px;
+}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.cond{font-family:"Saira Condensed",Impact,sans-serif}
+
+/* ---------- classification banner ---------- */
+.class-bar{
+  background:var(--cy); color:#04181D;
+  font-family:"JetBrains Mono",monospace; font-weight:700;
+  font-size:10.5px; letter-spacing:.28em; text-transform:uppercase;
+  text-align:center; padding:3px 8px; white-space:nowrap; overflow:hidden;
+}
+.class-bar.bottom{background:var(--rule2);color:var(--ink2)}
+
+/* ---------- shell ---------- */
+.shell{width:100%;max-width:none;margin:0;padding:0 clamp(14px,1.6vw,32px) 40px}
+.mast{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding:14px 2px 12px;border-bottom:1px solid var(--rule2);
+}
+.brand{display:flex;align-items:baseline;gap:12px}
+.brand h1{
+  font-family:"Saira Condensed",Impact,sans-serif;font-weight:800;
+  font-size:clamp(28px,4.4vw,44px);line-height:.9;letter-spacing:.01em;
+  margin:0;color:var(--ink);text-transform:uppercase;
+}
+.brand h1 em{color:var(--cy);font-style:normal}
+.codename{
+  font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.24em;
+  color:var(--am);border:1px solid var(--am-dim);padding:3px 7px;text-transform:uppercase;
+  white-space:nowrap;
+}
+.mast-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.langsw{display:flex;border:1px solid var(--rule2)}
+.langsw button{
+  background:transparent;border:0;color:var(--mute);cursor:pointer;
+  font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.14em;
+  padding:5px 9px;text-transform:uppercase;
+}
+.langsw button[aria-pressed="true"]{background:var(--cy);color:#04181D;font-weight:700}
+
+/* ---------- hero stats ---------- */
+.hero{
+  /* exactly six tiles — fixed column counts so a row never strands a dead cell */
+  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:14px;
+}
+@media(max-width:1180px){.hero{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.hero{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat .v{font-size:26px}}
+.stat{background:var(--panel);padding:12px 14px 13px;position:relative;overflow:hidden}
+.stat .k{
+  font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.2em;
+  color:var(--mute);text-transform:uppercase;display:block;margin-bottom:5px;
+}
+.stat .v{
+  font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:32px;
+  line-height:1;letter-spacing:-.01em;color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+.stat .v.cy{color:var(--cy)} .stat .v.am{color:var(--am)} .stat .v.rd{color:var(--rd)}
+.stat .s{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--dim);margin-top:4px;letter-spacing:.06em}
+.stat .spark{position:absolute;right:0;bottom:0;opacity:.5}
+
+/* ---------- main grid ---------- */
+.main{display:grid;grid-template-columns:minmax(0,1fr) 348px;gap:12px;margin-top:12px;align-items:start}
+@media(max-width:1180px){.main{grid-template-columns:minmax(0,1fr) 310px}}
+@media(max-width:860px){.main{grid-template-columns:minmax(0,1fr)}}
+
+.pane{background:var(--panel);border:1px solid var(--rule);position:relative}
+.pane-h{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  padding:7px 10px;border-bottom:1px solid var(--rule);background:var(--panel2);
+}
+.pane-h .t{
+  font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.2em;
+  color:var(--ink2);text-transform:uppercase;
+}
+.pane-h .x{font-family:"JetBrains Mono",monospace;font-size:9.5px;color:var(--dim);letter-spacing:.1em}
+.pane-b{padding:10px}
+
+/* rail controls */
+.grp{margin-bottom:14px}
+.grp:last-child{margin-bottom:0}
+.grp>.lbl{
+  font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.2em;
+  color:var(--mute);text-transform:uppercase;display:block;margin-bottom:6px;
+}
+.opts{display:flex;flex-direction:column;gap:2px}
+.rail .opts{}
+.opt{
+  display:flex;justify-content:space-between;align-items:center;gap:6px;
+  background:transparent;border:1px solid transparent;border-left:2px solid var(--rule2);
+  color:var(--ink2);cursor:pointer;text-align:left;width:100%;
+  font-family:Barlow,sans-serif;font-size:12.5px;font-weight:500;
+  padding:5px 8px;letter-spacing:.02em;
+}
+.opt:hover{background:var(--raise);color:var(--ink)}
+.opt[aria-pressed="true"]{background:var(--raise);border-left-color:var(--cy);color:var(--cy)}
+.opt .n{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--dim)}
+.opt[aria-pressed="true"] .n{color:var(--cy)}
+.opt:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:1px solid var(--cy);outline-offset:1px}
+
+/* ---------- map ---------- */
+.mapwrap{position:relative;background:
+  radial-gradient(ellipse at 42% 34%, #0D1B24 0%, #070D12 62%, #050A0D 100%);}
+svg.map{display:block;width:100%;height:auto}
+.reg{
+  fill:var(--cy-dim);stroke:#0A1419;stroke-width:.9;
+  cursor:pointer;transition:fill .18s ease,stroke .18s ease;
+}
+.reg:hover{stroke:var(--cy-hi)!important;stroke-width:1.8!important}
+.reg.sel{stroke:var(--am)!important;stroke-width:2.2!important}
+.reg.nodata{fill:#12202A}
+.reg-lbl{
+  font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.12em;
+  fill:var(--ink2);pointer-events:none;text-anchor:middle;opacity:.9;
+}
+.reg-val{
+  font-family:"JetBrains Mono",monospace;font-size:10.6px;font-weight:700;
+  fill:#DFF6FB;pointer-events:none;text-anchor:middle;
+  paint-order:stroke;stroke:#04121A;stroke-width:2.6px;stroke-linejoin:round;
+}
+.mgrid line{stroke:#0E1D26;stroke-width:.6}
+.inset-box{fill:none;stroke:var(--rule2);stroke-width:.9;stroke-dasharray:3 3}
+.inset-lbl{font-family:"JetBrains Mono",monospace;font-size:7.5px;letter-spacing:.16em;fill:var(--dim)}
+.retic{pointer-events:none}
+.retic line{stroke:var(--am);stroke-width:.8;opacity:.85}
+.retic circle{fill:none;stroke:var(--am);stroke-width:.9}
+.brk{pointer-events:none;stroke:var(--am);stroke-width:1.3;fill:none}
+.sweep{pointer-events:none}
+.flag{pointer-events:none}
+.flag circle{fill:var(--am);stroke:#0A1419;stroke-width:1}
+.flag text{font-family:"JetBrains Mono",monospace;font-size:7px;font-weight:700;fill:#04181D;text-anchor:middle}
+
+/* map footer bar */
+.mapbar{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+  border-top:1px solid var(--rule);padding:7px 10px;background:var(--panel2);
+}
+.legend{display:flex;align-items:center;gap:7px}
+.legend .ramp{width:130px;height:8px;border:1px solid var(--rule2)}
+.legend span{font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--mute);letter-spacing:.1em}
+
+/* ---------- dossier ---------- */
+.dossier .name{
+  font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:26px;
+  line-height:1;text-transform:uppercase;color:var(--ink);margin:0 0 2px;
+}
+.dossier .sub{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.16em;color:var(--mute);text-transform:uppercase}
+.big{
+  font-family:"Saira Condensed",sans-serif;font-weight:800;font-size:42px;line-height:1;
+  color:var(--cy);font-variant-numeric:tabular-nums;margin:10px 0 0;
+}
+.big.neg{color:var(--rd)}
+.bigsub{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--dim);letter-spacing:.1em;margin-top:3px}
+
+.kv{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin-top:12px;
+  border-top:1px solid var(--rule);padding-top:9px}
+.kv .k{font-size:12px;color:var(--ink2)}
+.kv .v{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink);text-align:right}
+
+.bars{margin-top:12px;border-top:1px solid var(--rule);padding-top:10px}
+.bar{margin-bottom:7px}
+.bar .r{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink2);margin-bottom:2px}
+.bar .r b{font-family:"JetBrains Mono",monospace;color:var(--ink);font-weight:500}
+.bar .pctline{font-family:"JetBrains Mono",monospace;font-size:9.5px;color:var(--dim);text-align:right;margin-top:1px}
+.track{height:5px;background:#0D1920;border:1px solid var(--rule)}
+.fill{height:100%;background:var(--cy)}
+.fill.t1{background:var(--cy)} .fill.t2{background:#2FA8C4} .fill.t3{background:var(--am)}
+.fill.t4{background:#C77A2E} .fill.t5{background:var(--mag)}
+
+.advisory{
+  border:1px solid var(--am-dim);background:#1A1305;padding:8px 10px;margin-top:12px;
+  display:grid;grid-template-columns:auto 1fr;gap:0 8px;
+}
+.advisory .tag{
+  font-family:"JetBrains Mono",monospace;font-size:8.5px;font-weight:700;letter-spacing:.16em;
+  color:var(--am);text-transform:uppercase;
+}
+.advisory p{grid-column:1/-1;margin:4px 0 0;font-size:12px;color:#D9C79A;line-height:1.45}
+.advisory.mag{border-color:#3E2A55;background:#150E1D}
+.advisory.mag .tag{color:var(--mag)}
+.advisory.mag p{color:#CDB6E0}
+
+footer.foot{
+  margin-top:16px;padding:12px 2px;border-top:1px solid var(--rule2);
+  display:flex;flex-wrap:wrap;gap:6px 20px;justify-content:space-between;
+  font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.12em;
+  color:var(--dim);text-transform:uppercase;
+}
+
+
+/* ---------- composition strip: every euro, in one bar ---------- */
+.comp{border:1px solid var(--rule);border-top:0;background:var(--panel);padding:12px 12px 14px}
+.comp[hidden]{display:none}
+.offmap[hidden]{display:none}
+
+.comp-h .ttl{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.2em;
+  color:var(--mute);text-transform:uppercase}
+
+.cwrap{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.donut{position:relative;flex:0 0 auto;width:clamp(200px,23vw,286px)}
+.donut svg{display:block;width:100%;height:auto;transform:rotate(-90deg)}
+.dseg{cursor:pointer;transition:filter .15s}
+.dseg:hover{filter:brightness(1.45)}
+.donut-c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  padding:0 15%;text-align:center;pointer-events:none}
+.donut-v{font-family:"Saira Condensed",sans-serif;font-weight:800;
+  font-size:clamp(25px,3.1vw,40px);line-height:1;letter-spacing:-.015em;
+  color:var(--cy);font-variant-numeric:tabular-nums}
+.clegend{flex:1 1 300px;display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:2px 16px}
+.cli{display:grid;grid-template-columns:9px 1fr auto auto;gap:7px;align-items:start;
+  background:transparent;border:0;padding:3px 2px;cursor:pointer;text-align:left;width:100%}
+.cli:hover{background:var(--raise)}
+.cli[aria-pressed="true"]{background:var(--raise)}
+/* Swatch anchors to the FIRST line of a (possibly wrapped) label, not the block
+   centre — centering on the whole block pulls the dot away from where the eye starts
+   reading, which looks disconnected the moment a label wraps to 2+ lines. The offset
+   is (line-height - swatch height)/2, i.e. centered within .nm's own first line box. */
+.cli .sw{width:9px;height:9px;border-radius:1px;margin-top:3.6px}
+.cli .nm{font-size:12px;color:var(--ink2);line-height:1.35;overflow-wrap:anywhere}
+.cli[aria-pressed="true"] .nm{color:var(--ink);font-weight:600}
+.cli .vv{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--ink)}
+.cli .pp{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--dim);min-width:38px;text-align:right}
+.cli-total{grid-column:1/-1;display:grid;grid-template-columns:9px 1fr auto auto;gap:7px;
+  align-items:baseline;padding:8px 2px 2px;margin-top:7px;border-top:1px solid var(--rule2)}
+.cli-total .nm{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--mute)}
+.cli-total .vv{font-family:"JetBrains Mono",monospace;font-size:12.5px;font-weight:700;color:var(--cy)}
+.cli-total .pp{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--mute);
+  min-width:38px;text-align:right}
+.comp-note{font-size:11.5px;color:var(--dim);margin-top:9px;line-height:1.45}
+.comp-note b{color:var(--ink2);font-weight:600}
+
+/* ---------- off-map cards: revenue with no territory ---------- */
+.offmap{display:flex;gap:1px;background:var(--rule);border-top:1px solid var(--rule)}
+.omc{flex:1;background:var(--panel2);border:0;cursor:pointer;padding:9px 11px;text-align:left;
+  display:grid;grid-template-columns:26px 1fr;gap:0 9px;align-items:center}
+.omc:hover{background:var(--raise)}
+.omc[aria-pressed="true"]{background:var(--raise);box-shadow:inset 0 0 0 1px var(--am)}
+.omc .gl{grid-row:1/3;width:26px;height:26px}
+.omc .k{font-family:"JetBrains Mono",monospace;font-size:8.5px;letter-spacing:.14em;
+  color:var(--mute);text-transform:uppercase}
+.omc .v{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:17px;line-height:1.05;
+  color:var(--am);font-variant-numeric:tabular-nums}
+@media(max-width:700px){.offmap{flex-wrap:wrap}.omc{flex:1 1 46%}}
+
+
+
+/* ---------- headline + breakdown, one block ---------- */
+.comp{border:1px solid var(--rule);background:var(--panel);padding:16px 14px 14px;margin-top:14px}
+.comp[hidden]{display:none}
+.head-k{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.22em;
+  color:var(--mute);text-transform:uppercase}
+.head-s{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--dim);
+  letter-spacing:.08em;margin:3px 0 18px}
+.head-s b{color:var(--ink2);font-weight:500}
+
+
+
+
+
+
+/* ---------- full-width footnote ---------- */
+.infonote{grid-column:1/-1;display:grid;grid-template-columns:18px 1fr;gap:0 10px;
+  align-items:start;margin-top:14px;padding:10px 12px;background:var(--panel2);
+  border:1px solid var(--rule);border-left:2px solid var(--rule2)}
+.infonote .ico{width:16px;height:16px;border-radius:50%;border:1px solid var(--mute);
+  color:var(--mute);font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:700;
+  line-height:14px;text-align:center;margin-top:1px}
+.infonote p{margin:0;font-size:12px;color:var(--mute);line-height:1.5;max-width:none}
+.infonote p b{color:var(--ink2);font-weight:600}
+.wtab th.grp,.wtab td.grp{text-align:left;white-space:nowrap}
+.wtab td.grp{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--dim)}
+/* 3. close control sits in the corner of the panel */
+.expl{position:relative}
+.expl .close{position:absolute;top:10px;right:10px;margin:0;grid-column:auto;justify-self:auto}
+
+/* ---------- who-pays sub-tabs ---------- */
+.wtabs{display:flex;gap:2px;margin:2px 0 11px;border-bottom:1px solid var(--rule)}
+.wtb{background:transparent;border:0;border-bottom:2px solid transparent;cursor:pointer;
+  color:var(--mute);font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;padding:5px 11px 7px}
+.wtb:hover{color:var(--ink2)}
+.wtb[aria-pressed="true"]{color:var(--cy);border-bottom-color:var(--cy)}
+
+/* ---------- statutory scale ---------- */
+.scale{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin:2px 0 12px}
+@media(max-width:760px){.scale{grid-template-columns:1fr}}
+.scale h5{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--mute);margin:0 0 6px;font-weight:500}
+.srow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;
+  padding:3px 0;border-bottom:1px solid var(--rule)}
+.srow:last-child{border-bottom:0}
+.srow .b{font-size:12.5px;color:var(--ink2)}
+.srow .r{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--ink);font-weight:600}
+.srow .r i{font-style:normal;color:var(--dim);font-weight:400;font-size:10.5px;margin-left:5px}
+
+/* ---------- who pays ---------- */
+.who{grid-column:2;margin-top:12px;border-top:1px solid var(--rule);padding-top:10px}
+.who-h{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.18em;
+  color:var(--mute);text-transform:uppercase;display:block;margin-bottom:8px}
+.who-note{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 0 7px;max-width:80ch}
+.who-note+.who-note{color:var(--dim)}
+.wtab{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+.wtab th{font-family:"JetBrains Mono",monospace;font-size:8.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--mute);text-align:right;padding:0 0 5px;font-weight:500;
+  border-bottom:1px solid var(--rule)}
+.wtab th:first-child{text-align:left}
+.wtab td{padding:3.5px 0;border-bottom:1px solid var(--rule);color:var(--ink2);text-align:right;
+  font-family:"JetBrains Mono",monospace;font-size:11.5px}
+.wtab td:first-child{text-align:left;font-family:Barlow,sans-serif;font-size:12.5px;color:var(--ink2)}
+
+.wtab th.sortable{cursor:pointer;user-select:none}
+.wtab th.sortable:hover{color:var(--ink2)}
+.wtab th.sortable.on{color:var(--cy)}
+.wtab .sar{margin-left:5px;font-size:8px;opacity:.7}
+.wtab tr.tot td{border-top:1px solid var(--rule2);border-bottom:0;color:var(--ink);font-weight:600}
+.wtab td b{color:var(--ink);font-weight:600}
+.wbar{display:inline-block;height:5px;background:var(--cy);vertical-align:middle;min-width:1px}
+.wgap{border-left:2px solid var(--rule2);padding:6px 0 6px 10px;margin-top:9px;
+  font-size:12px;color:var(--mute);line-height:1.45;max-width:80ch}
+.wgap b{color:var(--ink2);font-weight:600}
+
+/* ---------- sub-function breakdown ---------- */
+.subs{grid-column:2;margin-top:11px;border-top:1px solid var(--rule);padding-top:9px}
+.subs-h{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.18em;
+  color:var(--mute);text-transform:uppercase;display:block;margin-bottom:7px}
+.subrow{display:grid;grid-template-columns:minmax(0,1fr) 78px 46px 90px;gap:10px;
+  align-items:baseline;padding:3px 0}
+.subrow .sn{font-size:12.5px;color:var(--ink2);min-width:0}
+.subrow .sn i{display:block;font-style:normal;font-size:11px;color:var(--dim);line-height:1.35}
+.subrow .sv{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink);text-align:right}
+.subrow .sp{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--mute);text-align:right}
+.subrow .sbar{height:5px;background:#0D1920;border:1px solid var(--rule);align-self:center}
+.subrow .sbar i{display:block;height:100%}
+.subs-src{font-size:11px;color:var(--dim);line-height:1.4;margin:8px 0 0}
+@media(max-width:760px){.subrow{grid-template-columns:minmax(0,1fr) 78px 44px}.subrow .sbar{display:none}}
+
+.cli.dim{opacity:.42}
+
+/* ---------- explainer ---------- */
+.expl{border:1px solid var(--rule2);background:var(--panel2);margin-top:12px;padding:12px 13px;
+  display:grid;grid-template-columns:auto 1fr;gap:0 12px}
+.expl .swatch{width:5px;border-radius:2px;grid-row:1/3}
+.expl h4{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:19px;margin:0 0 1px;
+  text-transform:uppercase;letter-spacing:.02em;color:var(--ink)}
+.expl .amt{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--cy);margin-bottom:6px}
+.expl p{margin:0 0 8px;font-size:13px;color:var(--ink2);line-height:1.5;max-width:74ch}
+.expl .facts{display:flex;flex-wrap:wrap;gap:5px 8px}
+.expl .fct{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;border:1px solid var(--rule2);color:var(--mute);padding:2px 7px}
+.expl .fct b{color:var(--ink2);font-weight:500}
+.expl .close{grid-column:2;justify-self:start;background:transparent;border:1px solid var(--rule2);
+  color:var(--mute);font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.12em;
+  padding:3px 9px;cursor:pointer;text-transform:uppercase;margin-top:2px}
+.expl .close:hover{color:var(--ink)}
+.dseg.dim{filter:brightness(.4) saturate(.5)}
+
+/* ---------- mode tabs + year picker: fused to the top of the composition panel ---------- */
+.modebar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  margin-top:14px;padding:0 8px 0 3px;
+  border:1px solid var(--rule);border-bottom:0;background:var(--panel2)}
+.modebar + .comp{margin-top:0}
+.modetabs{display:flex;gap:2px}
+.modetabs button{
+  background:transparent;border:0;border-bottom:2px solid transparent;color:var(--mute);cursor:pointer;
+  font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:15px;
+  letter-spacing:.14em;padding:8px 16px 6px;text-transform:uppercase;
+}
+.modetabs button:hover{color:var(--ink2);background:var(--raise)}
+.modetabs button[aria-selected="true"]{color:var(--cy);border-bottom-color:var(--cy);background:var(--panel)}
+
+/* one <select> holds any number of years — the list grows without touching the layout */
+.yearpick{display:flex;align-items:center;gap:8px;padding:5px 0}
+.ylbl{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--mute)}
+.ysel{appearance:none;color-scheme:dark;cursor:pointer;
+  background-color:var(--panel);color:var(--ink);border:1px solid var(--rule2);
+  font-family:"JetBrains Mono",monospace;font-size:11.5px;letter-spacing:.1em;
+  padding:5px 26px 5px 9px;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6' fill='none' stroke='%238FA9B6' stroke-width='1.4'%3E%3Cpath d='M1 1.5 4.5 4.5 8 1.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center}
+.ysel:hover{border-color:var(--cy-dim);color:var(--cy)}
+.ysel:focus-visible{outline:1px solid var(--cy);outline-offset:1px}
+@media(max-width:560px){
+  .modebar{padding:0 6px 0 3px}
+  .modetabs{flex:1 1 auto}
+  .modetabs button{flex:1;padding:8px 6px 6px;font-size:14px}
+}
+
+/* spending mode recolours the data accent, semantics stay put */
+body.exp{--cy:#F0A82E;--cy-hi:#FFD98A;--cy-dim:#6B4A12}
+
+/* ---------- lens strip ---------- */
+.lens{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  border:1px solid var(--rule);border-top:0;background:var(--panel2);
+  padding:7px 12px;
+}
+.lens .tag{
+  font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.2em;
+  color:var(--mute);text-transform:uppercase;
+}
+.lens .desc{font-size:12.5px;color:var(--ink2);flex:1;min-width:200px}
+.lens .desc b{color:var(--cy);font-weight:600}
+.lens button{
+  background:transparent;border:1px solid var(--am-dim);color:var(--am);cursor:pointer;
+  font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.14em;
+  padding:4px 9px;text-transform:uppercase;white-space:nowrap;
+}
+.lens button:hover{background:#1A1305}
+
+/* ---------- bridge ---------- */
+.bridge{border:1px solid var(--rule);border-top:0;background:var(--panel);padding:14px 12px 16px}
+.bridge[hidden]{display:none}
+.bridge h3{
+  font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:19px;
+  text-transform:uppercase;margin:0 0 3px;color:var(--ink);letter-spacing:.01em;
+}
+.bridge .lead{font-size:12.5px;color:var(--ink2);margin:0 0 12px;max-width:78ch}
+.ladder{display:flex;flex-direction:column;gap:3px}
+.rung{display:grid;grid-template-columns:16px minmax(150px,1.1fr) 92px minmax(80px,2fr);
+  gap:10px;align-items:center;padding:3px 0}
+.rung .op{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--mute);text-align:center}
+.rung .lb{font-size:12.5px;color:var(--ink2)}
+.rung .lb small{display:block;color:var(--dim);font-size:11px;line-height:1.3}
+.rung .vv{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--ink);text-align:right}
+.rung .bb{height:9px;background:#0D1920;border:1px solid var(--rule)}
+.rung .bb i{display:block;height:100%;background:var(--cy-dim)}
+.rung.sum{border-top:1px solid var(--rule2);margin-top:4px;padding-top:7px}
+.rung.sum .lb{color:var(--ink);font-weight:600}
+.rung.sum .vv{color:var(--cy);font-weight:700}
+.rung.sum .bb i{background:var(--cy)}
+.rung.here .lb{color:var(--am)}
+.rung.here .vv{color:var(--am)}
+.rung.here .bb i{background:var(--am)}
+@media(max-width:640px){.rung{grid-template-columns:14px 1fr 84px}.rung .bb{display:none}}
+
+@keyframes sweepdown{0%{transform:translateY(-4%);opacity:0}12%{opacity:.85}100%{transform:translateY(104%);opacity:0}}
+.sweepline{animation:sweepdown 1.1s cubic-bezier(.3,0,.2,1) 1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="class-bar" id="classbar">UNCLASSIFIED // PUBLIC RELEASE // OPEN SOURCE — DATOS PÚBLICOS</div>
+
+<div class="shell">
+
+<header class="mast">
+  <div class="brand">
+    <h1>MAD<em>TAX</em></h1>
+    <span class="codename" id="cn">OPEN SOURCE</span>
+  </div>
+  <div class="mast-right">
+    <div class="langsw" role="group" aria-label="Language">
+      <button id="lang-es" aria-pressed="true">ES</button>
+      <button id="lang-en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</header>
+
+<div class="modebar">
+  <div class="modetabs" role="tablist" aria-label="Mode">
+    <button id="mode-rev" role="tab" aria-selected="true" aria-controls="comp">Ingresos</button>
+    <button id="mode-exp" role="tab" aria-selected="false" aria-controls="comp">Gasto</button>
+  </div>
+  <div class="yearpick">
+    <label class="ylbl" for="yearsel">Ejercicio</label>
+    <select class="ysel" id="yearsel"></select>
+  </div>
+</div>
+<section class="comp" id="comp" role="tabpanel"></section>
+
+<div class="main">
+
+  <section class="pane">
+    <div class="pane-h">
+      <span class="t" id="h-map">MAPA TÁCTICO · ESPAÑA</span>
+      <span class="x" id="mapyear">FY2024</span>
+    </div>
+    <div class="mapwrap" id="mapwrap"></div>
+    <div class="offmap" id="offmap"></div>
+    <div class="mapbar">
+      <div class="legend">
+        <span id="lg-lo">BAJO</span>
+        <div class="ramp" id="ramp"></div>
+        <span id="lg-hi">ALTO</span>
+      </div>
+    </div>
+  </section>
+
+  <aside class="pane dossier">
+    <div class="pane-h"><span class="t" id="h-dos">EXPEDIENTE</span><span class="x" id="dos-code">ES—</span></div>
+    <div class="pane-b" id="dossier"></div>
+  </aside>
+
+</div>
+
+<footer class="foot">
+  <span id="f1">Fuente: AEAT vía ISTAC · Eurostat · INE</span>
+  <span id="f2">Recaudación líquida del Estado — no incluye cotizaciones sociales</span>
+  <span id="f3">Prototipo UI · MadTax</span>
+</footer>
+
+</div>
+
+<div class="class-bar bottom" id="classbar2">MADTAX // PROTOTIPO DE INTERFAZ // DATOS REALES SIN MODELIZAR</div>
+
+<script>
+const D = __BUNDLE__;
+
+/* ============================== i18n ============================== */
+const T={
+ es:{
+  classTop:'UNCLASSIFIED // PUBLIC RELEASE // OPEN SOURCE — DATOS PÚBLICOS',
+  classBot:'MADTAX // PROTOTIPO DE INTERFAZ // DATOS REALES SIN MODELIZAR',
+  ctrl:'CONTROL',metric:'MÉTRICA',lo:'BAJO',hi:'ALTO',dos:'EXPEDIENTE',
+  modeRev:'Ingresos',modeExp:'Gasto',
+  taxLbl:'FIGURA TRIBUTARIA',fnLbl:'FUNCIÓN DEL GASTO',
+  mapRev:'MAPA TÁCTICO · RECAUDACIÓN',mapExp:'MAPA TÁCTICO · GASTO AUTONÓMICO',
+  roRev:'AEAT · RECAUDACIÓN LÍQUIDA',roExp:'IGAE + EUROSTAT · SEC 2010',
+  hq:'▲ EFECTO SEDE',foral:'◆ RÉGIMEN FORAL',
+  unal:v=>'SIN ASIGNAR '+v,noreg:'◇ SIN GOBIERNO AUTONÓMICO',
+  m:{total:'Total absoluto',pc:'Por habitante',gdp:'% del PIB regional'},
+  tx:{TOTAL:'Todas las figuras',IRPF:'IRPF · Renta',IS:'Sociedades',IVA:'IVA',IIEE:'Impuestos especiales',OTROS:'Otros impuestos',TASAS:'Tasas'},
+  fnAll:'Todas las funciones',
+  fam:{social:'Cotizaciones sociales',income:'Impuestos sobre la renta',
+       consume:'Impuestos sobre consumo, producción y propiedad',
+       nontax:'Ingresos no tributarios',capital:'Impuestos sobre el capital'},
+  expSub:'gasto consolidado de todas las AAPP · COFOG',
+  fOfTotal:'% del total',fRank:'Puesto',fPerCap:'Por habitante',
+  fOnMap:'En el mapa {P}',fOffMap:'Sin reparto territorial',fYear:'Ejercicio',fClose:'Cerrar',
+  rvTotal:'TODOS los ingresos', rvTotalK:'INGRESOS PÚBLICOS TOTALES', rvTotalSub:'todas las AAPP · SEC 2010', rvPending:'detalle por figura aún no publicado',
+  compTtl:'DE DÓNDE SALE CADA EURO',
+  compNote:'Las partidas suman exactamente el total y ninguna se solapa con otra. Pulsa cualquiera para saber qué es — no filtra el mapa. Fuente: contabilidad nacional (SEC 2010), Eurostat; reparto territorial de AEAT, IGAE y CONPREL.',
+  regWhat:'IMPUESTOS RECAUDADOS AQUÍ ·',
+  regNone:'Sin dato territorial para:',
+  restWhat:'QUÉ HAY EXACTAMENTE AQUÍ DENTRO',
+  pendProd:['Impuestos sobre el consumo y la producción','Desglose 2025 pendiente: Eurostat publica el detalle por figura un año después del agregado'],
+  pendInc:['Impuestos sobre la renta','Desglose 2025 pendiente: Eurostat publica el detalle por figura un año después del agregado'],
+  whoH:'¿QUIÉN GENERA ESTE INGRESO?',
+  whoYear:'· datos de {Y}',
+  wScaleIntro:'<b>La escala del IRPF en 2023.</b> Estos son los tramos por los que realmente se calcula el impuesto. Se aplican a la <b>base liquidable</b> —lo que queda de la renta tras el mínimo personal y familiar y las reducciones—, no al sueldo bruto.',
+  wScaleGeneral:'Escala general · rentas del trabajo y actividades',
+  wScaleSavings:'Escala del ahorro · intereses, dividendos, plusvalías',
+  wStateHalf:'estatal',
+  wScaleWhy:'Sólo se muestra la mitad estatal. Cada comunidad autónoma aprueba su propia escala, que se suma a ésta, así que el tipo marginal real depende de dónde vivas. Y son tipos <b>marginales</b>: nadie paga el 24,5% sobre toda su renta, sólo sobre la parte que supera los 300.000 €. Por eso AEAT no publica —ni podría— un recuento de personas «dentro» de cada tramo: todo el mundo atraviesa los tramos inferiores.',
+  wDistH:'Cuánta gente hay y cuánto paga.',
+  wDistIntro:'AEAT sí publica el reparto de contribuyentes por renta anual, pero usando sus propios intervalos, que no coinciden con la escala legal. Es lo más cercano que existe a «quién paga el IRPF».',
+  tabTop:'Top 10%',
+  wGroupCol:'Grupo',
+  wTop10_1:'10% → 1%',wTop1_01:'1% → 0,1%',
+  wTop01_001:'0,1% → 0,01%',wTop001:'Top 0,01%',
+  tabDec:'Deciles',tabQui:'Quintiles',
+  wPosLow:'el {P}% que menos gana',wPosHigh:'el {P}% que más gana',wPosMid:'posición {A}–{B}%',
+  wMadIntro:'<b>La escala real que se aplica en Madrid.</b> El Estado fija una mitad y la Comunidad de Madrid la otra; el tipo marginal que pagas es la suma. Madrid tiene la escala autonómica más baja de España.',
+  wMadBand:'Base liquidable',wMadState:'Estatal',wMadRegion:'Madrid',wMadTotal:'Marginal total',
+  wMadPeople:'Personas que llegan',wMadPct:'% que llega',
+  wMadCaveat:'<b>Las dos últimas columnas son una estimación</b>, la única de todo MadTax. AEAT no publica cuántos contribuyentes hay en cada tramo de la escala, así que se interpola a partir de la distribución por deciles. Además la escala se aplica a la <b>base liquidable</b> y la distribución es de <b>renta bruta</b>: son magnitudes distintas, así que léelo como un orden de magnitud, no como un dato oficial. Los tipos sí son exactos.',
+  wPeoplePct:'% personas',wAvgTax:'Media por persona',wNegZero:'Renta negativa o cero',
+  wTotalRow:'Total',
+  wGap:'Los tramos son de renta anual (rendimientos e imputaciones) y suman <b>{R}</b>, la cuota de las declaraciones de IRPF presentadas. La cifra de cabecera es <b>{H}</b> porque la contabilidad nacional incluye además el IRPF de País Vasco y Navarra, que tienen su propio impuesto, y las retenciones de quienes no están obligados a declarar. Diferencia: <b>{G}</b>.',
+  wPeople:'Personas',wIncome:'Renta',wTax:'Impuesto',
+  wRate:'Tipo medio',wShare:'% del impuesto',wAll:'Total',
+  wBandRange:'Renta anual',wUpToV:'Hasta {V}',wOverV:'Más de {V}',wThreshold:'A partir de',
+  wCoType:'Tipo de empresa',wProfit:'Beneficio',wBase:'Base imponible',
+  wRateBase:'Tipo s/ base',wRateProfit:'Tipo s/ beneficio',
+  wGroups:'Grupos consolidados',wStandalone:'Sociedades independientes',wAllCo:'Total',
+  wPayer:'Quién paga',wAmount:'Importe',
+  wEmployer:'Empresas (cuota patronal)',wEmployee:'Trabajadores por cuenta ajena',
+  wSelf:'Autónomos',wNonEmp:'No ocupados (convenios especiales)',wVoluntary:'Aportaciones voluntarias',wImputed:'Imputadas (sector público)',
+  subsH:'EN QUÉ SE DESGLOSA',
+  subsSrc:'Desglose oficial por códigos SEC 2010 · Eurostat. Las partes suman exactamente la cifra de arriba.',
+  wProduct:'Figura',wVatRate:'Tipo de IVA',
+  wAeatTot:'TOTAL DEVENGADO · AEAT',wProv:'provisional',
+  wGapExcise:'Cifras de AEAT en devengo del Estado: <b>{A}</b>. La cabecera dice <b>{H}</b> porque la contabilidad nacional cuenta también los impuestos especiales de País Vasco y Navarra, que los recaudan sus haciendas forales, y otros impuestos sobre el consumo. Diferencia: <b>{G}</b>.',
+  wGapVat:'El reparto por tipos sólo se publica del <b>régimen general</b> ({A}). Fuera quedan los regímenes especiales ({SP}), el ajuste de los territorios forales ({F}) y otros ajustes ({O}), que llevan el IVA devengado total a <b>{T}</b>. La cabecera dice <b>{H}</b>, en contabilidad nacional.',
+  osSoc:'Seguridad Social · pensiones y prestaciones',
+  osCentral:'Estado central · defensa, deuda, exteriores',
+  osLocal:'Ayuntamientos y diputaciones',
+  osAdj:'Transferencias entre niveles (se eliminan)',
+  osSocD:'Lo que gasta directamente la Seguridad Social: pensiones de jubilación, viudedad, incapacidad y desempleo. No se publica repartido por comunidad autónoma.',
+  osCentralD:'Gasto del Estado y sus organismos. Incluye lo que por naturaleza no tiene reparto regional: defensa, intereses de la deuda, acción exterior y la administración central.',
+  osLocalD:'Gasto de ayuntamientos, diputaciones y cabildos. Es territorial, pero se contabiliza en el subsector local, no en el autonómico que muestra el mapa.',
+  osAdjD:'Dinero que un nivel de gobierno transfiere a otro. Aparece dos veces si se suman los niveles, así que la contabilidad nacional lo elimina. Casi todo es Estado → comunidades autónomas.',
+  omNoTerr:'sin reparto por comunidad',omOfTotal:'DEL TOTAL NACIONAL',
+  omOnMap:'En el mapa',omOffMap:'Fuera del mapa',omNat:'Total nacional',
+  omWhy:'¿POR QUÉ NO ESTÁ EN EL MAPA?',
+  omSocD:'Las cotizaciones las recauda la Tesorería General de la Seguridad Social, que solo publica cifras nacionales. No existe un dato oficial por comunidad autónoma, así que no lo inventamos.',
+  omEuD:'La Comisión Europea paga al Estado miembro, no a las comunidades. El dinero entra en el presupuesto español y luego se reparte a los organismos gestores, algunos autonómicos. Existe un dato de en qué región se gastó, pero eso no es lo mismo que a quién se pagó.',
+  omRestD:'Incluye rentas de la propiedad del Estado, transferencias no europeas, aranceles, la recaudación de las haciendas forales del País Vasco y Navarra, y la diferencia entre criterio de caja (datos administrativos) y devengo (contabilidad nacional).',
+  omSoc:'Seguridad Social · sin reparto territorial',
+  omEu:'Unión Europea · se paga al Estado',
+  omRest:'Resto sin reparto regional',
+  pt:{
+    social:['Cotizaciones sociales','Cuotas de empresas y trabajadores a la Seguridad Social'],
+    irpf:['IRPF · Renta de las personas','Impuesto sobre la renta de nóminas, pensiones, autónomos y ahorro'],
+    vat:['IVA','Impuesto sobre el valor añadido en el consumo'],
+    corp:['Impuesto de Sociedades','Impuesto sobre el beneficio de las empresas'],
+    sales:['Tasas, precios públicos y ventas','Matrículas, copagos, entradas, licencias y venta de servicios públicos'],
+    excise:['Impuestos especiales','Hidrocarburos, tabaco, alcohol, electricidad y carbón'],
+    eu:['Fondos europeos','Transferencias recibidas de la UE: cohesión, PAC y Next Generation'],
+    otherProd:['ITP/AJD, seguros, juego y matriculación','Transmisiones patrimoniales, actos jurídicos, primas de seguros, juego, matriculación'],
+    propInc:['Rentas de la propiedad','Intereses, dividendos de empresas públicas y alquileres'],
+    propTax:['IBI · Impuesto sobre inmuebles','Impuesto municipal sobre el valor de terrenos y edificios'],
+    otherProdTax:['IAE y otros sobre la actividad','Actividades económicas, tasas medioambientales y otros gravámenes sobre la producción'],
+    otherTransfer:['Otras transferencias recibidas','Transferencias corrientes y de capital que no vienen de la UE'],
+    inherit:['Sucesiones y donaciones','Impuesto sobre herencias, donaciones y otros gravámenes sobre el capital'],
+    otherCurr:['Patrimonio, vehículos y otros','Impuesto sobre el patrimonio, circulación de vehículos de hogares y otros corrientes'],
+    customs:['Aranceles de importación','Derechos de aduana sobre mercancías importadas'],
+    taxProdPending:['Consumo y producción · pendiente','IVA, especiales, IBI, ITP y resto — Eurostat aún no ha publicado el desglose de 2025'],
+    taxIncPending:['Impuestos sobre la renta · pendiente','IRPF, Sociedades y resto — Eurostat aún no ha publicado el desglose de 2025']
+  },
+  sRev:{nat:'INGRESOS PÚBLICOS TOTALES',natSub:'todas las AAPP · SEC 2010',
+        tax:'Impuestos',soc:'Cotizaciones sociales',other:'Tasas, ventas y otros',
+        eu:'Recibido de la UE',euSub:'llega al Estado, no a las CCAA',
+        map:'Atribuible a un territorio',mapSub:'del total',mapNone:'sin datos locales aún',
+        est:'Estado (AEAT)',aut:'Autonómico',loc:'Local',tas:'Tasas y multas'},
+  rv:{total:'TODO lo recaudado',st:'Total Estado (AEAT)',irpf:'IRPF · Renta',is:'Sociedades',
+      iva:'IVA',iiee:'Impuestos especiales',otrosE:'Otros estatales',tasasE:'Tasas estatales',
+      rg:'ITP, sucesiones, patrimonio, juego',lt:'Impuestos municipales',
+      ibi:'IBI · Bienes inmuebles',lf:'Tasas y multas locales',eu:'Fondos europeos recibidos'},
+  grp:{TOTAL:'CONJUNTO','ESTADO · AEAT':'ESTADO · AEAT','AUTONÓMICO':'AUTONÓMICO',
+       LOCAL:'LOCAL','UNIÓN EUROPEA':'UNIÓN EUROPEA'},
+  ssGap:'FALTA · COTIZACIONES SOCIALES',
+  ssGapT:'Las cotizaciones a la Seguridad Social (unos 210.000 M€ al año, la mayor fuente de ingresos públicos) NO se publican por territorio. La TGSS solo da cifras nacionales. Por eso no están en este total. Añadirlas exigiría estimarlas a partir de afiliación y bases medias, y eso sería un cálculo nuestro, no un dato oficial.',
+  partial:'DATOS PARCIALES',
+  partialT:'Para este ejercicio falta algún componente. Cobertura: Estado 2007-2025, autonómico 2012-2024, local 2019-2023, fondos UE 2012-2022. El total solo está completo entre 2019 y 2022.',
+  euLbl:'Fondos europeos',
+  euWhoT:'¿A quién paga la UE?',
+  euWho:'La Comisión Europea paga al <b>Estado miembro</b>, no a las comunidades autónomas. El dinero entra en el circuito presupuestario español y después se reparte a los organismos gestores, que a veces son autonómicos. Por eso los fondos europeos son una cifra nacional aquí y no una capa del mapa.',
+  sExp:{tot:'Gasto total AAPP',soc:'Protección social',hea:'Sanidad',edu:'Educación',reg:'Gasto autonómico',def:'Déficit'},
+  lensNat:'Los ingresos públicos totales son {T}. De esa cifra, {M} se puede atribuir a un territorio concreto — es lo único que muestra el mapa. El resto (cotizaciones sociales, fondos europeos, ingresos del Estado) no se publica por comunidad.',
+  lensRev:'Estás viendo <b>la recaudación del Estado vía AEAT</b> — no el total de ingresos públicos.',
+  lensExp:'Estás viendo <b>el gasto total de las AAPP</b> a nivel nacional; el mapa muestra solo el <b>gasto autonómico</b>.',
+  why:'¿Por qué no cuadra?',close:'Cerrar',
+  bridgeRevT:'De dónde sale cada euro público',
+  bridgeRevL:'Desglose completo de los ingresos públicos del ejercicio, y qué parte se puede repartir por territorio. Fuente: Eurostat (contabilidad nacional, SEC 2010) para el total; AEAT, IGAE y CONPREL para el reparto territorial.',
+  brn:{taxes:['Impuestos','IRPF, IVA, Sociedades, especiales, ITP, IBI y todos los demás'],
+       social:['Cotizaciones sociales','Seguridad Social — la mayor fuente individual. No se publica por territorio'],
+       sales:['Tasas, precios y ventas','lo que cobran las administraciones por servicios'],
+       property:['Rentas de la propiedad','intereses, dividendos y alquileres públicos'],
+       transfers:['Transferencias recibidas','incluye los fondos europeos'],
+       total:['INGRESOS PÚBLICOS TOTALES',''],
+       mapped:['Atribuible a un territorio','impuestos estatales, autonómicos y locales — lo que ves en el mapa'],
+       unmapped:['No atribuible a un territorio','cotizaciones sociales, fondos UE e ingresos del Estado sin reparto regional']},
+  bridgeExpT:'De 725,0 MM€ a lo que ves en el mapa',
+  bridgeExpL:'El gasto público se reparte entre cuatro niveles de administración. El mapa muestra únicamente el nivel autonómico, que es quien gestiona la sanidad y la educación. Datos de 2024, sin consolidar entre niveles.',
+  br:{aeat:['Recaudación estatal AEAT','caja, territorio común — lo que muestra el mapa'],
+      notaeat:['Impuestos que no recauda la AEAT','forales (País Vasco, Navarra) + autonómicos (ITP, sucesiones) + locales (IBI, vehículos)'],
+      alltax:['Todos los ingresos tributarios',''],
+      socsec:['Cotizaciones sociales','las recauda la Seguridad Social, no la AEAT'],
+      taxsoc:['Impuestos + cotizaciones',''],
+      nontax:['Ingresos no tributarios','tasas, ventas, multas, rentas de la propiedad, fondos europeos'],
+      ggtotal:['INGRESOS TOTALES DE LAS AAPP','']},
+  tiers:{S1311:['Administración central','Estado, ministerios, organismos'],
+         S1312:['Administración autonómica','sanidad y educación — lo que muestra el mapa'],
+         S1313:['Administración local','ayuntamientos y diputaciones'],
+         S1314:['Seguridad Social','pensiones y prestaciones'],
+         TSUM:['Suma de los cuatro niveles','⚠ NO es el gasto público — cuenta dos veces las transferencias'],
+         ELIM:['Transferencias entre niveles','dinero que el Estado da a las CCAA y estas vuelven a gastar'],
+         S13:['GASTO PÚBLICO TOTAL (CONSOLIDADO)','la cifra correcta — Eurostat S13']},
+  perCap:'per cápita',pop:'Población',gdpL:'PIB regional',shr:'Cuota nacional',
+  rank:'Puesto',compo:'Composición',compoEcon:'¿En qué se gasta?',hint:'Selecciona un territorio en el mapa',
+  advHQ:'ADVERTENCIA · EFECTO SEDE',
+  advHQt:'Las grandes empresas tributan donde tienen su domicilio fiscal, no donde operan. Madrid concentra las sedes del IBEX, así que esta cifra mide dónde se declara el impuesto, no dónde se genera la actividad. No lo interpretes como "quién paga más".',
+  advF:'ADVERTENCIA · RÉGIMEN FORAL',
+  advFt:'Esta comunidad recauda sus propios impuestos bajo el Concierto o Convenio Económico. Las cifras estatales aquí son residuales y pueden ser negativas cuando las devoluciones superan lo recaudado. Sus datos reales están en su hacienda foral, aún no integrada.',
+  advN:'ADVERTENCIA · VALOR NEGATIVO',
+  advNt:'Las devoluciones superaron la recaudación bruta del Estado en este territorio durante el ejercicio.',
+  advNoReg:'SIN DATOS · CIUDAD AUTÓNOMA',
+  advNoRegt:'Ceuta y Melilla no tienen gobierno autonómico. Su gasto se contabiliza en la administración local, no en el subsector autonómico que muestra este mapa.',
+  advScope:'ÁMBITO · SOLO GASTO AUTONÓMICO',
+  advScopet:'Esta cifra es lo que gasta el gobierno autonómico. No incluye lo que el Estado, la Seguridad Social o los ayuntamientos gastan en este territorio — las pensiones, por ejemplo, no aparecen aquí.'
+ },
+ en:{
+  classTop:'UNCLASSIFIED // PUBLIC RELEASE // OPEN SOURCE — PUBLIC DATA',
+  classBot:'MADTAX // INTERFACE PROTOTYPE // REAL DATA, NOT MODELLED',
+  ctrl:'CONTROL',metric:'METRIC',lo:'LOW',hi:'HIGH',dos:'DOSSIER',
+  modeRev:'Revenue',modeExp:'Spending',
+  taxLbl:'TAX HEAD',fnLbl:'SPENDING FUNCTION',
+  mapRev:'TACTICAL MAP · COLLECTION',mapExp:'TACTICAL MAP · REGIONAL SPENDING',
+  roRev:'AEAT · NET COLLECTION',roExp:'IGAE + EUROSTAT · ESA 2010',
+  hq:'▲ HQ EFFECT',foral:'◆ FORAL REGIME',
+  unal:v=>'UNALLOCATED '+v,noreg:'◇ NO REGIONAL GOVERNMENT',
+  m:{total:'Absolute total',pc:'Per resident',gdp:'% of regional GDP'},
+  tx:{TOTAL:'All tax heads',IRPF:'Personal income',IS:'Corporate income',IVA:'VAT',IIEE:'Excise duties',OTROS:'Other taxes',TASAS:'Fees'},
+  fnAll:'All functions',
+  fam:{social:'Social contributions',income:'Taxes on income',
+       consume:'Taxes on consumption, production and property',
+       nontax:'Non-tax revenue',capital:'Taxes on capital'},
+  expSub:'consolidated general government spending · COFOG',
+  fOfTotal:'% of total',fRank:'Rank',fPerCap:'Per resident',
+  fOnMap:'On the map {P}',fOffMap:'No territorial split',fYear:'Year',fClose:'Close',
+  rvTotal:'ALL revenue', rvTotalK:'TOTAL PUBLIC REVENUE', rvTotalSub:'all government · ESA 2010', rvPending:'per-tax detail not yet published',
+  compTtl:'WHERE EVERY EURO COMES FROM',
+  compNote:'The parts sum exactly to the total and none overlaps another. Click any one to see what it is — it does not filter the map. Source: national accounts (ESA 2010), Eurostat; territorial split from AEAT, IGAE and CONPREL.',
+  regWhat:'TAXES COLLECTED HERE ·',
+  regNone:'No territorial figure for:',
+  restWhat:'WHAT IS ACTUALLY IN HERE',
+  pendProd:['Consumption and production taxes','2025 detail pending: Eurostat publishes the per-tax split about a year after the aggregate'],
+  pendInc:['Income taxes','2025 detail pending: Eurostat publishes the per-tax split about a year after the aggregate'],
+  whoH:'WHO GENERATES THIS REVENUE?',
+  whoYear:'· {Y} data',
+  wScaleIntro:'<b>The 2023 IRPF scale.</b> These are the bands the tax is actually calculated on. They apply to the <b>taxable base</b> — what is left of income after the personal allowance and reductions — not to gross salary.',
+  wScaleGeneral:'General scale · earned income and business',
+  wScaleSavings:'Savings scale · interest, dividends, capital gains',
+  wStateHalf:'state',
+  wScaleWhy:'Only the state half is shown. Each autonomous community approves its own scale on top of this one, so the real marginal rate depends on where you live. And these are <b>marginal</b> rates: nobody pays 24.5% on all their income, only on the part above €300,000. That is why AEAT does not — and could not — publish a headcount "inside" each band: everyone passes through the lower ones.',
+  wDistH:'How many people, and how much they pay.',
+  wDistIntro:'AEAT does publish the distribution of taxpayers by annual income, but using its own intervals, which do not match the legal scale. It is the closest thing that exists to "who pays income tax".',
+  tabTop:'Top 10%',
+  wGroupCol:'Group',
+  wTop10_1:'10% → 1%',wTop1_01:'1% → 0.1%',
+  wTop01_001:'0.1% → 0.01%',wTop001:'Top 0.01%',
+  tabDec:'Deciles',tabQui:'Quintiles',
+  wPosLow:'the lowest-earning {P}%',wPosHigh:'the highest-earning {P}%',wPosMid:'position {A}–{B}%',
+  wMadIntro:'<b>The scale actually applied in Madrid.</b> The state sets one half and the Comunidad de Madrid the other; the marginal rate you pay is the sum. Madrid has the lowest regional scale in Spain.',
+  wMadBand:'Taxable base',wMadState:'State',wMadRegion:'Madrid',wMadTotal:'Total marginal',
+  wMadPeople:'People reaching it',wMadPct:'% reaching it',
+  wMadCaveat:'<b>The last two columns are an estimate</b> — the only one in MadTax. AEAT does not publish how many taxpayers sit in each band of the scale, so it is interpolated from the decile distribution. The scale also applies to <b>taxable base</b> while the distribution is <b>gross income</b>: different measures, so read it as an order of magnitude, not an official figure. The rates themselves are exact.',
+  wPeoplePct:'% of people',wAvgTax:'Average per person',wNegZero:'Negative or zero income',
+  wTotalRow:'Total',
+  wGap:'Bands are annual income (earnings and imputations) and add up to <b>{R}</b>, the tax settled on filed income tax returns. The headline figure is <b>{H}</b> because national accounts also include income tax in the Basque Country and Navarre, which run their own, and tax withheld from people not required to file. Difference: <b>{G}</b>.',
+  wPeople:'People',wIncome:'Income',wTax:'Tax',
+  wRate:'Average rate',wShare:'% of the tax',wAll:'Total',
+  wBandRange:'Annual income',wUpToV:'Up to {V}',wOverV:'Over {V}',wThreshold:'From',
+  wCoType:'Company type',wProfit:'Profit',wBase:'Taxable base',
+  wRateBase:'Rate on base',wRateProfit:'Rate on profit',
+  wGroups:'Consolidated groups',wStandalone:'Standalone companies',wAllCo:'Total',
+  wPayer:'Who pays',wAmount:'Amount',
+  wEmployer:'Employers',wEmployee:'Employees',
+  wSelf:'Self-employed',wNonEmp:'Non-employed (special agreements)',wVoluntary:'Voluntary contributions',wImputed:'Imputed (public sector)',
+  subsH:'WHAT IT BREAKS DOWN INTO',
+  subsSrc:'Official ESA 2010 code breakdown · Eurostat. The parts sum exactly to the figure above.',
+  wProduct:'Product',wVatRate:'VAT rate',
+  wAeatTot:'TOTAL ACCRUED · AEAT',wProv:'provisional',
+  wGapExcise:'AEAT figures, accrued state basis: <b>{A}</b>. The headline says <b>{H}</b> because national accounts also count the excise collected by the Basque and Navarrese foral treasuries, plus other consumption taxes. Difference: <b>{G}</b>.',
+  wGapVat:'The split by rate is published for the <b>general regime</b> only ({A}). Outside it sit the special regimes ({SP}), the foral territories adjustment ({F}) and other adjustments ({O}), which bring total accrued VAT to <b>{T}</b>. The headline says <b>{H}</b>, on a national-accounts basis.',
+  osSoc:'Social Security · pensions and benefits',
+  osCentral:'Central government · defence, debt, foreign affairs',
+  osLocal:'Councils and provincial authorities',
+  osAdj:'Transfers between tiers (eliminated)',
+  osSocD:'What Social Security spends directly: retirement, survivor, disability and unemployment payments. Not published split by autonomous community.',
+  osCentralD:'Spending by the State and its agencies. Includes what has no regional split by nature: defence, debt interest, foreign affairs and central administration.',
+  osLocalD:'Spending by town councils and provincial authorities. It is territorial, but recorded in the local subsector rather than the regional one the map shows.',
+  osAdjD:'Money one tier of government transfers to another. It appears twice if you add the tiers up, so national accounts eliminate it. Almost all of it is State to autonomous communities.',
+  omNoTerr:'no split by community',omOfTotal:'OF THE NATIONAL TOTAL',
+  omOnMap:'On the map',omOffMap:'Off the map',omNat:'National total',
+  omWhy:'WHY IS THIS NOT ON THE MAP?',
+  omSocD:'Contributions are collected by the Social Security Treasury, which publishes national figures only. There is no official per-community figure, so we do not invent one.',
+  omEuD:'The European Commission pays the Member State, not the communities. Money enters the Spanish budget and is then distributed to managing authorities, some of them regional. Data exists on which region the money was spent in, but that is not the same as who was paid.',
+  omRestD:'Includes central government property income, non-EU transfers, customs duties, collection by the Basque and Navarrese foral treasuries, and the difference between cash basis (administrative data) and accrual (national accounts).',
+  omSoc:'Social Security · no territorial split',
+  omEu:'European Union · paid to the State',
+  omRest:'Rest with no regional split',
+  pt:{
+    social:['Social contributions','Employer and employee payments into Social Security'],
+    irpf:['Personal income tax','Tax on wages, pensions, self-employment and savings income'],
+    vat:['VAT','Value added tax on consumption'],
+    corp:['Corporate income tax','Tax on company profits'],
+    sales:['Fees, charges and sales','Tuition, co-payments, admissions, licences and sales of public services'],
+    excise:['Excise duties','Fuel, tobacco, alcohol, electricity and coal'],
+    eu:['European funds','Transfers received from the EU: cohesion, farm support and Next Generation'],
+    otherProd:['Transfer, insurance, gambling and registration taxes','Property transfer and stamp duty, insurance premiums, gambling, vehicle registration'],
+    propInc:['Property income','Interest, dividends from public companies and rents'],
+    propTax:['Property tax (IBI)','Municipal tax on the value of land and buildings'],
+    otherProdTax:['Business rates and other production taxes','Business activity tax, environmental levies and other charges on production'],
+    otherTransfer:['Other transfers received','Current and capital transfers that do not come from the EU'],
+    inherit:['Inheritance and gift tax','Tax on inheritances, gifts and other capital levies'],
+    otherCurr:['Wealth, vehicle and other current taxes','Wealth tax, household vehicle tax and other current taxes'],
+    customs:['Import duties','Customs duties on imported goods'],
+    taxProdPending:['Consumption & production · pending','VAT, excise, property, transfer taxes — Eurostat has not yet published the 2025 split'],
+    taxIncPending:['Income taxes · pending','Personal and corporate income tax — Eurostat has not yet published the 2025 split']
+  },
+  sRev:{nat:'TOTAL PUBLIC REVENUE',natSub:'all government · ESA 2010',
+        tax:'Taxes',soc:'Social contributions',other:'Fees, sales and other',
+        eu:'Received from the EU',euSub:'paid to the State, not to regions',
+        map:'Attributable to a territory',mapSub:'of total',mapNone:'local data not out yet',
+        est:'State (AEAT)',aut:'Regional',loc:'Local',tas:'Fees & fines'},
+  rv:{total:'EVERYTHING raised',st:'State total (AEAT)',irpf:'Personal income',is:'Corporate income',
+      iva:'VAT',iiee:'Excise duties',otrosE:'Other state taxes',tasasE:'State fees',
+      rg:'Transfer, inheritance, wealth, gambling',lt:'Municipal taxes',
+      ibi:'Property tax (IBI)',lf:'Local fees & fines',eu:'EU funds received'},
+  grp:{TOTAL:'COMBINED','ESTADO · AEAT':'STATE · AEAT','AUTONÓMICO':'REGIONAL',
+       LOCAL:'LOCAL','UNIÓN EUROPEA':'EUROPEAN UNION'},
+  ssGap:'MISSING · SOCIAL CONTRIBUTIONS',
+  ssGapT:'Social security contributions (around €210bn a year, the single largest source of public revenue) are NOT published by territory. TGSS only reports national figures. That is why they are absent from this total. Adding them would mean estimating from affiliation and average contribution bases — our calculation, not an official figure.',
+  partial:'PARTIAL DATA',
+  partialT:'A component is missing for this year. Coverage: state 2007-2025, regional 2012-2024, local 2019-2023, EU funds 2012-2022. The total is only complete for 2019-2022.',
+  euLbl:'EU funds',
+  euWhoT:'Who does the EU pay?',
+  euWho:'The European Commission pays the <b>Member State</b>, not the autonomous communities. The money enters the Spanish budget circuit and is then distributed to managing authorities, which are sometimes regional. That is why EU funds are a national figure here rather than a map layer.',
+  sExp:{tot:'Total gov spending',soc:'Social protection',hea:'Health',edu:'Education',reg:'Regional spending',def:'Deficit'},
+  lensNat:'Total public revenue is {T}. Of that, {M} can be attributed to a specific territory — that is all the map shows. The rest (social contributions, EU funds, central government revenue) is not published by community.',
+  lensRev:'You are looking at <b>state tax collected by AEAT</b> — not total public revenue.',
+  lensExp:'You are looking at <b>total government spending</b> nationally; the map shows <b>regional government spending</b> only.',
+  why:"Why don't these add up?",close:'Close',
+  bridgeRevT:'Where every public euro comes from',
+  bridgeRevL:'Full breakdown of public revenue for the year, and how much of it can be split by territory. Sources: Eurostat national accounts (ESA 2010) for the total; AEAT, IGAE and CONPREL for the territorial split.',
+  brn:{taxes:['Taxes','income, VAT, corporate, excise, transfer, property and all the rest'],
+       social:['Social contributions','Social Security — the largest single source. Not published by territory'],
+       sales:['Fees, charges and sales','what government charges for services'],
+       property:['Property income','public interest, dividends and rents'],
+       transfers:['Transfers received','includes European funds'],
+       total:['TOTAL PUBLIC REVENUE',''],
+       mapped:['Attributable to a territory','state, regional and local taxes — what the map shows'],
+       unmapped:['Not attributable to a territory','social contributions, EU funds and central revenue with no regional split']},
+  bridgeExpT:'From €725.0bn to what the map shows',
+  bridgeExpL:'Public spending is split across four tiers of government. The map shows only the regional tier, which is the one that runs hospitals and schools. 2024 figures, unconsolidated between tiers.',
+  br:{aeat:['AEAT state collection','cash basis, common territory — what the map shows'],
+      notaeat:['Taxes AEAT does not collect','foral (Basque Country, Navarre) + regional (transfer, inheritance) + local (property, vehicle)'],
+      alltax:['All tax receipts',''],
+      socsec:['Social contributions','collected by Social Security, not the tax agency'],
+      taxsoc:['Taxes + social contributions',''],
+      nontax:['Non-tax revenue','fees, sales, fines, property income, EU funds'],
+      ggtotal:['TOTAL GENERAL GOVERNMENT REVENUE','']},
+  tiers:{S1311:['Central government','the State, ministries, agencies'],
+         S1312:['Regional government','health and education — what the map shows'],
+         S1313:['Local government','councils and provincial authorities'],
+         S1314:['Social security','pensions and benefits'],
+         TSUM:['Sum of the four tiers','⚠ NOT public spending — counts transfers twice'],
+         ELIM:['Transfers between tiers','money the State gives the regions, which they then spend again'],
+         S13:['TOTAL PUBLIC SPENDING (CONSOLIDATED)','the correct figure — Eurostat S13']},
+  perCap:'per resident',pop:'Population',gdpL:'Regional GDP',shr:'National share',
+  rank:'Rank',compo:'Composition',compoEcon:'What it is spent on',hint:'Select a territory on the map',
+  advHQ:'ADVISORY · HEADQUARTERS EFFECT',
+  advHQt:'Large companies pay tax where they are registered, not where they operate. Madrid hosts most IBEX headquarters, so this figure measures where tax is declared, not where activity happened. Do not read it as "who pays most".',
+  advF:'ADVISORY · FORAL REGIME',
+  advFt:'This community collects its own taxes under the Concierto or Convenio Económico. State figures here are residual and can go negative when refunds exceed collection. Its real data sits with its own tax authority, not yet integrated.',
+  advN:'ADVISORY · NEGATIVE VALUE',
+  advNt:'Refunds exceeded gross state collection in this territory during the year.',
+  advNoReg:'NO DATA · AUTONOMOUS CITY',
+  advNoRegt:'Ceuta and Melilla have no regional government. Their spending is recorded under local government, not the regional subsector this map shows.',
+  advScope:'SCOPE · REGIONAL SPENDING ONLY',
+  advScopet:'This is what the regional government spends. It excludes what the State, Social Security and councils spend in this territory — pensions, for example, do not appear here.'
+ }
+};
+let L='es'; const t=()=>T[L];
+
+/* ============================== state ============================== */
+let MODE='rev';
+let year='2023', metric='total', slice=0, sel=null, hover=null, focus=null;
+const TAXKEYS=['TOTAL','IRPF','IS','IVA','IIEE','OTROS','TASAS'];
+/* Revenue is now ONE unified figure per territory, split by the administration that
+   levies it. Components are non-overlapping by construction: the regional and local
+   shares of national taxes are excluded from those tiers because they already sit
+   inside AEAT territorial collection. */
+const REV_SLICES=[{k:'total'}].concat(D.PARTS.map(k=>({k})));
+const FAMILIES=[
+  {k:'social',  parts:['social']},
+  {k:'income',  parts:['irpf','corp','otherCurr','taxIncPending']},
+  {k:'consume', parts:['vat','excise','otherProd','propTax','otherProdTax','customs','taxProdPending']},
+  {k:'nontax',  parts:['sales','eu','propInc','otherTransfer']},
+  {k:'capital', parts:['inherit']}
+];
+const PART_COLOR={
+  social:'#3FC8DC', irpf:'#2FA8C4', vat:'#2789A8', corp:'#1F6E8C',
+  sales:'#F0A82E', excise:'#5CC4A6', eu:'#B47BE8', otherProd:'#C77A2E',
+  propInc:'#8FA9B6', propTax:'#7BEEFF', otherProdTax:'#4A7C8C',
+  otherTransfer:'#6A5A8C', inherit:'#E38C95', otherCurr:'#5A7280', customs:'#3A4642',
+  taxProdPending:'#2789A8', taxIncPending:'#2FA8C4'
+};
+function revVal(r,y,k){
+  const p=r.parts && r.parts[y]; if(!p) return null;
+  const v=p[k]; return v===undefined?null:v;
+}
+const years    = ()=> MODE==='rev' ? D.revYears : D.spendYears;
+/* Spending data ends a year earlier than revenue; never index it blind. */
+const spendYear= (y)=> D.spendNational[y] ? y : D.spendYears[D.spendYears.length-1];
+const spendNat = (y)=> D.spendNational[spendYear(y)];
+const sliceCount = ()=> MODE==='rev' ? REV_SLICES.length : 11;
+const partKey  = ()=> REV_SLICES[slice].k;
+function natVal(y,k){ const n=D.natParts[y]; if(!n) return null;
+  return k==='total'? n.total : (n[k]??null); }
+function mapAgg(y,k){ return (D.mapAgg[y]&&D.mapAgg[y][k])||{mapped:0,offmap:0,nat:0}; }
+const sliceLabel = i => {
+  if(MODE==='rev') return i===0? t().rvTotal : t().pt[REV_SLICES[i].k][0];
+  if(i===0) return t().fnAll;
+  return (L==='es'?D.divES:D.divEN)[D.divisions[i-1]];
+};
+
+/* ============================== format ============================== */
+const loc=()=>L==='es'?'es-ES':'en-GB';
+const nf=(v,d=1)=>new Intl.NumberFormat(loc(),{minimumFractionDigits:d,maximumFractionDigits:d,useGrouping:'always'}).format(v);
+const nf0=v=>new Intl.NumberFormat(loc(),{maximumFractionDigits:0,useGrouping:'always'}).format(v);
+function eur(m){                      // m is € millions
+  if(m==null) return '—';
+  const a=Math.abs(m), sign=m<0?'−':'';
+  if(a>=1000) return sign+'€'+nf(a/1000,1)+(L==='es'?' MM':'bn');
+  if(a>=1)    return sign+'€'+nf0(a)+(L==='es'?' M':'m');
+  if(a>=0.001)return sign+'€'+nf0(a*1000)+(L==='es'?' mil':'k');
+  return sign+'€'+nf0(a*1e6);
+}
+function val(r,y=year){
+  if(MODE==='rev') return revVal(r,y,REV_SLICES[slice].k);
+  const s=r.spend[y]; return s? s[slice] : null;
+}
+function metricVal(r,y=year){
+  const v=val(r,y); if(v===null||v===undefined) return null;
+  if(metric==='total') return v;
+  if(metric==='pc')  return r.pop? v*1e6/r.pop : null;
+  return r.gdp? v/r.gdp*100 : null;
+}
+const fmtMetric=v=> v==null?'—' : metric==='total'?eur(v) : metric==='pc'?'€'+nf0(v) : nf(v,1)+'%';
+
+/* ============================== colour ============================== */
+const RAMP_REV=[[9,21,28],[13,42,55],[18,72,92],[26,112,136],[42,158,184],[80,222,244]];
+const RAMP_EXP=[[26,19,5],[56,38,10],[96,64,14],[150,100,22],[204,142,34],[255,196,88]];
+function ramp(x){
+  const stops = MODE==='rev'?RAMP_REV:RAMP_EXP;
+  const p=Math.max(0,Math.min(1,x))*(stops.length-1);
+  const i=Math.floor(p), f=p-i, a=stops[i], b=stops[Math.min(i+1,stops.length-1)];
+  return `rgb(${Math.round(a[0]+(b[0]-a[0])*f)},${Math.round(a[1]+(b[1]-a[1])*f)},${Math.round(a[2]+(b[2]-a[2])*f)})`;
+}
+function scale(){
+  const vals=D.regions.map(r=>metricVal(r)).filter(v=>v!=null&&v>0);
+  const max=Math.max(...vals,1), min=Math.min(...vals,0);
+  const gamma = (MODE==='rev'&&metric==='total') ? 0.55 : 0.8;
+  return v=>{
+    if(v==null) return null;
+    if(v<=0) return 'neg';
+    return ramp(Math.pow(Math.max(0,Math.min(1,(v-min)/Math.max(max-min,1e-9))),gamma));
+  };
+}
+function intensity(r){
+  const vals=D.regions.map(q=>metricVal(q)).filter(v=>v!=null&&v>0);
+  const max=Math.max(...vals,1), v=metricVal(r);
+  return (v==null||v<=0)?0:Math.max(0,Math.min(1,v/max));
+}
+
+/* ============================== map ============================== */
+function buildMap(){
+  const {W,H,CB}=D; let g='';
+  for(let x=0;x<=W;x+=50) g+=`<line x1="${x}" y1="0" x2="${x}" y2="${H}"/>`;
+  for(let y=0;y<=H;y+=50) g+=`<line x1="0" y1="${y}" x2="${W}" y2="${y}"/>`;
+  document.getElementById('mapwrap').innerHTML=`
+  <svg class="map" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Spain">
+    <defs><filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g class="mgrid">${g}</g>
+    <rect class="inset-box" x="${CB.x}" y="${CB.y}" width="${CB.w}" height="${CB.h}"/>
+    <text class="inset-lbl" x="${CB.x+4}" y="${CB.y-5}">CANARIAS · INSET</text>
+    <g id="regs">${D.regions.map(r=>
+      `<path class="reg" id="r-${r.id}" data-id="${r.id}" d="${r.d}" tabindex="0" role="button"
+        aria-label="${r.es}"><title>${r.es}</title></path>`).join('')}</g>
+    <g id="labels"></g><g id="flags"></g><g id="retic"></g><g id="sweep"></g><g id="hud"></g>
+  </svg>`;
+  D.regions.forEach(r=>{
+    const el=document.getElementById('r-'+r.id);
+    el.addEventListener('click',()=>select(r.id));
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(r.id);}});
+    el.addEventListener('mouseenter',()=>{hover=r.id;paintLabels();});
+    el.addEventListener('mouseleave',()=>{hover=null;paintLabels();});
+  });
+}
+function paintMap(){
+  const sc=scale();
+  D.regions.forEach(r=>{
+    const el=document.getElementById('r-'+r.id), v=metricVal(r), c=sc(v), i=intensity(r);
+    if(c===null){ el.classList.add('nodata'); el.style.fill=''; el.style.stroke=''; el.style.strokeWidth=''; }
+    else if(c==='neg'){ el.classList.remove('nodata'); el.style.fill='var(--rd-dim)'; el.style.stroke='#8E2C3C'; el.style.strokeWidth='1.1'; }
+    else {
+      el.classList.remove('nodata'); el.style.fill=c;
+      const base = MODE==='rev'?[80,222,244]:[255,196,88];
+      el.style.stroke = i>0.06 ? `rgba(${base[0]},${base[1]},${base[2]},${(0.18+0.62*i).toFixed(2)})` : '#0A1419';
+      el.style.strokeWidth=(0.9+1.5*i).toFixed(2);
+    }
+    el.style.filter = i>0.55 ? 'url(#glow)' : '';
+    el.classList.toggle('sel',sel===r.id);
+  });
+  paintLabels(); paintFlags();
+}
+function paintLabels(){
+  let s='';
+  D.regions.forEach(r=>{
+    const small=['18','19','17','06','03'].includes(r.id);
+    if(!(hover===r.id||sel===r.id||!small)) return;
+    const v=metricVal(r);
+    s+=`<text class="reg-lbl" x="${r.cx}" y="${r.cy-4}">${r.nuts}</text>`;
+    if(v!=null) s+=`<text class="reg-val" x="${r.cx}" y="${r.cy+7}">${fmtMetric(v)}</text>`;
+  });
+  document.getElementById('labels').innerHTML=s;
+}
+function paintFlags(){
+  let s='';
+  D.regions.forEach(r=>{
+    if(MODE==='rev'){
+      if(r.id==='13') s+=`<g class="flag"><circle cx="${r.cx+30}" cy="${r.cy-16}" r="6"/><text x="${r.cx+30}" y="${r.cy-13.5}">!</text></g>`;
+      if(r.foral)     s+=`<g class="flag"><circle cx="${r.cx+22}" cy="${r.cy-12}" r="5" style="fill:var(--mag)"/><text x="${r.cx+22}" y="${r.cy-9.8}" style="fill:#150E1D">F</text></g>`;
+    } else if(!r.spend[year]){
+      s+=`<g class="flag"><circle cx="${r.cx+13}" cy="${r.cy-9}" r="5" style="fill:#3E525E"/><text x="${r.cx+13}" y="${r.cy-6.8}" style="fill:#0B1218">?</text></g>`;
+    }
+  });
+  document.getElementById('flags').innerHTML=s;
+}
+function paintHud(){
+  const x=D.W-232, y=D.H-128;
+  const k=MODE==='rev'?REV_SLICES[slice].k:null;
+  const rows = MODE==='rev'
+    ? [['PROJ','MERCATOR / ETRS89'],['SRC','AEAT·IGAE·CONPREL·EU'],
+       ['FY',year+(D.national2[year]&&!D.national2[year].complete?' (P)':'')],
+       ['NAT TOTAL',eur(D.natParts[year].total)],
+       ['ON MAP',eur(D.regions.reduce((a,r)=>a+(revVal(r,year,k)||0),0))]]
+    : [['PROJ','MERCATOR / ETRS89'],['SRC','IGAE COFOG · EUROSTAT'],['FY',year+' · COFOG '+(slice?D.divisions[slice-1]:'ALL')],
+       ['GG TOTAL',eur(spendNat(year)[slice])],
+       ['REGIONAL',eur(D.regions.reduce((a,r)=>a+(r.spend[year]?r.spend[year][slice]:0),0))]];
+  document.getElementById('hud').innerHTML=`
+    <g class="hudg" transform="translate(${x} ${y})">
+      <path d="M0 8 L0 0 L10 0" fill="none" stroke="#274150"/><path d="M212 0 L222 0 L222 8" fill="none" stroke="#274150"/>
+      <path d="M0 108 L0 116 L10 116" fill="none" stroke="#274150"/><path d="M212 116 L222 116 L222 108" fill="none" stroke="#274150"/>
+      ${rows.map((r,i)=>`
+        <text x="8" y="${20+i*19}" font-family="JetBrains Mono, monospace" font-size="8.5" letter-spacing="1.6" fill="#5A7280">${r[0]}</text>
+        <text x="214" y="${20+i*19}" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9.5"
+              fill="${i>=3?(MODE==='rev'?'#3FC8DC':'#F0A82E'):'#8FA9B6'}">${r[1]}</text>`).join('')}
+    </g>`;
+}
+function paintReticle(){
+  const g=document.getElementById('retic'), sw=document.getElementById('sweep');
+  const r=sel?D.regions.find(x=>x.id===sel):null;
+  if(!r){ g.innerHTML=''; sw.innerHTML=''; return; }
+  const [x0,y0,x1,y1]=r.bbox, p=7, K=13;
+  const c=(ax,ay,dx,dy)=>`<path class="brk" d="M${ax+dx*K} ${ay} L${ax} ${ay} L${ax} ${ay+dy*K}"/>`;
+  g.innerHTML=`<line x1="0" y1="${r.cy}" x2="${D.W}" y2="${r.cy}" opacity=".28"/>
+    <line x1="${r.cx}" y1="0" x2="${r.cx}" y2="${D.H}" opacity=".28"/>
+    <circle cx="${r.cx}" cy="${r.cy}" r="9"/><circle cx="${r.cx}" cy="${r.cy}" r="1.6" style="fill:var(--am)"/>
+    ${c(x0-p,y0-p,1,1)}${c(x1+p,y0-p,-1,1)}${c(x0-p,y1+p,1,-1)}${c(x1+p,y1+p,-1,-1)}`;
+  sw.innerHTML=`<rect x="${x0-p}" y="${y0-p}" width="${x1-x0+p*2}" height="3" fill="var(--am)" opacity=".55"/>`;
+  const rect=sw.querySelector('rect');
+  if(rect&&!matchMedia('(prefers-reduced-motion: reduce)').matches)
+    rect.animate([{transform:'translateY(0px)',opacity:0},{transform:'translateY(6px)',opacity:.7},
+      {transform:`translateY(${y1-y0+p*2}px)`,opacity:0}],{duration:620,easing:'cubic-bezier(.3,0,.2,1)'});
+}
+
+/* ============================== hero ============================== */
+/* One headline number, and a bar that IS the breakdown. Works for both modes. */
+const COFOG_COLOR=['#3FC8DC','#7BEEFF','#2FA8C4','#F0A82E','#5CC4A6','#B47BE8',
+                   '#2789A8','#C77A2E','#1F6E8C','#E38C95'];
+function compModel(){
+  const y=year;
+  if(MODE==='rev'){
+    const n=D.natParts[y];
+    return {total:n.total,
+      sub: n.detail? t().rvTotalSub : t().rvPending,
+      rows: D.PARTS.filter(k=>Math.abs(n[k])>0).map(k=>({k, v:n[k],
+              nm:t().pt[k][0], desc:t().pt[k][1], c:PART_COLOR[k]}))
+            .sort((a,b)=>b.v-a.v)};
+  }
+  /* Spending data ends a year before revenue. Fall back to the latest year that exists
+     rather than throwing if state ever gets out of step with the mode. */
+  const sy = spendYear(y);
+  const sp = D.spendNational[sy];
+  return {total:sp[0], sub:t().expSub, year:sy,
+    rows: D.divisions.map((d,i)=>({k:'gf'+d, v:sp[i+1],
+            nm:(L==='es'?D.divES:D.divEN)[d], desc:'', c:COFOG_COLOR[i]}))
+          .filter(r=>Math.abs(r.v)>0).sort((a,b)=>b.v-a.v)};
+}
+
+function paintComposition(){
+  const el=document.getElementById('comp');
+  const M=compModel(), n=M.total;
+  const totalLbl=MODE==='rev'?t().rvTotalK:t().sExp.tot;
+
+  /* Donut geometry. A part worth 0.04% of the total would be an invisible hairline,
+     so every share gets a floor and the set is then rescaled — the ring still closes
+     on exactly 100%, and the honest percentages are in the legend either way. */
+  const R=40, C=2*Math.PI*R, FLOOR=0.4;
+  const shares=M.rows.map(r=>Math.max(FLOOR, r.v/n*100));
+  const k=100/shares.reduce((a,x)=>a+x,0);
+  let at=0;
+  const ring=M.rows.map((r,i)=>{
+    const len=shares[i]*k/100*C, off=C-at;
+    at+=len;
+    /* toFixed, not nf(): these are SVG attributes, not display numbers — a locale
+       decimal comma would make them invalid. */
+    return `<circle class="dseg ${focus&&focus!==r.k?'dim':''}" data-p="${r.k}"
+      cx="50" cy="50" r="${R}" fill="none" stroke="${r.c}" stroke-width="15"
+      stroke-dasharray="${len.toFixed(3)} ${(C-len).toFixed(3)}"
+      stroke-dashoffset="${off.toFixed(3)}"><title>${r.nm} \u00B7 ${eur(r.v)} \u00B7 ${nf(r.v/n*100,1)}%</title></circle>`;
+  }).join('');
+
+  const legend=M.rows.map(r=>`
+    <button class="cli ${focus&&focus!==r.k?'dim':''}" data-p="${r.k}" aria-pressed="${focus===r.k}">
+      <span class="sw" style="background:${r.c}"></span>
+      <span class="nm" title="${r.desc}">${r.nm}</span>
+      <span class="vv">${eur(r.v)}</span>
+      <span class="pp">${nf(r.v/n*100,1)}%</span>
+    </button>`).join('');
+
+  el.innerHTML=`
+    <div class="head-k">${totalLbl} \u00B7 FY${year}</div>
+    <div class="head-s">${M.sub}</div>
+    <div class="cwrap">
+      <div class="donut">
+        <svg viewBox="0 0 100 100" role="img"
+          aria-label="${totalLbl} FY${year}: ${eur(n)}">${ring}</svg>
+        <div class="donut-c"><div class="donut-v">${eur(n)}</div></div>
+      </div>
+      <div class="clegend">${legend}
+        <div class="cli-total">
+          <span class="sw"></span>
+          <span class="nm">${totalLbl}</span>
+          <span class="vv">${eur(n)}</span>
+          <span class="pp">100%</span>
+        </div>
+      </div>
+    </div>
+    <div id="expl"></div>`;
+
+  el.querySelectorAll('[data-p]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      focus=(focus===b.dataset.p)?null:b.dataset.p;
+      // full render so the off-map cards follow the focused function.
+      // the map itself is driven by `slice`, not `focus`, so it does not change.
+      render();
+    });
+  });
+  paintExplainer(M);
+}
+
+function whoBlock(k){
+  const W=D.who && D.who[k];
+  let body='';
+  /* The series that genuinely varies by year, and so decides which year this section
+     shows. For income tax that is the decile distribution (2003-), NOT the AEAT fixed
+     bracket table, which is a single-year snapshot kept for tie-outs and never rendered.
+     Indexing the year off the bracket table pinned every selection to its one year. */
+  const S = W && (W.kind==='brackets' ? W.deciles : W.years);
+  if(W && S){
+    const yrs=Object.keys(S).sort();
+    const y = S[year] ? year : yrs[yrs.length-1];
+    const stale = y!==year ? ` <span style="color:var(--am)">${t().whoYear.replace('{Y}',y)}</span>` : '';
+    if(W.kind==='brackets') body=whoIrpf(S[y], y, stale);
+    if(W.kind==='company') body=whoCompany(S[y], y, stale);
+    if(W.kind==='payer')   body=whoPayer(S[y], y, stale);
+    if(W.kind==='product') body=whoProduct(S[y], y, stale, W, k);
+    if(W.kind==='rate')    body=whoRate(S[y], y, stale, W, k);
+  }
+  if(!body) return '';
+  return `<div class="who">${body}</div>`;
+}
+let whoTab='dec';   // dec | qui | mad
+
+function infoNote(html){
+  return `<div class="infonote"><span class="ico" aria-hidden="true">i</span><p>${html}</p></div>`;
+}
+
+/* `dec` is the decile record for the selected year, handed in by whoBlock. */
+function whoIrpf(dec, y, stale){
+  const tabs=[['dec',t().tabDec],['qui',t().tabQui],['top',t().tabTop]];
+  const bar=`<div class="wtabs">${tabs.map(([k,l])=>
+    `<button class="wtb" data-wt="${k}" aria-pressed="${whoTab===k}">${l}</button>`).join('')}</div>`;
+  let body='';
+  if(whoTab==='top')      body=dec? topView(dec, y, stale) : '';
+  else if(dec)            body=groupView(dec, y, whoTab==='qui'?2:1, stale);
+  return bar+body;
+}
+
+/* Deciles, or quintiles by merging decile pairs. Both are exact aggregations of the
+   published data — no interpolation anywhere. */
+function groupView(d, y, per, stale){
+  const T=d.TOT; if(!T) return '';
+  const D10=[...Array(10)].map((_,i)=>d['D'+String(i+1).padStart(2,'0')]);
+  if(D10.some(x=>!x)) return '';
+  const money=v=>'€'+nf0(v);
+  const groups=[];
+  for(let i=0;i<10;i+=per){
+    const part=D10.slice(i,i+per);
+    const n=part.reduce((a,x)=>a+x.n,0), income=part.reduce((a,x)=>a+x.income,0),
+          tax=part.reduce((a,x)=>a+x.tax,0);
+    const hi=i+per>=10 ? null : D10[i+per-1].limit;
+    const lo=i===0 ? null : D10[i-1].limit;
+    groups.push({lo,hi,n,income,tax, rate: income? tax/income*100 : null,
+      pctFrom:i*10, pctTo:Math.min(100,(i+per)*10)});
+  }
+  let rows2=groups.map(g=>({x:{n:g.n,income:g.income,tax:g.tax}, g}));
+  rows2=applySort(rows2, T);
+  const maxShare=Math.max(...groups.map(g=>g.tax/T.tax*100));
+  const label=g=> g.lo===null ? t().wUpToV.replace('{V}', money(g.hi))
+                : g.hi===null ? t().wOverV.replace('{V}', money(g.lo))
+                : money(g.lo)+' – '+money(g.hi);
+  const rows=rows2.map(({g})=>{
+    const share=g.tax/T.tax*100;
+    return `<tr>
+      <td>${label(g)}</td>
+      <td>${nf0(g.n)}</td>
+      <td>${eur(g.income/1e6)}</td>
+      <td><b>${eur(g.tax/1e6)}</b></td>
+      <td>${nf(share,1)}%<span class="wbar" style="width:${Math.max(1,share/maxShare*46)}px;margin-left:6px"></span></td></tr>`;
+  }).join('');
+  const head=D3_headline(), gap=head!=null? head-Math.round(T.tax/1e6) : null;
+  return `
+    <table class="wtab"><thead><tr>
+      <th>${t().wBandRange}${stale}</th><th>${t().wPeople}</th><th>${t().wIncome}</th>
+      ${sortTh('tax', t().wTax)}${sortTh('share', t().wShare)}</tr></thead>
+      <tbody>${rows}
+      <tr class="tot"><td>${t().wTotalRow}</td><td>${nf0(T.n)}</td>
+        <td>${eur(T.income/1e6)}</td><td><b>${eur(T.tax/1e6)}</b></td>
+        <td>100%</td></tr></tbody></table>
+    ${gap!=null?infoNote(t().wGap.replace('{R}',eur(Math.round(T.tax/1e6)))
+      .replace('{H}',eur(head)).replace('{G}',eur(gap))):''}`;
+}
+
+/* The top decile, split by AEAT's published percentile thresholds. Each row is the
+   nested group minus the one inside it, so the four rows are mutually exclusive and add
+   back to the top decile exactly. No interpolation. */
+function topView(d, y, stale){
+  const T=d.TOT; if(!d.D10||!d.P99||!d.P999||!d.P9999) return '';
+  const money=v=>'€'+nf0(v);
+  const sub=(a,b)=>({n:a.n-b.n, income:a.income-b.income, tax:a.tax-b.tax});
+  const D9lim=d.D09?d.D09.limit:null;
+  let rows=[
+    {key:'a', pos:t().wTop10_1,  lo:D9lim,        hi:d.P99.limit,   x:sub(d.D10,d.P99)},
+    {key:'b', pos:t().wTop1_01,  lo:d.P99.limit,  hi:d.P999.limit,  x:sub(d.P99,d.P999)},
+    {key:'c', pos:t().wTop01_001,lo:d.P999.limit, hi:d.P9999.limit, x:sub(d.P999,d.P9999)},
+    {key:'d', pos:t().wTop001,   lo:d.P9999.limit,hi:null,          x:d.P9999, top:true}
+  ];
+  rows=applySort(rows, T);
+  const maxShare=Math.max(...rows.map(r=>r.x.tax/T.tax*100));
+  const label=r=> r.hi===null ? t().wOverV.replace('{V}', money(r.lo))
+                              : money(r.lo)+' – '+money(r.hi);
+  const body=rows.map(r=>{
+    const share=r.x.tax/T.tax*100;
+    return `<tr>
+      <td>${label(r)}</td><td class="grp">${r.pos}</td>
+      <td>${nf0(r.x.n)}</td>
+      <td>${eur(r.x.income/1e6)}</td>
+      <td><b>${eur(r.x.tax/1e6)}</b></td>
+      <td>${nf(share,1)}%<span class="wbar" style="width:${Math.max(1,share/maxShare*46)}px;margin-left:6px"></span></td></tr>`;
+  }).join('');
+  const dec=d.D10, decShare=dec.tax/T.tax*100;
+  return `
+    <table class="wtab"><thead><tr>
+      <th>${t().wBandRange}${stale}</th><th class="grp">${t().wGroupCol}</th><th>${t().wPeople}</th><th>${t().wIncome}</th>
+      ${sortTh('tax', t().wTax)}${sortTh('share', t().wShare)}</tr></thead>
+      <tbody>${body}
+      <tr class="tot"><td>${t().wTotalRow}</td><td></td><td>${nf0(dec.n)}</td>
+        <td>${eur(dec.income/1e6)}</td><td><b>${eur(dec.tax/1e6)}</b></td>
+        <td>${nf(decShare,1)}%</td></tr></tbody></table>
+    ${(()=>{const head=D3_headline();
+       return head!=null ? infoNote(t().wGap.replace('{R}',eur(Math.round(T.tax/1e6)))
+         .replace('{H}',eur(head)).replace('{G}',eur(head-Math.round(T.tax/1e6)))) : '';})()}`;
+}
+
+/* Sorting shared by every who-pays table. Tax and share are proportional, so both are
+   offered but they produce the same order — the pair is there because each reads
+   naturally to a different person. */
+let whoSort=null;   // {col:'tax'|'share', dir:-1|1}
+function sortTh(col, label){
+  const on = whoSort && whoSort.col===col;
+  const arrow = on ? (whoSort.dir===-1?'\u25BC':'\u25B2') : '\u25BE';
+  return `<th class="sortable ${on?'on':''}" data-sort="${col}"
+    aria-sort="${on?(whoSort.dir===-1?'descending':'ascending'):'none'}">${label}<span class="sar">${arrow}</span></th>`;
+}
+function applySort(rows, T){
+  if(!whoSort) return rows;
+  const val=r=>r.x.tax;             // share is tax/total, so the ordering is identical
+  return [...rows].sort((a,b)=>(val(a)-val(b))*whoSort.dir);
+}
+
+// the headline figure this section sits under, for the coverage note
+function D3_headline(){
+  const n=D.natParts[year];
+  return n && n.irpf ? n.irpf : null;
+}
+
+function whoCompany(c, y, stale){
+  if(!c||!c.total) return '';
+  const r=(k,lab,hi)=>{const d=c[k]; if(!d||d.profit==null) return '';
+    return `<tr><td>${lab}</td>
+      <td>${eur(Math.round(d.profit))}</td><td>${eur(Math.round(d.base))}</td>
+      <td><b>${eur(Math.round(d.tax))}</b></td>
+      <td>${d.rateBase!=null?nf(d.rateBase,1)+'%':'—'}</td>
+      <td>${d.rateProfit!=null?nf(d.rateProfit,1)+'%':'—'}</td></tr>`;};
+  const g=c.groups, s=c.standalone, T=c.total;
+  return `<table class="wtab"><thead><tr>
+      <th>${t().wCoType}${stale}</th><th>${t().wProfit}</th><th>${t().wBase}</th>
+      <th>${t().wTax}</th><th>${t().wRateBase}</th><th>${t().wRateProfit}</th></tr></thead>
+    <tbody>${r('groups',t().wGroups)}${r('standalone',t().wStandalone)}
+    ${r('total',t().wAllCo)}</tbody></table>`;
+}
+/* AEAT publishes excise by product and VAT by rate on its own accrued state basis.
+   Neither equals the ESA bucket in the headline, so each table carries its own total
+   and states the gap rather than being rescaled to fit. */
+function aeatRows(o, W, colHead, stale){
+  const lab=(L==='es'?W.labES:W.labEN);
+  return `<table class="wtab"><thead><tr><th>${colHead}${stale}</th>
+      <th>${t().wAmount}</th><th>${t().wShare}</th></tr></thead><tbody>
+    ${o.rows.map(([k,v])=>`<tr><td>${lab[k]||k}</td>
+      <td><b>${eur(v)}</b></td>
+      <td>${nf(v/o.total*100,1)}%<span class="wbar" style="width:${Math.max(1,v/o.total*100*1.4)}px;margin-left:6px"></span></td></tr>`).join('')}
+    <tr class="tot"><td>${t().wAeatTot}${o.prov?` <i style="font-style:normal;color:var(--am)">· ${t().wProv}</i>`:''}</td>
+      <td><b>${eur(o.total)}</b></td><td>100%</td></tr></tbody></table>`;
+}
+function whoProduct(o, y, stale, W, k){
+  if(!o||!o.rows) return '';
+  const esa=D.natParts[y]&&D.natParts[y][k];
+  return aeatRows(o,W,t().wProduct,stale)
+    +(esa?`<p class="who-note">${t().wGapExcise.replace('{A}',eur(o.total))
+        .replace('{H}',eur(esa)).replace('{G}',eur(esa-o.total))}</p>`:'');
+}
+function whoRate(o, y, stale, W, k){
+  if(!o||!o.rows) return '';
+  const esa=D.natParts[y]&&D.natParts[y][k];
+  return aeatRows(o,W,t().wVatRate,stale)
+    +`<p class="who-note">${t().wGapVat.replace('{A}',eur(o.total))
+        .replace('{SP}',eur(o.special)).replace('{F}',eur(o.foral)).replace('{O}',eur(o.adjOther))
+        .replace('{T}',eur(o.accrued)).replace('{H}',esa?eur(esa):'—')}</p>`;
+}
+function whoPayer(o, y, stale){
+  if(!o||!o.D61) return '';
+  const rows=[['D611',t().wEmployer],['D613CE',t().wEmployee],['D613CS',t().wSelf],
+              ['D613CN',t().wNonEmp],['D612',t().wImputed],['VOLUNTARY',t().wVoluntary]];
+  return `<table class="wtab"><thead><tr><th>${t().wPayer}${stale}</th>
+      <th>${t().wAmount}</th><th>${t().wShare}</th></tr></thead><tbody>
+    ${rows.filter(([k])=>o[k]!=null).map(([k,lab,hi])=>`
+      <tr><td>${lab}</td><td><b>${eur(o[k])}</b></td>
+      <td>${nf(o[k]/o.D61*100,1)}%<span class="wbar" style="width:${Math.max(1,o[k]/o.D61*100*1.4)}px;margin-left:6px"></span></td></tr>`).join('')}
+    <tr class="tot"><td>${t().wAll}</td><td><b>${eur(o.D61)}</b></td><td>100%</td></tr>
+    </tbody></table>`;
+}
+
+function paintExplainer(M){
+  const box=document.getElementById('expl');
+  if(!box) return;
+  M=M||compModel();
+  const r=M.rows.find(x=>x.k===focus);
+  if(!r){ box.innerHTML=''; return; }
+  const facts=[];
+  facts.push(`<span class="fct">${t().fRank} <b>${M.rows.indexOf(r)+1}</b></span>`);
+  facts.push(`<span class="fct">${t().fPerCap} <b>€${nf0(r.v*1e6/48600000)}</b></span>`);
+  if(MODE==='rev'){
+    const m=mapAgg(year,focus);
+    facts.push(`<span class="fct">${m.mapped>0
+      ? t().fOnMap.replace('{P}', nf(m.mapped/m.nat*100,0)+'%') : t().fOffMap}</span>`);
+  }
+  let subBlock='';
+  /* Official ESA children of this bucket. Only ever shown for the year on screen —
+     the parts are an exact partition of the figure above, never a stale one. */
+  if(MODE==='rev'){
+    const rows=(D.natSub[year]||{})[focus]||[];
+    if(rows.length>1){
+      const mx=Math.max(...rows.map(x=>Math.abs(x[1])));
+      subBlock=`<div class="subs">
+        <span class="subs-h">${t().subsH}</span>
+        ${rows.map(([code,v])=>`<div class="subrow">
+          <span class="sn">${D.subLab[L][code]||code}</span>
+          <span class="sv">${eur(v)}</span>
+          <span class="sp">${nf(v/r.v*100,1)}%</span>
+          <span class="sbar"><i style="width:${Math.max(1,Math.abs(v)/mx*100)}%;background:${r.c}"></i></span>
+        </div>`).join('')}
+        <p class="subs-src">${t().subsSrc}</p>
+      </div>`;
+    }
+  }
+  if(MODE!=='rev' && focus.startsWith('gf')){
+    const sy=D.spendSub[year]?year:D.spendYears[D.spendYears.length-1];
+    const div='GF'+focus.slice(2), sb=D.spendSub[sy]||{};
+    const a=D.spendAgg[sy] && D.spendAgg[sy][div];
+    if(a) facts.push(`<span class="fct">${a.mapped>0
+      ? t().fOnMap.replace('{P}', nf(a.mapped/a.nat*100,0)+'%') : t().fOffMap}</span>`);
+    const rows=Object.entries(sb).filter(([k,v])=>k.startsWith(div)&&k.length===6&&Math.abs(v)>0)
+      .sort((a,b)=>b[1]-a[1]);
+    if(rows.length){
+      const mx=rows[0][1];
+      subBlock=`<div class="subs">
+        <span class="subs-h">${t().subsH}</span>
+        ${rows.map(([k,v])=>{
+          const nm=(L==='es'?(D.spendSubES[k]||D.spendSubEN[k]):D.spendSubEN[k]);
+          const note=(L==='es'?D.spendNoteES:D.spendNoteEN)[k];
+          return `<div class="subrow">
+            <span class="sn">${nm}${note?`<i>${note}</i>`:''}</span>
+            <span class="sv">${eur(v)}</span>
+            <span class="sp">${nf(v/r.v*100,1)}%</span>
+            <span class="sbar"><i style="width:${Math.max(1,v/mx*100)}%;background:${r.c}"></i></span>
+          </div>`;}).join('')}
+      </div>`;
+    }
+  }
+  facts.push(`<span class="fct">${t().fYear} <b>FY${year}</b></span>`);
+  box.innerHTML=`
+    <div class="expl">
+      <span class="swatch" style="background:${r.c}"></span>
+      <div><h4>${r.nm}</h4>
+        <div class="amt">${eur(r.v)} · ${nf(r.v/M.total*100,1)}${t().fOfTotal}</div></div>
+      ${subBlock}
+      ${MODE==='rev'?whoBlock(focus):''}
+      <button class="close">${t().fClose}</button>
+    </div>`;
+  box.querySelector('.close').addEventListener('click',()=>{focus=null;render();});
+  box.querySelectorAll('[data-wt]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation(); whoTab=b.dataset.wt; paintExplainer();
+  }));
+  box.querySelectorAll('[data-sort]').forEach(h=>h.addEventListener('click',e=>{
+    e.stopPropagation();
+    const c=h.dataset.sort;
+    whoSort = (whoSort && whoSort.col===c)
+      ? (whoSort.dir===-1 ? {col:c,dir:1} : null)     // desc -> asc -> natural
+      : {col:c, dir:-1};
+    paintExplainer();
+  }));
+}
+
+/* Off-map cards: the share of the selected revenue with no territorial split.
+   regions on the map + these cards = the national figure, always. */
+const GLYPH={
+  social:`<svg class="gl" viewBox="0 0 24 24" fill="none" stroke="#F0A82E" stroke-width="1.6">
+    <path d="M12 3.5c2.2 1.7 4.3 2.4 6.5 2.4v6.3c0 3.7-2.4 6.7-6.5 8.3-4.1-1.6-6.5-4.6-6.5-8.3V5.9C7.7 5.9 9.8 5.2 12 3.5Z"/>
+    <path d="M9.2 12.2h5.6M12 9.4v5.6"/></svg>`,
+  eu:`<svg class="gl" viewBox="0 0 24 24" fill="none" stroke="#B47BE8" stroke-width="1.6">
+    <circle cx="12" cy="12" r="8.4"/>
+    <g fill="#B47BE8" stroke="none">
+      <circle cx="12" cy="5.4" r="1"/><circle cx="15.3" cy="6.3" r="1"/><circle cx="17.7" cy="8.7" r="1"/>
+      <circle cx="18.6" cy="12" r="1"/><circle cx="17.7" cy="15.3" r="1"/><circle cx="15.3" cy="17.7" r="1"/>
+      <circle cx="12" cy="18.6" r="1"/><circle cx="8.7" cy="17.7" r="1"/><circle cx="6.3" cy="15.3" r="1"/>
+      <circle cx="5.4" cy="12" r="1"/><circle cx="6.3" cy="8.7" r="1"/><circle cx="8.7" cy="6.3" r="1"/>
+    </g></svg>`,
+  rest:`<svg class="gl" viewBox="0 0 24 24" fill="none" stroke="#8FA9B6" stroke-width="1.6">
+    <path d="M4 19.5h16M6 19.5V9.8M10 19.5V9.8M14 19.5V9.8M18 19.5V9.8M3.2 9.8 12 4.5l8.8 5.3Z"/></svg>`,
+  central:`<svg class="gl" viewBox="0 0 24 24" fill="none" stroke="#F0A82E" stroke-width="1.6">
+    <path d="M4 20h16M5.5 20V9.5M9.5 20V9.5M14.5 20V9.5M18.5 20V9.5M3 9.5 12 3.6l9 5.9ZM3.4 20h17.2"/></svg>`,
+  local:`<svg class="gl" viewBox="0 0 24 24" fill="none" stroke="#5CC4A6" stroke-width="1.6">
+    <path d="M3.5 20.2h17M6 20.2V11l4-3 4 3v9.2M14 20.2V13h4v7.2M8.2 13.6h1.4M8.2 16.4h1.4"/></svg>`,
+  adjust:`<svg class="gl" viewBox="0 0 24 24" fill="none" stroke="#B47BE8" stroke-width="1.6">
+    <path d="M5 8.5h14M5 15.5h14"/><path d="M9 5.5 6.5 8.5 9 11.5M15 12.5l2.5 3-2.5 3"/></svg>`
+};
+function paintOffmap(){
+  const el=document.getElementById('offmap');
+  el.style.display='';
+  let cards=[];
+  if(MODE==='rev'){
+    const k=partKey(), n=D.natParts[year], total=mapAgg(year,k);
+    const socOff=(k==='total')?n.social:(k==='social'?n.social:0);
+    const euOff =(k==='total')?n.eu    :(k==='eu'    ?n.eu    :0);
+    const rest  = total.offmap - socOff - euOff;
+    if(socOff>0) cards.push(['social',t().omSoc,socOff,'social']);
+    if(euOff>0)  cards.push(['eu',    t().omEu, euOff,'eu']);
+    if(Math.abs(rest)>50) cards.push(['rest',t().omRest,rest,'rest']);
+  } else {
+    const code = focus && focus.startsWith('gf') ? 'GF'+focus.slice(2) : 'TOTAL';
+    const sy=D.spendAgg[year]?year:D.spendYears[D.spendYears.length-1];
+    const a=D.spendAgg[sy] && D.spendAgg[sy][code];
+    if(!a){ el.innerHTML=''; return; }
+    if(a.socsec  > 50) cards.push(['social', t().osSoc,    a.socsec, 'ss']);
+    if(a.central > 50) cards.push(['central',t().osCentral,a.central,'central']);
+    if(a.local   > 50) cards.push(['local',  t().osLocal,  a.local,  'local']);
+    if(Math.abs(a.adj) > 500) cards.push(['adjust',t().osAdj, a.adj, 'adj']);
+  }
+  if(!cards.length){ el.innerHTML=''; return; }
+  el.innerHTML=cards.map(([g,lab,v,id])=>`
+    <button class="omc" data-om="${id}" aria-pressed="${sel==='om:'+id}">
+      ${GLYPH[g]}<span class="k">${lab}</span><span class="v">${eur(v)}</span>
+    </button>`).join('');
+  el.querySelectorAll('[data-om]').forEach(b=>b.addEventListener('click',()=>{
+    const id='om:'+b.dataset.om; sel=(sel===id?null:id); render();
+  }));
+}
+
+function paintDossier(){
+  const box=document.getElementById('dossier'), code=document.getElementById('dos-code');
+  const blank=()=>{ code.textContent='ES\u2014';
+    box.innerHTML=`<div class="sub" style="padding:22px 0;text-align:center;color:var(--dim)">${t().hint}</div>`; };
+  if(!sel) return blank();
+  if(String(sel).startsWith('om:')) return paintOffmapDossier(sel.slice(3), box, code);
+  const r=D.regions.find(x=>x.id===sel);
+  if(!r) return blank();
+  code.textContent=r.nuts;
+
+  const mv=metricVal(r), cur=val(r);
+  const nat=MODE==='rev'?natVal(year,partKey()):spendNat(year)[slice];
+  const ranked=[...D.regions].filter(x=>val(x)!=null).sort((a,b)=>val(b)-val(a));
+  const rank=ranked.findIndex(x=>x.id===r.id)+1;
+
+  let body='', adv='';
+  if(MODE==='rev'){
+    const pr=r.parts[year]||{};
+    const rows=D.PARTS.map(k=>[k, pr[k]]).filter(([,v])=>v!=null&&Math.abs(v)>0)
+      .sort((a,b)=>b[1]-a[1]);
+    const collected=rows.reduce((a,x)=>a+x[1],0);
+    body=`
+      <div class="bars">
+        <span class="sub" style="display:block;margin-bottom:8px">${t().regWhat} FY${year}</span>
+        ${partBars(rows, collected)}
+      </div>`;
+    if(r.foral) adv=`<div class="advisory mag"><span class="tag">${t().advF}</span><p>${t().advFt}</p></div>`;
+  } else {
+    const sp=r.spend[year];
+    if(sp){
+      const comps=D.divisions.map((d,i)=>[(L==='es'?D.divES:D.divEN)[d], sp[i+1]])
+        .sort((a,b)=>b[1]-a[1]);
+      const mx=Math.max(...comps.map(c=>Math.abs(c[1])),1);
+      body=`<div class="bars"><span class="sub" style="display:block;margin-bottom:7px">${t().compo} FY${year}</span>${
+        comps.map((c,i)=>`<div class="bar"><div class="r"><span>${c[0]}</span><b>${eur(c[1])}</b></div>
+          <div class="track"><div class="fill t${(i%5)+1}" style="width:${Math.max(0,Math.abs(c[1])/mx*100)}%"></div></div></div>`).join('')}</div>`;
+      const e=r.econ[year];
+      if(e){
+        const mx2=Math.max(...e.map(Math.abs),1);
+        body+=`<div class="bars"><span class="sub" style="display:block;margin-bottom:7px">${t().compoEcon}</span>${
+          D.econKeys.map((k,i)=>({k,v:e[i]})).sort((a,b)=>b.v-a.v).slice(0,5).map((o,i)=>
+          `<div class="bar"><div class="r"><span>${(L==='es'?D.econES:D.econEN)[o.k]}</span><b>${eur(o.v)}</b></div>
+           <div class="track"><div class="fill t${i+1}" style="width:${Math.max(0,Math.abs(o.v)/mx2*100)}%"></div></div></div>`).join('')}</div>`;
+      }
+      adv=`<div class="advisory"><span class="tag">${t().advScope}</span><p>${t().advScopet}</p></div>`;
+    } else {
+      adv=`<div class="advisory"><span class="tag">${t().advNoReg}</span><p>${t().advNoRegt}</p></div>`;
+    }
+  }
+
+  box.innerHTML=`
+    <h2 class="name">${L==='es'?r.es:r.en}</h2>
+    <div class="sub">${r.nuts} \u00B7 FY${year} \u00B7 ${sliceLabel(slice)}</div>
+    <div class="big ${(mv!=null&&mv<0)?'neg':''}">${fmtMetric(mv)}</div>
+    <div class="bigsub">${t().m[metric].toUpperCase()}</div>
+    <div class="kv">
+      <span class="k">${t().shr}</span><span class="v">${cur!=null&&nat?nf(cur/nat*100,2)+'%':'\u2014'}</span>
+      <span class="k">${t().rank}</span><span class="v">${rank||'\u2014'} / ${ranked.length}</span>
+      <span class="k">${t().pop}</span><span class="v">${r.pop?nf0(r.pop):'\u2014'}</span>
+      <span class="k">${t().gdpL}</span><span class="v">${r.gdp?eur(r.gdp):'\u2014'}</span>
+    </div>
+    ${body}${adv}`;
+}
+
+function partBars(rows, total){
+  const mx=Math.max(...rows.map(r=>Math.abs(r[1])),1);
+  return rows.map(([k,v])=>`
+    <div class="bar"><div class="r">
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:1px;
+        margin-right:6px;background:${PART_COLOR[k]||'var(--mute)'}"></span>${t().pt[k][0]}</span>
+      <b>${eur(v)}</b></div>
+      <div class="track"><div class="fill" style="width:${Math.max(0,Math.abs(v)/mx*100)}%;
+        background:${PART_COLOR[k]||'var(--mute)'}"></div></div>
+      ${total?`<div class="pctline">${nf(v/total*100,1)}%</div>`:''}
+    </div>`).join('');
+}
+
+function paintOffmapDossier(id, box, code){
+  let code2=null;
+  const isRev = MODE==='rev';
+  const n=D.natParts[year], k=isRev?partKey():'total';
+  const m=isRev ? mapAgg(year,k) : (()=>{const c=focus&&focus.startsWith('gf')?'GF'+focus.slice(2):'TOTAL';
+        const sy=D.spendAgg[year]?year:D.spendYears[D.spendYears.length-1];
+        const a=D.spendAgg[sy][c]; return {mapped:a.mapped, offmap:a.nat-a.mapped, nat:a.nat};})();
+  const socOff=isRev?((k==='total')?n.social:(k==='social'?n.social:0)):0;
+  const euOff =isRev?((k==='total')?n.eu    :(k==='eu'    ?n.eu    :0)):0;
+  const rest  = m.offmap - socOff - euOff;
+  let spec;
+  if(MODE!=='rev'){
+    const code = focus && focus.startsWith('gf') ? 'GF'+focus.slice(2) : 'TOTAL';
+    const sy=D.spendAgg[year]?year:D.spendYears[D.spendYears.length-1];
+    const a=D.spendAgg[sy][code];
+    spec={ ss:     {v:a.socsec, t:t().osSoc,     d:t().osSocD},
+           central:{v:a.central,t:t().osCentral, d:t().osCentralD},
+           local:  {v:a.local,  t:t().osLocal,   d:t().osLocalD},
+           adj:    {v:a.adj,    t:t().osAdj,     d:t().osAdjD} }[id];
+    if(!spec){ box.innerHTML=''; return; }
+    code2=code;
+  } else {
+    spec={ social:{v:socOff,t:t().omSoc,d:t().omSocD},
+           eu:    {v:euOff, t:t().omEu, d:t().omEuD},
+           rest:  {v:rest,  t:t().omRest,d:t().omRestD} }[id];
+  }
+  let restBlock='';
+  if(isRev && id==='rest'){
+    const rows=D.PARTS.filter(k=>k!=='social'&&k!=='eu')
+      .map(k=>[k, mapAgg(year,k).offmap])
+      .filter(([,v])=>Math.abs(v)>20)
+      .sort((a,b)=>b[1]-a[1]);
+    restBlock=`<div class="bars"><span class="sub" style="display:block;margin-bottom:8px">${
+      t().restWhat}</span>${partBars(rows, spec.v)}</div>`;
+  }
+  code.textContent = code2 || 'OFF-MAP';
+  const pctNat = n.total? nf(spec.v/n.total*100,2)+'%' : '—';
+  box.innerHTML=`
+    <h2 class="name">${spec.t}</h2>
+    <div class="sub">FY${year} · ${t().omNoTerr}</div>
+    <div class="big" style="color:var(--am)">${eur(spec.v)}</div>
+    <div class="bigsub">${t().omOfTotal}</div>
+    <div class="kv">
+      <span class="k">${t().shr}</span><span class="v">${pctNat}</span>
+      <span class="k">${t().omOnMap}</span><span class="v">${eur(m.mapped)}</span>
+      <span class="k">${t().omOffMap}</span><span class="v">${eur(m.offmap)}</span>
+      <span class="k">${t().omNat}</span><span class="v">${eur(m.nat)}</span>
+    </div>
+    ${restBlock}
+    <div class="advisory mag" style="margin-top:12px">
+      <span class="tag">${t().omWhy}</span><p>${spec.d}</p></div>`;
+}
+
+/* ============================== year picker & controls ============================== */
+/* Newest first: the recent years are the ones anyone reaches for, and the list stays
+   one scroll away however many years the feed grows to. */
+function buildYearPicker(){
+  document.getElementById('yearsel').innerHTML=[...years()].reverse().map(y=>
+    `<option value="${y}"${y===year?' selected':''}>FY${y}</option>`).join('');
+}
+function buildControls(){
+  document.getElementById('metrics').innerHTML=Object.entries(t().m).map(([k,v])=>
+    `<button class="opt" data-m="${k}" aria-pressed="${metric===k}"><span>${v}</span>
+      <span class="n">${k==='total'?'ABS':k==='pc'?'P/C':'GDP'}</span></button>`).join('');
+  let opts='';
+  for(let i=0;i<sliceCount();i++){
+
+    const k=MODE==='rev'?REV_SLICES[i].k:null;
+    const sw = (MODE==='rev'&&k!=='total')
+      ? `<span style="display:inline-block;width:8px;height:8px;border-radius:1px;margin-right:6px;background:${PART_COLOR[k]}"></span>` : '';
+    const tag = MODE==='rev'
+      ? (k==='total'?'ALL':String(i).padStart(2,'0'))
+      : (i===0?'ALL':D.divisions[i-1]);
+    opts+=`<button class="opt" data-s="${i}" aria-pressed="${slice===i}"><span>${sw}${sliceLabel(i)}</span>
+      <span class="n">${tag}</span></button>`;
+  }
+  document.getElementById('taxes').innerHTML=opts;
+  document.querySelectorAll('[data-m]').forEach(b=>b.addEventListener('click',()=>{metric=b.dataset.m;render();}));
+  document.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('click',()=>{slice=+b.dataset.s;render();}));
+}
+
+/* ============================== chrome ============================== */
+function paintChrome(){
+  const x=t(), rev=MODE==='rev';
+  document.body.classList.toggle('exp',!rev);
+  document.getElementById('classbar').textContent=x.classTop;
+  document.getElementById('classbar2').textContent=x.classBot;
+  document.getElementById('h-map').textContent=rev?x.mapRev:x.mapExp;
+  document.getElementById('h-dos').textContent=x.dos;
+  document.getElementById('lg-lo').textContent=x.lo;
+  document.getElementById('lg-hi').textContent=x.hi;
+  document.querySelector('.ylbl').textContent=x.fYear;
+  document.getElementById('mode-rev').textContent=x.modeRev;
+  document.getElementById('mode-exp').textContent=x.modeExp;
+  document.getElementById('mode-rev').setAttribute('aria-selected',String(rev));
+  document.getElementById('mode-exp').setAttribute('aria-selected',String(!rev));
+  
+  document.getElementById('mapyear').textContent='FY'+year;
+  const stops=[];for(let i=0;i<=10;i++)stops.push(ramp(i/10));
+  document.getElementById('ramp').style.background='linear-gradient(90deg,'+stops.join(',')+')';
+}
+
+function select(id){ sel=(sel===id?null:id); render(); }
+function render(){
+  paintChrome(); paintComposition();
+  paintMap(); paintHud(); paintReticle(); paintOffmap(); paintDossier();
+  document.getElementById('yearsel').value=year;
+}
+function setMode(m){
+  if(MODE===m) return;
+  MODE=m; slice=0; focus=null;
+  const ys=years();
+  if(!ys.includes(year)) year=ys[ys.length-1];
+  if(!years().includes(year)) year=years()[years().length-1];
+  buildYearPicker(); render();
+}
+document.getElementById('mode-rev').addEventListener('click',()=>setMode('rev'));
+document.getElementById('mode-exp').addEventListener('click',()=>setMode('exp'));
+document.getElementById('yearsel').addEventListener('change',e=>{year=e.target.value;render();});
+document.getElementById('lang-es').addEventListener('click',()=>{L='es';syncLang();});
+document.getElementById('lang-en').addEventListener('click',()=>{L='en';syncLang();});
+function syncLang(){
+  document.getElementById('lang-es').setAttribute('aria-pressed',String(L==='es'));
+  document.getElementById('lang-en').setAttribute('aria-pressed',String(L==='en'));
+  document.documentElement.lang=L; buildYearPicker(); render();
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){ if(focus){focus=null;paintComposition();} else {sel=null;render();} return; }
+  const ys=years(), i=ys.indexOf(year);
+  if(e.key==='ArrowLeft'&&i>0){year=ys[i-1];render();}
+  if(e.key==='ArrowRight'&&i<ys.length-1){year=ys[i+1];render();}
+});
+
+buildMap(); buildYearPicker(); render();
+</script>

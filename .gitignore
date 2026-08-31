@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+.venv/
+__pycache__/
+*.py[cod]
+
+# next.js
+.next/
+out/
+build/
+dist/
+
+# env — never commit real credentials
+.env
+.env.local
+.env*.local
+!.env.example
+
+# data working directories (raw sources are archived to object storage, not git)
+data/raw/
+data/interim/
+*.duckdb
+*.parquet
+*.mdb
+*.accdb
+
+# misc
+.DS_Store
+*.log
+.vercel
+coverage/
+
+# pipeline working files — raw downloads and intermediates, re-created by the extractors
+pipeline/*/who/
+pipeline/*/eurostat_*.json
+pipeline/*/nat_sub.json
+pipeline/*/aeat_detail.json
+pipeline/*/bundle*.json

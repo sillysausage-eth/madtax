@@ -1,0 +1,288 @@
+# MadTax — Spain source registry
+#
+# This file is the single source of truth for ingestion. Every connector reads its
+# definition from here; nothing about a source is hardcoded in Python.
+#
+# grade:    A = API or stable machine-readable endpoint
+#           B = stable bulk files needing a parser (Excel / XML / Access)
+#           C = PDF or interactive only; cross-check use
+# verified: date the endpoint was last confirmed working by hand
+# phase:    which implementation phase consumes it
+
+version: 1
+country: ES
+updated: 2026-08-29
+
+sources:
+
+  # ---------------------------------------------------------------- revenue --
+  - id: eurostat_gov_main
+    name: Eurostat — government revenue & expenditure (SEC 2010)
+    publisher: Eurostat
+    grade: A
+    verified: 2026-08-29
+    phase: 1
+    perspective: gg_sec2010
+    basis: accrual
+    cadence: annual
+    coverage: {from: 1995, to: 2024}
+    licence: Eurostat open data
+    endpoint: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10a_main
+    params: {format: JSON, geo: ES, unit: MIO_EUR, lang: EN}
+    sectors: [S13, S1311, S1312, S1313, S1314]   # total, central, regional, local, social security
+    notes: Top-of-tree totals and the independent cross-check for every other source.
+
+  - id: eurostat_gov_taxag
+    name: Eurostat — revenue by tax and social contribution type
+    publisher: Eurostat
+    grade: A
+    verified: 2026-08-29
+    phase: 1
+    perspective: gg_sec2010
+    endpoint: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10a_taxag
+    params: {format: JSON, geo: ES, unit: MIO_EUR, sector: S13, lang: EN}
+    notes: >
+      Full tax decomposition — D2/D5/D61/D91 and every child code. Confirmed returning
+      Spain 2024: total tax receipts 381.3bn, social contributions 210.3bn, VAT 102.5bn.
+
+  - id: eurostat_gov_cofog
+    name: Eurostat — expenditure by function (COFOG)
+    publisher: Eurostat
+    grade: A
+    verified: 2026-08-29
+    phase: 4
+    endpoint: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10a_exp
+    params: {format: JSON, geo: ES, unit: MIO_EUR, sector: S13, lang: EN}
+    notes: Functional spine — health, defence, education, social protection, cross-classified by transaction.
+
+  - id: aeat_annual_collection
+    name: AEAT — Annual Tax Collection Report
+    publisher: Agencia Estatal de Administración Tributaria
+    grade: B
+    verified: 2026-08-29
+    phase: 2
+    perspective: aeat_cash
+    basis: cash
+    cadence: annual
+    coverage: {from: 1999, to: 2025}
+    index: https://sede.agenciatributaria.gob.es/Sede/datosabiertos/catalogo/hacienda/Informes_anuales_de_Recaudacion_Tributaria.shtml
+    pdf_pattern: https://sede.agenciatributaria.gob.es/static_files/AEAT/Estudios/Estadisticas/Informes_Estadisticos/Informes_Anuales_de_Recaudacion_Tributaria/Ejercicio_{year}/IART{yy}_es_es.pdf
+    annexes: [cuadros, delegaciones, derechos_reconocidos, distribucion_salarial, distribucion_salarial_ccaa, distribucion_irpf]
+    next_release: 2027-04-22
+    caveats:
+      - Excludes the foral territories (Basque Country, Navarre) for most taxes.
+      - Excludes social contributions entirely — these are collected by Social Security.
+      - Cash basis; will not agree with national accounts. Do not present side by side unlabelled.
+
+  - id: aeat_collection_by_region
+    name: AEAT — State tax collection by autonomous community and province
+    publisher: AEAT / datos.gob.es
+    grade: A
+    verified: 2026-08-29
+    phase: 2
+    cadence: monthly
+    coverage: {from: 2007}
+    endpoint: https://datos.gob.es/en/catalogo/a05003423-recaudacion-tributaria-del-estado-acumulada-comunidades-autonomas-y-provincias-por-periodos
+    notes: Revenue geography layer.
+
+  - id: igae_execution
+    name: IGAE — budget execution (State, Social Security, consolidated)
+    publisher: Intervención General de la Administración del Estado
+    grade: B
+    phase: 2
+    perspective: central_budget
+    basis: obligations_recognised
+    cadence: monthly
+    index: https://www.igae.pap.hacienda.gob.es/sitios/igae/es-ES/Contabilidad/ContabilidadPublica/CPE/EjecucionPresupuestaria/
+    lag_months: 2
+
+  - id: pge_budget
+    name: Presupuestos Generales del Estado (approved budget)
+    publisher: Secretaría de Estado de Presupuestos y Gastos
+    grade: B
+    phase: 2
+    perspective: central_budget
+    stage: budget_initial
+    cadence: annual
+    index: https://www.sepg.pap.hacienda.gob.es/sitios/sepg/es-ES/Presupuestos/PGE/
+    schema: http://www.oficinavirtual.pap.hacienda.gob.es/ficherosXSD/PGE_XML_Presupuestos.xsd
+    notes: Prefer the XML over the rendered HTML — it carries the full organic × economic × programme tree.
+
+  - id: ine_tempus3
+    name: INE — Tempus3 statistical API
+    publisher: Instituto Nacional de Estadística
+    grade: A
+    verified: 2026-08-29
+    phase: 1
+    endpoint: https://servicios.ine.es/wstempus/js/ES/OPERACIONES_DISPONIBLES
+    needs: [population, gdp, cpi]
+    notes: >
+      Required for per-capita, %GDP and constant-price series. Without it, year-over-year
+      comparison is misleading. CSV downloads are ISO-8859-15, not UTF-8.
+
+  # -------------------------------------------------------- who contributes --
+  - id: aeat_irpf_declarants
+    name: AEAT — IRPF declarant statistics (by income bracket)
+    publisher: AEAT
+    grade: B
+    verified: 2026-08-29
+    phase: 3
+    endpoint: https://sede.agenciatributaria.gob.es/Sede/datosabiertos/catalogo/hacienda/Estadistica_de_los_declarantes_del_IRPF.shtml
+    dimensions: [income_bracket, ccaa]
+    source_forms: [modelo_100, modelo_190]
+
+  - id: aeat_irpf_municipal
+    name: AEAT — IRPF declarant statistics by municipality
+    publisher: AEAT
+    grade: B
+    verified: 2026-08-29
+    phase: 3
+    endpoint: https://sede.agenciatributaria.gob.es/Sede/datosabiertos/catalogo/hacienda/Estadistica_de_los_declarantes_del_IRPF_por_municipios.shtml
+    dimensions: [municipality, income_bracket]
+
+  - id: aeat_irpf_postcode
+    name: AEAT — IRPF statistics by postcode, largest municipalities
+    publisher: AEAT
+    grade: B
+    verified: 2026-08-29
+    phase: 3
+    endpoint: https://sede.agenciatributaria.gob.es/Sede/datosabiertos/catalogo/hacienda/Estadistica_del_IRPF_por_codigo_postal.shtml
+    dimensions: [postcode, income_bracket]
+    notes: Postcode-level income data is rare internationally. High-value differentiator.
+
+  - id: aeat_corporate_accounts
+    name: AEAT — annual accounts statistics, corporate income tax
+    publisher: AEAT
+    grade: B
+    verified: 2026-08-29
+    phase: 3
+    dimensions: [turnover_bracket, cnae_sector, ccaa, company_class]
+    turnover_brackets: 14
+    large_company_threshold_eur: 6010121.04
+    source_forms: [modelo_200]
+    notes: >
+      Census-level, from every corporate tax return. Carries accounting result,
+      adjustments, tax base and final liability — so effective tax rate by company size
+      is computable from official figures with no modelling. This is the answer to
+      "which companies contribute most" for non-listed companies.
+
+  - id: cnmv_xbrl
+    name: CNMV — listed issuer financial statements (XBRL)
+    publisher: Comisión Nacional del Mercado de Valores
+    grade: B
+    verified: 2026-08-29
+    phase: 3
+    endpoint: https://www.cnmv.es/portal/xbrl/
+    notes: Named, audited tax-paid figures for listed companies. XBRL parsing required.
+
+  - id: aeat_debtors_95bis
+    name: AEAT — list of debtors owing over €600,000 (Art. 95-bis LGT)
+    publisher: AEAT
+    grade: C
+    verified: 2026-08-29
+    phase: 3
+    cadence: annual
+    published: first half of each calendar year
+    threshold_eur: 600000
+    notes: >
+      The only lawful named-individual tax dataset in Spain. Names people and companies.
+      Handle with care: these are debts, not evasion findings, and are appealable.
+
+  # ------------------------------------------------------------ expenditure --
+  - id: bdns_grants
+    name: BDNS — National Subsidies Database
+    publisher: IGAE / Ministerio de Hacienda
+    grade: A
+    verified: 2026-08-29
+    phase: 5
+    priority: highest
+    auth: none
+    rate_limit: none published
+    endpoints:
+      calls: https://www.infosubvenciones.es/bdnstrans/api/convocatorias/busqueda
+      awards: https://www.infosubvenciones.es/bdnstrans/api/concesiones/busqueda
+    params: {page: 0, pageSize: 100, order: fechaConcesion, direccion: desc}
+    coverage: {state_sector_from: 2014, all_administrations_from: 2016}
+    volume: {awards: ~10500000, calls: ~350000}
+    fields: [beneficiario_nif, beneficiario_nombre, importe, fechaConcesion, instrumento, nivel1, nivel2, nivel3, urlBR]
+    notes: >
+      The single highest-value source in the project. Named counterparties, euro-exact,
+      every tier of government, clean JSON API. Build the "follow the money" experience
+      on this before touching PLACSP.
+
+  - id: placsp_tenders
+    name: PLACSP — public sector procurement platform, open data
+    publisher: Dirección General del Patrimonio del Estado
+    grade: B
+    verified: 2026-08-29
+    phase: 5
+    cadence: daily
+    coverage: {from: 2012, to: 2026}
+    format: zipped ATOM/XML
+    url_patterns:
+      annual: https://contrataciondelsectorpublico.gob.es/sindicacion/sindicacion_643/licitacionesPerfilesContratanteCompleto3_{year}.zip
+      monthly: https://contrataciondelsectorpublico.gob.es/sindicacion/sindicacion_643/licitacionesPerfilesContratanteCompleto3_{year}{month:02d}.zip
+    datasets: [tenders_contractor_profiles, tenders_aggregated_regional, minor_contracts, contractor_profiles]
+    entry_file: licitacionesPerfilesContratanteCompleto3.atom
+    caveats:
+      - Max 500 entries per ATOM file; follow pagination within the archive.
+      - A tender reappears on every modification — deduplicate by id, keep latest version.
+      - >
+        TLS chain is issued by FNMT-RCM, absent from several default trust stores.
+        curl on macOS fails with exit 60 while OpenSSL verifies fine. Ship the FNMT root
+        explicitly in the ingestion container. Do NOT disable certificate verification.
+
+  - id: conprel_local
+    name: CONPREL — local entity budgets and liquidations
+    publisher: Secretaría General de Financiación Autonómica y Local
+    grade: B
+    verified: 2026-08-29
+    phase: 6
+    coverage: {from: 2002, to: 2026}
+    endpoint: https://serviciostelematicosext.hacienda.gob.es/SGFAL/CONPREL
+    formats: {aggregates: xlsx, per_entity: access_mdb_zipped}
+    entity_types: [ayuntamiento, diputacion, cabildo, consejo_insular, area_metropolitana]
+    lag_months: 12-24
+    tooling: mdbtools
+    notes: Only route to ~8,100 municipalities. Access format is awkward but tractable.
+
+  - id: cimcanet_ccaa
+    name: CIMCANET — monthly budget execution, autonomous communities
+    publisher: IGAE
+    grade: B
+    phase: 6
+    cadence: monthly
+
+  - id: elisa_mrr
+    name: ELISA — Recovery Plan (NextGenerationEU) execution
+    publisher: Gobierno de España
+    grade: C
+    phase: 6
+    endpoint: https://planderecuperacion.gob.es/ejecucion/elisa-el-plan-en-cifras
+    dimensions: [lever, sector, company_size, ccaa]
+
+  # ------------------------------------------------------------- discovery ---
+  - id: datos_gob_catalog
+    name: datos.gob.es — catalogue API
+    publisher: Gobierno de España
+    grade: A
+    verified: 2026-08-29
+    phase: 0
+    endpoint: https://datos.gob.es/apidata/catalog/dataset/publisher/{publisher_id}
+    publishers: {aeat: EA0028512}
+    notes: Monitor for new and changed datasets rather than discovering breakage by accident.
+
+# ---------------------------------------------------------------------------
+# Known gaps that must be closed before any figure is labelled "Spain"
+# ---------------------------------------------------------------------------
+gaps:
+  - id: haciendas_forales
+    what: Basque Country and Navarre collect their own taxes under the Concierto/Convenio
+    why_it_matters: Excluded from most AEAT series; national totals are incomplete without them
+    status: no unified API — separate regional portals, manual connectors needed
+    blocks_phase: 2
+  - id: social_security_detail
+    what: Social contributions (~€210bn) and their spending
+    why_it_matters: Largest single revenue line; entirely absent from AEAT data
+    status: available via IGAE and the Social Security budget
+    blocks_phase: 2
