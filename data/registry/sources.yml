@@ -55,6 +55,76 @@ sources:
     params: {format: JSON, geo: ES, unit: MIO_EUR, sector: S13, lang: EN}
     notes: Functional spine — health, defence, education, social protection, cross-classified by transaction.
 
+  # ------------------------------------------------------------------- debt --
+  - id: eurostat_gov_edp_debt
+    name: Eurostat — government debt under the Excessive Deficit Procedure
+    publisher: Eurostat
+    grade: A
+    verified: 2026-08-31
+    phase: 1
+    perspective: gg_sec2010
+    basis: consolidated gross debt at face value
+    cadence: annual
+    coverage: {from: 1995, to: 2025}
+    licence: Eurostat open data
+    endpoint: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10dd_edpt1
+    params: {format: JSON, geo: ES, unit: MIO_EUR, lang: EN}
+    sectors: [S13, S1311, S1312, S1313, S1314]
+    notes: >
+      The debt spine. GD is the headline stock; GD_F2/F31/F32/F41/F42 partition it exactly
+      by instrument and maturity at issue. Confirmed for Spain 2025: 1,698,224.6 MIO_EUR,
+      100.7% of GDP, instruments tying to the total to the euro. Subsector totals are gross
+      and deliberately sum ABOVE the consolidated S13 figure (2,061.1bn vs 1,698.2bn in 2025)
+      because one tier holding another's paper is netted out — carry the elimination, never
+      rescale. Interest (D41PAY) comes from gov_10a_main on the same sector keys and behaves
+      the same way: 43.9bn gross against 40.3bn consolidated in 2025.
+
+  - id: bde_debt_holders
+    name: Banco de España — EDP debt by counterpart sector (Boletín Estadístico 11.13)
+    publisher: Banco de España
+    grade: B
+    verified: 2026-08-31
+    phase: 1
+    perspective: gg_sec2010
+    basis: EDP face value, consolidated — identical perimeter to eurostat_gov_edp_debt
+    cadence: quarterly
+    coverage: {from: 1994, to: 2026}
+    endpoint: https://www.bde.es/webbe/es/estadisticas/compartido/datos/csv/be1113.csv
+    notes: >
+      Who holds the debt. The reason this beats the Treasury's own holder table is perimeter:
+      it is the SAME consolidated general-government stock at the SAME face valuation, so it
+      closes on the headline to the cent — 1,698,224,580 thousand euros for Dec-2025 against
+      Eurostat's 1,698,224.6 MIO_EUR. Units are THOUSANDS of euros. Banco de España
+      (P00040) is a SUBSET of financial institutions (P00020), not a fifth bucket — adding
+      both double-counts 346.6bn. CSV is ISO-8859-1; header occupies rows 1-6 and the last
+      two rows are FUENTE and NOTAS. Key by series code, never column position. Bonds held by
+      the ECB itself count as rest-of-world, not as central-bank holdings.
+
+  - id: tesoro_debt_bulletin
+    name: Tesoro Público — Boletín de Estadísticas de la Deuda del Estado
+    publisher: Secretaría General del Tesoro y Financiación Internacional
+    grade: B
+    verified: 2026-08-31
+    phase: 1
+    perspective: state_only
+    basis: nominal outstanding, State debt only — NOT general government
+    cadence: monthly
+    coverage: {from: 2007, to: 2026}
+    endpoint: https://www.tesoro.es/sites/default/files/estadisticas/
+    notes: >
+      The only publisher of average life and average cost of the debt stock — Banco de España
+      publishes neither (all 14,116 catalogued BdE series were searched). Files are 01..19.xlsx
+      at fixed URLs, OVERWRITTEN IN PLACE each month with no archive, so snapshot on ingest.
+      02 = vida media (two columns are both labelled TOTAL; col K is the real one, including
+      FX and BdE loans). 03 = average cost outstanding, and it ALTERNATES rate rows with
+      nominal-outstanding rows in millions — a naive parser reads euros as a percentage.
+      10 = average cost of new issuance, with year-to-date rows interleaved among monthly ones.
+      14 (maturity profile) and 08 (currency split) are IMAGE-ONLY — a single embedded PNG and
+      zero data cells — so the redemption ladder is rebuilt security-by-security from the
+      valores-en-circulacion HTML instead. NN encodes position in the bulletin, not identity:
+      validate each file's title cell or a re-ordered bulletin will silently shift every table.
+      Scope trap: this is the State, ~1.56tn, against 1.70tn general government.
+
   - id: aeat_annual_collection
     name: AEAT — Annual Tax Collection Report
     publisher: Agencia Estatal de Administración Tributaria

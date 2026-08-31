@@ -484,5 +484,88 @@ else {
     withDetail.length>=14, `${withDetail.length} with detail; none for: ${without.join(', ')}`);
 }
 
+console.log('\n=== L. PUBLIC DEBT ===');
+{
+  const B=D.debt;
+  if(!B){ check('debt layer present in the bundle', false, 'run extract_debt.js then merge11.js'); }
+  else{
+    const y=B.ref;
+    check('debt reference year has both a stock and an interest figure',
+      B.total[y]!=null && B.interest[y] && B.interest[y].total!=null,
+      `${y}: ${bn(B.total[y])} owed, ${bn(B.interest[y].total)} interest`);
+
+    // the instrument split is a true partition — this is the one that must be exact
+    const isum=B.instr[y].reduce((a,r)=>a+r[1],0);
+    check('instruments sum exactly to the debt total',
+      Math.abs(isum-B.total[y])<=1, `${bn(isum)} vs ${bn(B.total[y])}`);
+    check('every year with a total also carries an instrument split',
+      B.years.every(k=>B.total[k]==null||(B.instr[k]&&B.instr[k].length)),
+      `${B.years.length} years, ${B.years[0]}-${B.years[B.years.length-1]}`);
+    check('the instrument partition holds in every year, not just the headline',
+      B.years.every(k=>{ if(B.total[k]==null||!B.instr[k]) return true;
+        return Math.abs(B.instr[k].reduce((a,r)=>a+r[1],0)-B.total[k])<=1; }),
+      'checked every year in the series');
+
+    // tiers deliberately do NOT sum to the total; the gap is carried, not hidden
+    const T=B.tier[y];
+    check('government tiers are carried gross with the elimination named',
+      T && T.gross!=null && T.elim!=null && T.consolidated!=null,
+      T?`gross ${bn(T.gross)}, consolidated ${bn(T.consolidated)}, eliminated ${bn(T.elim)}`:'');
+    check('tier gross equals the four tiers added up',
+      T && Math.abs(['S1311','S1312','S1313','S1314'].reduce((a,s)=>a+T[s],0)-T.gross)<=1,
+      T?bn(T.gross):'');
+    check('the consolidation elimination is real and positive',
+      T && T.elim>0 && Math.abs((T.gross-T.consolidated)-T.elim)<=1,
+      T?`${bn(T.elim)} of one tier's debt held by another`:'');
+    check('consolidated debt is never scaled to match the tier sum',
+      T && Math.abs(T.consolidated-B.total[y])<=1, `${bn(B.total[y])} both ways`);
+
+    // interest gets the same treatment
+    const N=B.interest[y];
+    check('interest is carried gross and consolidated, with the gap named',
+      N.gross!=null && N.elim!=null && Math.abs((N.gross-N.total)-N.elim)<=1,
+      `gross ${bn(N.gross)}, consolidated ${bn(N.total)}, intra-government ${bn(N.elim)}`);
+    check('interest paid between governments is smaller than the total',
+      N.elim>0 && N.elim<N.total, `${bn(N.elim)} of ${bn(N.total)}`);
+
+    // sanity bands: these would catch a unit slip or a decimal shift
+    check('debt-to-GDP is published, not computed here',
+      B.pcGdp[y]!=null && B.pcGdp[y]>50 && B.pcGdp[y]<200, B.pcGdp[y]+'% of GDP');
+    check('interest-to-GDP is published, not computed here',
+      B.intPcGdp && B.intPcGdp[y]!=null && B.intPcGdp[y]>0 && B.intPcGdp[y]<10,
+      B.intPcGdp[y]+'% of GDP');
+    check('debt exceeds a single year of total spending',
+      B.total[y] > D.gg['2024'].exp, `${bn(B.total[y])} vs ${bn(D.gg['2024'].exp)} spent in 2024`);
+    check('long-term securities are the bulk of the debt',
+      (B.instr[y].find(r=>r[0]==='GD_F32')||[0,0])[1]/B.total[y] > 0.6,
+      ((B.instr[y].find(r=>r[0]==='GD_F32')||[0,0])[1]/B.total[y]*100).toFixed(0)+'% in long-term securities');
+
+    /* Narrower-perimeter sources are optional by design. When absent the screen says so;
+       when present they must declare their scope, because a State-only split rendered as
+       if it covered all four tiers would be the worst kind of quiet error. */
+    for(const [k,o] of [['maturity',B.maturity],['cost',B.cost],['holders',B.holders]]){
+      if(!o){ check(`${k}: absent, and the screen states the gap`, true, 'no source wired in yet'); continue; }
+      check(`${k}: declares the perimeter it covers`, !!o.scope, o.scope||'MISSING scope');
+      check(`${k}: declares its reference date`, !!o.asOf, o.asOf||'MISSING asOf');
+    }
+    if(B.maturity&&B.maturity.rows){
+      check('maturity ladder is chronological and positive',
+        B.maturity.rows.every((r,i)=> r[1]>=0 && (i===0||+r[0]>+B.maturity.rows[i-1][0])),
+        `${B.maturity.rows.length} years`);
+      check('maturity ladder does not exceed the debt it describes',
+        B.maturity.rows.reduce((a,r)=>a+r[1],0) <= B.total[y]*1.02,
+        `${bn(B.maturity.rows.reduce((a,r)=>a+r[1],0))} laddered`);
+    }
+    if(B.holders&&B.holders.rows){
+      check('holder split sums to its own stated total',
+        Math.abs(B.holders.rows.reduce((a,r)=>a+r[1],0)-B.holders.total)/B.holders.total<0.005,
+        bn(B.holders.total));
+      check('every holder group has a label in both languages',
+        B.holders.rows.every(r=>B.holders.labES[r[0]]&&B.holders.labEN[r[0]]),
+        `${B.holders.rows.length} groups`);
+    }
+  }
+}
+
 console.log(`\n=== RESULT: ${pass} pass · ${warn} warn · ${fail} fail ===\n`);
 process.exit(fail?1:0);

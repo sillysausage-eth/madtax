@@ -90,6 +90,7 @@ body{
 
 /* ---------- main grid ---------- */
 .main{display:grid;grid-template-columns:minmax(0,1fr) 348px;gap:12px;margin-top:12px;align-items:start}
+.main[hidden]{display:none}
 @media(max-width:1180px){.main{grid-template-columns:minmax(0,1fr) 310px}}
 @media(max-width:860px){.main{grid-template-columns:minmax(0,1fr)}}
 
@@ -384,6 +385,114 @@ footer.foot{
 .expl .close:hover{color:var(--ink)}
 .dseg.dim{filter:brightness(.4) saturate(.5)}
 
+/* ---------- debt screen ----------
+   Debt is a stock, not a flow: it is what is owed on one date, so this screen has no
+   fiscal year and the year picker is hidden while it is open. Every panel here states
+   its own reference date, because the four sources behind them are published on
+   different clocks. */
+.debtscreen{border:1px solid var(--rule);border-top:0;background:var(--panel);padding:0}
+.debtscreen[hidden]{display:none}
+
+.dhero{padding:16px 14px 14px;border-bottom:1px solid var(--rule)}
+.dhero .k{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.22em;
+  color:var(--mute);text-transform:uppercase}
+.dhero .fig{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-top:6px}
+.dhero .big{font-family:"Saira Condensed",sans-serif;font-weight:800;
+  font-size:clamp(38px,6vw,68px);line-height:.92;letter-spacing:-.02em;color:var(--cy);
+  font-variant-numeric:tabular-nums}
+.dhero .pc{font-family:"Saira Condensed",sans-serif;font-weight:700;
+  font-size:clamp(17px,2.2vw,26px);color:var(--ink2);letter-spacing:.01em}
+.dhero .asof{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.14em;
+  color:var(--dim);text-transform:uppercase}
+
+/* headline stats: each carries its own source date because they do not share one */
+.dstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);background:var(--panel2)}
+.dstat{padding:9px 12px;border-right:1px solid var(--rule)}
+.dstat:last-child{border-right:0}
+.dstat .sk{font-family:"JetBrains Mono",monospace;font-size:8.5px;letter-spacing:.16em;
+  color:var(--mute);text-transform:uppercase;display:block}
+.dstat .sv{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:23px;
+  color:var(--ink);line-height:1.15;font-variant-numeric:tabular-nums}
+.dstat .sv.none{font-family:Barlow,sans-serif;font-size:12.5px;font-weight:400;color:var(--dim)}
+.dstat .sn{font-family:"JetBrains Mono",monospace;font-size:8.5px;color:var(--dim);
+  letter-spacing:.1em;display:block;margin-top:1px}
+
+/* the stock over time: a debt screen with no history invites the reader to assume the
+   number has always been what it is now */
+.dtrend{padding:12px 14px 10px;border-bottom:1px solid var(--rule);background:var(--panel2)}
+.dtrend .th{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  flex-wrap:wrap;margin-bottom:7px}
+.dtrend .th .t{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.18em;
+  color:var(--mute);text-transform:uppercase}
+.dtrend .th .x{font-family:"JetBrains Mono",monospace;font-size:9px;color:var(--dim);
+  letter-spacing:.1em}
+.dtrend svg{display:block;width:100%;height:auto}
+.dtrend .gl{stroke:var(--rule);stroke-width:.4}
+.dtrend .ar{fill:var(--cy);opacity:.16}
+.dtrend .ln{fill:none;stroke:var(--cy);stroke-width:1.4}
+.dtrend .pt{fill:var(--cy)}
+.dtrend .lb{font-family:"JetBrains Mono",monospace;font-size:3.4px;fill:var(--ink2);
+  letter-spacing:.04em}
+.dtrend .lbm{font-family:"JetBrains Mono",monospace;font-size:3.1px;fill:var(--dim)}
+
+.dsec{padding:14px;border-bottom:1px solid var(--rule)}
+.dsec:last-child{border-bottom:0}
+.dsec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  flex-wrap:wrap;margin-bottom:10px}
+.dsec-h .t{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:19px;
+  letter-spacing:.05em;color:var(--ink);text-transform:uppercase}
+.dsec-h .q{font-size:12.5px;color:var(--mute);font-style:italic}
+.dsec-h .x{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.12em;
+  color:var(--dim);text-transform:uppercase}
+
+/* the donut row — the three "shape of the debt" questions side by side */
+.dring{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px}
+.dcard{border:1px solid var(--rule);background:var(--panel2);padding:11px 12px 12px}
+.dcard .ch{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.18em;
+  color:var(--cy);text-transform:uppercase;margin-bottom:2px}
+.dcard .cq{font-size:12px;color:var(--mute);margin-bottom:9px;line-height:1.35}
+/* Legend UNDER the donut, not beside it. Three cards across leaves each about 365px, and
+   the value and percentage columns take their intrinsic width — side by side that starves
+   the label column down to a couple of characters and every name breaks mid-word. Stacked,
+   the legend gets the full card width and the names wrap like prose. */
+.dcard .cwrap2{display:flex;flex-direction:column;align-items:center;gap:9px}
+.dcard .donut{width:clamp(124px,12vw,152px)}
+.dcard .donut-v{font-size:clamp(15px,1.5vw,19px)}
+.dcard .clegend{flex:none;width:100%;grid-template-columns:1fr;gap:1px}
+.dcard .cli{cursor:default;grid-template-columns:9px 1fr auto auto;gap:7px;align-items:baseline}
+.dcard .cli:hover{background:transparent}
+/* names wrap on word boundaries here; `anywhere` is for the dense revenue legend */
+.dcard .cli .nm{overflow-wrap:normal;word-break:normal;hyphens:none}
+.dcard .cli .sw{align-self:start;margin-top:4px}
+
+/* maturity ladder: a stock falling due over time is a timeline, so it stays bars */
+.mat{display:grid;grid-template-columns:1fr;gap:3px}
+.matr{display:grid;grid-template-columns:62px 1fr 92px;gap:9px;align-items:center}
+.matr .my{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink2);
+  letter-spacing:.06em}
+.matr .mt{display:block;height:13px;background:#0D1920;border:1px solid var(--rule);position:relative}
+/* .mt is blockified as a grid item, but .mf is not — an inline span ignores both the
+   percentage width and height:100%, which renders every bar at zero. */
+.matr .mf{display:block;height:100%;background:var(--cy);opacity:.85}
+.matr .mv{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink);
+  text-align:right;font-variant-numeric:tabular-nums}
+.matr.far .mf{background:var(--cy-dim)}
+
+.dnote{font-size:11.5px;color:var(--dim);margin-top:10px;line-height:1.5}
+.dnote b{color:var(--ink2);font-weight:600}
+.dnote code{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--ink2)}
+
+/* a gap we cannot fill from a published source is stated in place, never left blank */
+.dgap{border:1px solid var(--rule2);background:var(--panel2);padding:11px 12px;
+  font-size:12.5px;color:var(--ink2);line-height:1.5}
+.dgap .tag{font-family:"JetBrains Mono",monospace;font-size:8.5px;font-weight:700;
+  letter-spacing:.16em;color:var(--mute);text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* debt mode takes the violet accent: distinct from revenue cyan and spending amber,
+   and deliberately not red — the colour should identify the screen, not grade it */
+body.debt{--cy:#B47BE8;--cy-hi:#D9B8F5;--cy-dim:#3E2A55}
+
 /* ---------- mode tabs + year picker: fused to the top of the composition panel ---------- */
 .modebar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
   margin-top:14px;padding:0 8px 0 3px;
@@ -400,6 +509,8 @@ footer.foot{
 
 /* one <select> holds any number of years — the list grows without touching the layout */
 .yearpick{display:flex;align-items:center;gap:8px;padding:5px 0}
+/* an explicit display wins over the UA [hidden] rule, so hiding needs saying twice */
+.yearpick[hidden]{display:none}
 .ylbl{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.2em;
   text-transform:uppercase;color:var(--mute)}
 .ysel{appearance:none;color-scheme:dark;cursor:pointer;
@@ -490,15 +601,17 @@ body.exp{--cy:#F0A82E;--cy-hi:#FFD98A;--cy-dim:#6B4A12}
   <div class="modetabs" role="tablist" aria-label="Mode">
     <button id="mode-rev" role="tab" aria-selected="true" aria-controls="comp">Ingresos</button>
     <button id="mode-exp" role="tab" aria-selected="false" aria-controls="comp">Gasto</button>
+    <button id="mode-debt" role="tab" aria-selected="false" aria-controls="debtscreen">Deuda</button>
   </div>
-  <div class="yearpick">
+  <div class="yearpick" id="yearpick">
     <label class="ylbl" for="yearsel">Ejercicio</label>
     <select class="ysel" id="yearsel"></select>
   </div>
 </div>
 <section class="comp" id="comp" role="tabpanel"></section>
+<section class="debtscreen" id="debtscreen" role="tabpanel" hidden></section>
 
-<div class="main">
+<div class="main" id="mainlayout">
 
   <section class="pane">
     <div class="pane-h">
@@ -542,7 +655,63 @@ const T={
   classTop:'UNCLASSIFIED // PUBLIC RELEASE // OPEN SOURCE — DATOS PÚBLICOS',
   classBot:'MADTAX // PROTOTIPO DE INTERFAZ // DATOS REALES SIN MODELIZAR',
   ctrl:'CONTROL',metric:'MÉTRICA',lo:'BAJO',hi:'ALTO',dos:'EXPEDIENTE',
-  modeRev:'Ingresos',modeExp:'Gasto',
+  modeRev:'Ingresos',modeExp:'Gasto',modeDebt:'Deuda',
+  footRev1:'Fuente: AEAT vía ISTAC · Eurostat · INE',
+  footRev2:'Recaudación líquida del Estado — no incluye cotizaciones sociales',
+  footExp1:'Fuente: IGAE · Eurostat · INE',
+  footExp2:'Gasto consolidado del conjunto de las administraciones (SEC 2010)',
+  foot3:'Prototipo UI · MadTax',
+  dbt:{
+    foot1:'Fuente: Eurostat — Procedimiento de Déficit Excesivo (gov_10dd_edpt1, gov_10a_main)',
+    foot2:'Deuda bruta consolidada a valor nominal · saldo vivo, no un flujo anual',
+    heroK:'Deuda pública · todas las administraciones',
+    ofGdp:'del PIB',
+    asOf:'Cierre de {Y} · Eurostat PDE',
+    sInt:'Intereses pagados',        sIntN:'ejercicio {Y}',
+    sIntGdp:'Intereses / PIB',       sIntGdpN:'ejercicio {Y}',
+    sLife:'Vida media',              sLifeN:'deuda del Estado',
+    sCost:'Coste medio',             sCostN:'deuda en circulación',
+    sCostNew:'Coste de emisión',     sCostNewN:'deuda nueva',
+    sYears:'años',
+    noPub:'Sin dato publicado',
+    trendK:'Deuda sobre PIB, año a año',
+    trendSrc:'Eurostat, dato publicado',
+    secShape:'La forma de la deuda',
+    qWho:'¿Quién la debe?',
+    qWhoS:'Reparto por administración, antes de consolidar',
+    qForm:'¿En qué forma?',
+    qFormS:'Instrumento y plazo de emisión',
+    qHold:'¿A quién se la debemos?',
+    qHoldS:'Tenedores del saldo vivo',
+    secMat:'¿Cuándo vence?',
+    qMat:'Calendario de amortización de la deuda del Estado',
+    secInt:'¿Cuánto cuesta?',
+    qInt:'Intereses devengados en el ejercicio {Y}',
+    qIntWho:'¿Quién paga los intereses?',
+    qIntWhoS:'Por administración, antes de consolidar',
+    tier:{S1311:'Administración central',S1312:'Comunidades autónomas',
+          S1313:'Corporaciones locales',S1314:'Seguridad Social'},
+    instr:{GD_F32:'Valores a largo plazo',GD_F31:'Valores a corto plazo',
+           GD_F42:'Préstamos a largo plazo',GD_F41:'Préstamos a corto plazo',
+           GD_F2:'Efectivo y depósitos'},
+    elimTag:'Consolidación',
+    elimTxt:'Las cuatro administraciones suman <b>{G}</b>, pero la deuda consolidada es <b>{C}</b>. '+
+      'La diferencia, <b>{E}</b>, es deuda de una administración en manos de otra: '+
+      'se elimina al consolidar para no contarla dos veces. Nunca se reescala para cuadrar.',
+    elimIntTag:'Intereses entre administraciones',
+    elimIntTxt:'Las administraciones pagan <b>{G}</b> en intereses, pero el total consolidado es <b>{C}</b>. '+
+      'Los <b>{E}</b> de diferencia se pagan entre ellas —sobre todo las comunidades autónomas al Estado '+
+      'por los préstamos del FLA y del Fondo de Financiación— y se eliminan al consolidar.',
+    matAvg:'Vida media {V} años',
+    matNote:'Importe que vence cada año, por valor nominal. Solo deuda del Estado en valores: '+
+      'no incluye la deuda de comunidades autónomas, corporaciones locales ni Seguridad Social, '+
+      'ni los préstamos y la deuda en divisas del propio Estado. El primer año es parcial: '+
+      'recoge solo lo que queda por vencer desde la fecha de referencia.',
+    scopeState:'Deuda del Estado',
+    scopeGG:'Todas las administraciones',
+    gapTag:'Dato no publicado',
+    faceTag:'Valor nominal frente a valor de mercado'
+  },
   taxLbl:'FIGURA TRIBUTARIA',fnLbl:'FUNCIÓN DEL GASTO',
   mapRev:'MAPA TÁCTICO · RECAUDACIÓN',mapExp:'MAPA TÁCTICO · GASTO AUTONÓMICO',
   roRev:'AEAT · RECAUDACIÓN LÍQUIDA',roExp:'IGAE + EUROSTAT · SEC 2010',
@@ -704,7 +873,63 @@ const T={
   classTop:'UNCLASSIFIED // PUBLIC RELEASE // OPEN SOURCE — PUBLIC DATA',
   classBot:'MADTAX // INTERFACE PROTOTYPE // REAL DATA, NOT MODELLED',
   ctrl:'CONTROL',metric:'METRIC',lo:'LOW',hi:'HIGH',dos:'DOSSIER',
-  modeRev:'Revenue',modeExp:'Spending',
+  modeRev:'Revenue',modeExp:'Spending',modeDebt:'Debt',
+  footRev1:'Source: AEAT via ISTAC · Eurostat · INE',
+  footRev2:'Liquid State collection — excludes social contributions',
+  footExp1:'Source: IGAE · Eurostat · INE',
+  footExp2:'Consolidated general government expenditure (ESA 2010)',
+  foot3:'UI prototype · MadTax',
+  dbt:{
+    foot1:'Source: Eurostat — Excessive Deficit Procedure (gov_10dd_edpt1, gov_10a_main)',
+    foot2:'Consolidated gross debt at face value · a stock outstanding, not an annual flow',
+    heroK:'Public debt · all levels of government',
+    ofGdp:'of GDP',
+    asOf:'End of {Y} · Eurostat EDP',
+    sInt:'Interest paid',            sIntN:'in {Y}',
+    sIntGdp:'Interest / GDP',        sIntGdpN:'in {Y}',
+    sLife:'Average life',            sLifeN:'State debt',
+    sCost:'Average cost',            sCostN:'debt outstanding',
+    sCostNew:'Cost of new debt',     sCostNewN:'issued this year',
+    sYears:'years',
+    noPub:'No published figure',
+    trendK:'Debt as a share of GDP, year by year',
+    trendSrc:'Eurostat, as published',
+    secShape:'The shape of the debt',
+    qWho:'Who owes it?',
+    qWhoS:'By level of government, before consolidation',
+    qForm:'What form does it take?',
+    qFormS:'Instrument and maturity at issue',
+    qHold:'Who do we owe it to?',
+    qHoldS:'Holders of the outstanding stock',
+    secMat:'When does it fall due?',
+    qMat:'Redemption calendar of State debt',
+    secInt:'What does it cost?',
+    qInt:'Interest accrued in {Y}',
+    qIntWho:'Who pays the interest?',
+    qIntWhoS:'By level of government, before consolidation',
+    tier:{S1311:'Central government',S1312:'Autonomous communities',
+          S1313:'Local councils',S1314:'Social security'},
+    instr:{GD_F32:'Long-term securities',GD_F31:'Short-term securities',
+           GD_F42:'Long-term loans',GD_F41:'Short-term loans',
+           GD_F2:'Currency and deposits'},
+    elimTag:'Consolidation',
+    elimTxt:'The four levels of government add to <b>{G}</b>, but consolidated debt is <b>{C}</b>. '+
+      'The difference, <b>{E}</b>, is one level’s debt held by another: it is eliminated on '+
+      'consolidation so it is not counted twice. It is never rescaled to make the total tie.',
+    elimIntTag:'Interest between governments',
+    elimIntTxt:'The levels of government pay <b>{G}</b> in interest, but the consolidated total is <b>{C}</b>. '+
+      'The <b>{E}</b> difference is paid between them — mostly by the autonomous communities to the State '+
+      'on regional liquidity loans — and is eliminated on consolidation.',
+    matAvg:'Average life {V} years',
+    matNote:'Amount falling due each year, at face value. State debt securities only: it excludes '+
+      'the debt of the autonomous communities, local councils and social security, and the State’s '+
+      'own loans and foreign-currency debt. The first year is partial — it holds only what is left '+
+      'to mature from the reference date.',
+    scopeState:'State debt',
+    scopeGG:'All levels of government',
+    gapTag:'Not published',
+    faceTag:'Face value versus market value'
+  },
   taxLbl:'TAX HEAD',fnLbl:'SPENDING FUNCTION',
   mapRev:'TACTICAL MAP · COLLECTION',mapExp:'TACTICAL MAP · REGIONAL SPENDING',
   roRev:'AEAT · NET COLLECTION',roExp:'IGAE + EUROSTAT · ESA 2010',
@@ -1642,22 +1867,264 @@ function buildControls(){
   document.querySelectorAll('[data-s]').forEach(b=>b.addEventListener('click',()=>{slice=+b.dataset.s;render();}));
 }
 
+/* ============================== debt ==============================
+   A stock, not a flow. Everything on this screen describes what is owed on one
+   reference date, which is why the screen carries no fiscal year and the year picker
+   is hidden while it is open. The four sources behind it are published on different
+   clocks, so each panel states its own date rather than implying a shared one. */
+
+const DEBT_TIER_C={S1311:'#B47BE8', S1312:'#8B5FC4', S1313:'#6742A0', S1314:'#4A2E75'};
+const DEBT_INSTR_C={GD_F32:'#B47BE8', GD_F42:'#8B5FC4', GD_F31:'#D9B8F5',
+                    GD_F41:'#6742A0', GD_F2:'#4A2E75'};
+const DEBT_HOLD_C=['#B47BE8','#8B5FC4','#D9B8F5','#6742A0','#4A2E75','#9E7BC0','#3E2A55'];
+
+/* Shared donut geometry, same as the composition ring: a slice worth a hair of the
+   total would render as an invisible line, so every share gets a floor and the set is
+   rescaled to close on exactly 100%. The honest percentages stay in the legend. */
+function donutRing(rows, total, opts){
+  const o=opts||{};
+  const R=40, C=2*Math.PI*R, FLOOR=0.7;
+  const shares=rows.map(r=>Math.max(FLOOR, Math.abs(r.v)/total*100));
+  const k=100/shares.reduce((a,x)=>a+x,0);
+  let at=0;
+  const ring=rows.map((r,i)=>{
+    const len=shares[i]*k/100*C, off=C-at;
+    at+=len;
+    /* toFixed, not nf(): these are SVG attributes — a locale decimal comma is invalid */
+    return `<circle cx="50" cy="50" r="${R}" fill="none" stroke="${r.c}" stroke-width="15"
+      stroke-dasharray="${len.toFixed(3)} ${(C-len).toFixed(3)}"
+      stroke-dashoffset="${off.toFixed(3)}"><title>${r.nm} · ${eur(r.v)} · ${nf(r.v/total*100,1)}%</title></circle>`;
+  }).join('');
+  const legend=rows.map(r=>`
+    <div class="cli">
+      <span class="sw" style="background:${r.c}"></span>
+      <span class="nm">${r.nm}</span>
+      <span class="vv">${eur(r.v)}</span>
+      <span class="pp">${nf(r.v/total*100,1)}%</span>
+    </div>`).join('');
+  return `<div class="cwrap2">
+      <div class="donut">
+        <svg viewBox="0 0 100 100" role="img" aria-label="${o.aria||''}">${ring}</svg>
+        <div class="donut-c"><div class="donut-v">${o.centre||eur(total)}</div></div>
+      </div>
+      <div class="clegend">${legend}</div>
+    </div>`;
+}
+/* Debt as a share of GDP, every year Eurostat publishes it. Both series are published
+   figures — the ratio is Eurostat's own, not one we divide out here. Labels mark the
+   series low, the series high and the latest point: the three the axis cannot show. */
+function debtTrend(B, X){
+  const ys=B.years.filter(y=>B.pcGdp[y]!=null);
+  if(ys.length<5) return '';
+  const W=300, H=54, PL=4, PR=4, PT=6, PB=8;
+  const vals=ys.map(y=>B.pcGdp[y]);
+  const lo=Math.min(...vals), hi=Math.max(...vals);
+  const x=i=>PL+i*(W-PL-PR)/(ys.length-1);
+  const y=v=>PT+(1-(v-lo)/((hi-lo)||1))*(H-PT-PB);
+  const pts=ys.map((yr,i)=>[x(i),y(B.pcGdp[yr])]);
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(2)+' '+p[1].toFixed(2)).join(' ');
+  const area=line+` L${x(ys.length-1).toFixed(2)} ${(H-PB).toFixed(2)} L${x(0).toFixed(2)} ${(H-PB).toFixed(2)} Z`;
+
+  const iLo=vals.indexOf(lo), iHi=vals.indexOf(hi), iLast=ys.length-1;
+  const mark=(i,anchor)=>{
+    const v=vals[i], px=x(i), py=y(v);
+    const ax=anchor==='end'?px-1.6:anchor==='start'?px+1.6:px;
+    return `<circle class="pt" cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="1.1"/>
+      <text class="lb" x="${ax.toFixed(2)}" y="${(py-2.4).toFixed(2)}" text-anchor="${anchor}">${nf(v,1)}%</text>
+      <text class="lbm" x="${ax.toFixed(2)}" y="${(py+4.4).toFixed(2)}" text-anchor="${anchor}">${ys[i]}</text>`;
+  };
+  /* only draw the low/high markers when they are far enough from the latest point to
+     not collide with its label */
+  const far=i=>Math.abs(i-iLast)>2;
+  return `<div class="dtrend">
+    <div class="th"><span class="t">${X.trendK}</span>
+      <span class="x">${ys[0]}–${ys[iLast]} · ${X.trendSrc}</span></div>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${X.trendK} ${ys[0]}-${ys[iLast]}">
+      <line class="gl" x1="${PL}" y1="${H-PB}" x2="${W-PR}" y2="${H-PB}"/>
+      <path class="ar" d="${area}"/><path class="ln" d="${line}"/>
+      ${far(iLo)?mark(iLo,'middle'):''}${far(iHi)?mark(iHi,'middle'):''}${mark(iLast,'end')}
+    </svg></div>`;
+}
+
+function debtCard(head, sub, inner){
+  return `<div class="dcard"><div class="ch">${head}</div><div class="cq">${sub}</div>${inner}</div>`;
+}
+function gapCard(head, sub, tag, text){
+  return `<div class="dcard"><div class="ch">${head}</div><div class="cq">${sub}</div>
+    <div class="dgap"><span class="tag">${tag}</span>${text}</div></div>`;
+}
+
+function paintDebt(){
+  const el=document.getElementById('debtscreen');
+  const B=D.debt;
+  if(!B){ el.innerHTML=`<div class="dsec"><div class="dgap">No debt data in this bundle.</div></div>`; return; }
+  const x=t(), X=x.dbt, ref=B.ref;
+  const total=B.total[ref], pc=B.pcGdp[ref];
+  const tierL=c=>X.tier[c]||c, instrL=c=>X.instr[c]||c;
+
+  /* ---- hero + the four headline stats ---- */
+  const iRec=B.interest[ref]||{};
+  const stat=(k,v,n,none)=>`<div class="dstat"><span class="sk">${k}</span>
+    <div class="sv${none?' none':''}">${v}</div><span class="sn">${n||''}</span></div>`;
+  const cost=B.cost||null, mat=B.maturity||null;
+  const stats=[
+    stat(X.sInt, eur(iRec.total), X.sIntN.replace('{Y}',ref)),
+    stat(X.sIntGdp, B.intPcGdp&&B.intPcGdp[ref]!=null ? nf(B.intPcGdp[ref],1)+'%' : '—',
+         X.sIntGdpN.replace('{Y}',ref)),
+    mat&&mat.avgLife!=null
+      ? stat(X.sLife, nf(mat.avgLife,2)+' '+X.sYears, X.sLifeN+' · '+(mat.avgLifeAsOf||mat.asOf||''))
+      : stat(X.sLife, X.noPub, X.sLifeN, true),
+    /* two different interest rates, and they answer different questions: what the debt
+       already outstanding costs, and what it costs to borrow now */
+    cost&&cost.avgCost!=null
+      ? stat(X.sCost, nf(cost.avgCost,2)+'%', X.sCostN+' · '+(cost.asOf||''))
+      : stat(X.sCost, X.noPub, X.sCostN, true),
+    cost&&cost.avgCostNew!=null
+      ? stat(X.sCostNew, nf(cost.avgCostNew,2)+'%', X.sCostNewN+' · '+(cost.asOf||''))
+      : stat(X.sCostNew, X.noPub, X.sCostNewN, true)
+  ].join('');
+
+  /* ---- who owes it: tiers, carried gross with the elimination named ---- */
+  const T=B.tier[ref];
+  let whoCard='';
+  if(T){
+    const rows=['S1311','S1312','S1313','S1314'].map(s=>
+      ({k:s, nm:tierL(s), v:T[s], c:DEBT_TIER_C[s]})).filter(r=>r.v!=null);
+    whoCard=debtCard(X.qWho, X.qWhoS,
+      donutRing(rows, T.gross, {centre:eur(T.gross), aria:`${X.qWho} ${eur(T.gross)}`})
+      + `<div class="dnote"><b>${X.elimTag}</b> — `
+      + X.elimTxt.replace('{G}',eur(T.gross)).replace('{C}',eur(T.consolidated))
+                 .replace('{E}',eur(T.elim))+`</div>`);
+  }
+
+  /* ---- what form: the instrument split is an exact partition of the total ---- */
+  const inst=B.instr[ref]||[];
+  const instrCard=debtCard(X.qForm, X.qFormS,
+    donutRing(inst.map(([c,v])=>({k:c, nm:instrL(c), v, c:DEBT_INSTR_C[c]||'#6742A0'})),
+      total, {centre:eur(total), aria:`${X.qForm} ${eur(total)}`}));
+
+  /* ---- who holds it: only if a published holder split is in the bundle ---- */
+  let holdCard='';
+  if(B.holders&&B.holders.rows&&B.holders.rows.length){
+    const H=B.holders, hl=k=>(L==='es'?H.labES:H.labEN)[k]||k;
+    const hrows=H.rows.map(([k,v],i)=>({k, nm:hl(k), v, c:DEBT_HOLD_C[i%DEBT_HOLD_C.length]}));
+    holdCard=debtCard(X.qHold, X.qHoldS,
+      donutRing(hrows, H.total, {centre:eur(H.total), aria:`${X.qHold} ${eur(H.total)}`})
+      + (H.note? `<div class="dnote">${(L==='es'?H.noteES:H.noteEN)||''}</div>` : ''));
+  } else {
+    holdCard=gapCard(X.qHold, X.qHoldS, X.gapTag,
+      L==='es'
+        ? 'El reparto por tenedores no está en este bundle todavía. No se estima: '
+          +'cuando se incorpore la fuente oficial, aparecerá aquí con su fecha y su perímetro.'
+        : 'The holder split is not in this bundle yet. It is not estimated: once the official '
+          +'source is wired in it will appear here with its own reference date and perimeter.');
+  }
+
+  /* ---- when it falls due ---- */
+  let matSec='';
+  if(mat&&mat.rows&&mat.rows.length){
+    const peak=Math.max(...mat.rows.map(r=>r[1]));
+    const bars=mat.rows.map(([yr,v],i)=>
+      `<div class="matr${i>=10?' far':''}"><span class="my">${yr}</span>
+        <span class="mt"><span class="mf" style="width:${Math.max(0.6,v/peak*100)}%"></span></span>
+        <span class="mv">${eur(v)}</span></div>`).join('');
+    const laddered=mat.totalLaddered!=null
+      ? mat.totalLaddered : mat.rows.reduce((a,r)=>a+r[1],0);
+    matSec=`<div class="dsec">
+      <div class="dsec-h"><span class="t">${X.secMat}</span>
+        <span class="q">${X.qMat}${mat.avgLife!=null?' · '+X.matAvg.replace('{V}',nf(mat.avgLife,2)):''}</span>
+        <span class="x">${eur(laddered)} · ${X.scopeState} · ${mat.asOf||''}</span></div>
+      <div class="mat">${bars}</div>
+      <div class="dnote">${X.matNote}</div></div>`;
+  } else {
+    matSec=`<div class="dsec">
+      <div class="dsec-h"><span class="t">${X.secMat}</span><span class="q">${X.qMat}</span></div>
+      <div class="dgap"><span class="tag">${X.gapTag}</span>${
+        L==='es'
+          ? 'El calendario de vencimientos no está en este bundle todavía. No se interpola.'
+          : 'The redemption calendar is not in this bundle yet. It is not interpolated.'}</div></div>`;
+  }
+
+  /* ---- what it costs ---- */
+  let intSec='';
+  if(iRec.total!=null){
+    const irows=['S1311','S1312','S1313','S1314'].map(s=>
+      ({k:s, nm:tierL(s), v:iRec[s], c:DEBT_TIER_C[s]})).filter(r=>r.v!=null&&r.v!==0);
+    const gross=iRec.gross!=null?iRec.gross:iRec.total;
+    /* Eurostat can publish a consolidated interest total before the per-tier split lands.
+       Rather than draw an empty ring, drop the card and leave the headline standing. */
+    const intCard = irows.length
+      ? debtCard(X.qIntWho, X.qIntWhoS,
+          donutRing(irows, gross, {centre:eur(gross), aria:`${X.qIntWho} ${eur(gross)}`})
+          + (iRec.elim!=null&&iRec.elim!==0
+              ? `<div class="dnote"><b>${X.elimIntTag}</b> — `
+                + X.elimIntTxt.replace('{G}',eur(gross)).replace('{C}',eur(iRec.total))
+                              .replace('{E}',eur(iRec.elim))+`</div>` : ''))
+      : gapCard(X.qIntWho, X.qIntWhoS, X.gapTag,
+          L==='es' ? 'Eurostat aún no ha publicado el desglose por administración de este ejercicio.'
+                   : 'Eurostat has not yet published this year’s split by level of government.');
+    intSec=`<div class="dsec">
+      <div class="dsec-h"><span class="t">${X.secInt}</span>
+        <span class="q">${X.qInt.replace('{Y}',ref)}</span>
+        <span class="x">${X.scopeGG}</span></div>
+      <div class="dring">${intCard}</div></div>`;
+  }
+
+  el.innerHTML=`
+    <div class="dhero">
+      <div class="k">${X.heroK}</div>
+      <div class="fig">
+        <span class="big">${eur(total)}</span>
+        <span class="pc">${pc!=null?nf(pc,1)+'% '+X.ofGdp:''}</span>
+        <span class="asof">${X.asOf.replace('{Y}',ref)}</span>
+      </div>
+    </div>
+    <div class="dstats">${stats}</div>
+    ${debtTrend(B,X)}
+    <div class="dsec">
+      <div class="dsec-h"><span class="t">${X.secShape}</span>
+        <span class="x">${X.scopeGG} · ${ref}</span></div>
+      <div class="dring">${whoCard}${instrCard}${holdCard}</div>
+    </div>
+    ${matSec}
+    ${intSec}`;
+}
+
 /* ============================== chrome ============================== */
 function paintChrome(){
-  const x=t(), rev=MODE==='rev';
-  document.body.classList.toggle('exp',!rev);
+  const x=t(), rev=MODE==='rev', debt=MODE==='debt';
+  document.body.classList.toggle('exp',MODE==='exp');
+  document.body.classList.toggle('debt',debt);
   document.getElementById('classbar').textContent=x.classTop;
   document.getElementById('classbar2').textContent=x.classBot;
+  document.getElementById('mode-rev').textContent=x.modeRev;
+  document.getElementById('mode-exp').textContent=x.modeExp;
+  document.getElementById('mode-debt').textContent=x.modeDebt;
+  ['rev','exp','debt'].forEach(m=>
+    document.getElementById('mode-'+m).setAttribute('aria-selected',String(MODE===m)));
+
+  /* Debt is a stock on a reference date, not a fiscal-year flow: the year picker would
+     be a control with nothing to control, so it goes away rather than sitting inert.
+     The map and dossier go with it — neither has a debt reading. */
+  /* The footer names the source and the perimeter, both of which change with the mode —
+     leaving the revenue caption under the debt screen would misdescribe what is on it. */
+  document.getElementById('f1').textContent=
+    debt?x.dbt.foot1 : rev?x.footRev1 : x.footExp1;
+  document.getElementById('f2').textContent=
+    debt?x.dbt.foot2 : rev?x.footRev2 : x.footExp2;
+  document.getElementById('f3').textContent=x.foot3;
+
+  document.getElementById('yearpick').hidden=debt;
+  document.getElementById('comp').hidden=debt;
+  document.getElementById('mainlayout').hidden=debt;
+  document.getElementById('debtscreen').hidden=!debt;
+  if(debt) return;
+
   document.getElementById('h-map').textContent=rev?x.mapRev:x.mapExp;
   document.getElementById('h-dos').textContent=x.dos;
   document.getElementById('lg-lo').textContent=x.lo;
   document.getElementById('lg-hi').textContent=x.hi;
   document.querySelector('.ylbl').textContent=x.fYear;
-  document.getElementById('mode-rev').textContent=x.modeRev;
-  document.getElementById('mode-exp').textContent=x.modeExp;
-  document.getElementById('mode-rev').setAttribute('aria-selected',String(rev));
-  document.getElementById('mode-exp').setAttribute('aria-selected',String(!rev));
-  
   document.getElementById('mapyear').textContent='FY'+year;
   const stops=[];for(let i=0;i<=10;i++)stops.push(ramp(i/10));
   document.getElementById('ramp').style.background='linear-gradient(90deg,'+stops.join(',')+')';
@@ -1665,29 +2132,37 @@ function paintChrome(){
 
 function select(id){ sel=(sel===id?null:id); render(); }
 function render(){
-  paintChrome(); paintComposition();
+  paintChrome();
+  if(MODE==='debt'){ paintDebt(); return; }
+  paintComposition();
   paintMap(); paintHud(); paintReticle(); paintOffmap(); paintDossier();
   document.getElementById('yearsel').value=year;
 }
 function setMode(m){
   if(MODE===m) return;
   MODE=m; slice=0; focus=null;
-  const ys=years();
-  if(!ys.includes(year)) year=ys[ys.length-1];
-  if(!years().includes(year)) year=years()[years().length-1];
-  buildYearPicker(); render();
+  if(m!=='debt'){
+    const ys=years();
+    if(!ys.includes(year)) year=ys[ys.length-1];
+    buildYearPicker();
+  }
+  render();
 }
 document.getElementById('mode-rev').addEventListener('click',()=>setMode('rev'));
 document.getElementById('mode-exp').addEventListener('click',()=>setMode('exp'));
+document.getElementById('mode-debt').addEventListener('click',()=>setMode('debt'));
 document.getElementById('yearsel').addEventListener('change',e=>{year=e.target.value;render();});
 document.getElementById('lang-es').addEventListener('click',()=>{L='es';syncLang();});
 document.getElementById('lang-en').addEventListener('click',()=>{L='en';syncLang();});
 function syncLang(){
   document.getElementById('lang-es').setAttribute('aria-pressed',String(L==='es'));
   document.getElementById('lang-en').setAttribute('aria-pressed',String(L==='en'));
-  document.documentElement.lang=L; buildYearPicker(); render();
+  document.documentElement.lang=L;
+  if(MODE!=='debt') buildYearPicker();
+  render();
 }
 document.addEventListener('keydown',e=>{
+  if(MODE==='debt') return;   // no year to step through, and nothing selectable
   if(e.key==='Escape'){ if(focus){focus=null;paintComposition();} else {sel=null;render();} return; }
   const ys=years(), i=ys.indexOf(year);
   if(e.key==='ArrowLeft'&&i>0){year=ys[i-1];render();}

@@ -11,6 +11,7 @@ __pycache__/
 out/
 build/
 dist/
+*.tsbuildinfo
 
 # env — never commit real credentials
 .env
@@ -34,7 +35,12 @@ coverage/
 
 # pipeline working files — raw downloads and intermediates, re-created by the extractors
 pipeline/*/who/
+pipeline/*/tesoro/
+pipeline/*/bde/
+pipeline/*/cofog_ccaa/
+pipeline/*/ccaa_rev/
 pipeline/*/eurostat_*.json
 pipeline/*/nat_sub.json
 pipeline/*/aeat_detail.json
 pipeline/*/bundle*.json
+pipeline/*/debt_*.json

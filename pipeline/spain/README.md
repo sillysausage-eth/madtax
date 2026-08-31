@@ -223,6 +223,125 @@ rather than defaulted to zero, and `verify.js` asserts that. Including it would 
 modelling from affiliation and average contribution bases; that would be our estimate,
 not an official figure.
 
+## Debt layer
+
+```bash
+node extract_debt.js         # -> debt_edp.json      Eurostat EDP stock + interest, 1995-2025
+python3 extract_tesoro.py    # -> debt_tesoro.json   maturity ladder, average life, average cost
+node extract_holders.js      # -> debt_holders.json  holder split (needs debt_edp.json)
+node merge11.js              # -> folds all three into the derived bundle
+node verify.js               # section L covers the debt tie-outs
+node build_console.js
+```
+
+All three take `--offline` to replay their snapshots (`eurostat_debt_*.json`, `tesoro/`, `bde/`).
+`extract_tesoro.py` shells out to `curl`, like the COFOG and CONPREL downloads above —
+Python's `urllib` has no CA bundle on this machine and fails every HTTPS fetch with
+`CERTIFICATE_VERIFY_FAILED`. Certificates are still verified; `-k` is not used.
+
+Debt is a **stock**, not a flow: it is what is owed on one date. That is why the console's
+Deuda tab has no fiscal-year picker — the control is hidden rather than left inert, and
+each panel states its own reference date, because the sources behind them are published
+on different clocks.
+
+### The consolidation trap — the same shape as the spending one
+The four government tiers **do not sum to the debt total**, and must never be scaled so
+they do:
+
+| 2025 | € bn |
+|---|---|
+| Central government | 1,562.6 |
+| Autonomous communities | 341.6 |
+| Local councils | 20.7 |
+| Social security | 136.2 |
+| **Gross sum** | **2,061.1** |
+| **Consolidated (S13, the headline)** | **1,698.2** |
+| Eliminated on consolidation | 362.9 |
+
+The €362.9bn gap is one tier's debt held by another — overwhelmingly State lending to the
+regions (regional liquidity funds) and to the Social Security system. The UI shows the
+gross ring with the elimination stated underneath, exactly as the spending ladder does.
+
+Interest behaves identically: €43.9bn paid gross against €40.3bn consolidated in 2025, the
+€3.6bn difference being interest the regions pay the State.
+
+By contrast the **instrument split is a true partition** and ties to the euro — `verify.js`
+asserts it for every one of the 31 years, not just the headline one.
+
+### Perimeter: what Eurostat does not publish
+The EDP feed covers all four tiers but says nothing about **residual maturity, the average
+cost of the debt, or who holds it**. Those come from the Treasury and the Banco de España
+and cover a **narrower perimeter** — Tesoro publishes *State* debt, which is smaller than
+general government. `merge11.js` therefore stamps `scope` on each of those blocks and
+`verify.js` fails if it is missing: a State-only holder split rendered as if it covered the
+whole €1.7tn would be the worst kind of quiet error. While a block is absent the screen
+says so in place rather than leaving a blank panel or interpolating.
+
+### The Tesoro bulletin — `extract_tesoro.py`
+
+One bulletin, 19 fixed-URL `.xlsx` files, **overwritten in place every month with no
+archive**. No API, no CSV. Raw downloads are snapshotted into `tesoro/` (gitignored) so
+last month's figures can still be reproduced. Traps, each of which cost a debugging round:
+
+- **`14.xlsx` (maturity profile) and `08.xlsx` (FX) are a single embedded PNG.** The
+  workbook has literally zero data cells. The ladder is therefore built security by
+  security from the [valores en circulación](https://www.tesoro.es/deuda-publica/valores-del-tesoro/valores-en-circulacion)
+  HTML list, which is finer than the chart was anyway — 78 ISINs with exact amounts.
+- **`NN` is a position in the bulletin, not an identity.** Insert one table upstream and
+  every later number silently points at different data. `want()` checks the A1 title on
+  every file and refuses to read one that has moved.
+- **`03.xlsx` alternates rate rows with nominal-outstanding rows** (footnote: "las cifras
+  entre paréntesis corresponden al nominal en circulación"). `1179884` there is € millions.
+  Rows are keyed off the FECHA column and every rate passes a `-5 < v < 25` sanity band.
+- **Use the ES mirror only.** ES is `1.558.033,45` and `DD/MM/YYYY`; EN is `1,558,033.45`
+  and `MM/DD/YYYY`. `04/09/2026` means September on one and April on the other, so mixing
+  mirrors moves €8.6bn of Letras into the wrong ladder year without any error.
+- **The securities list has two snapshot dates**, one per table — Letras and Bonos are
+  refreshed on different days. The later is carried; neither is presented as "the" date.
+- **The current ladder year is partial.** A mid-year snapshot holds only the redemptions
+  still to come, which is most of the ladder's -0.7pp gap against `14.xlsx` for 2026.
+
+The extractor prints its ladder against the official `14.xlsx` percentages every run. They
+differ by up to ±0.8pp because the chart's denominator includes the loans and FX debt the
+securities list has no rows for, on a different date. That is a fact about two perimeters;
+it is printed, never closed by rescaling.
+
+### Who holds it — Banco de España, not Tesoro
+
+`extract_holders.js` reads **BdE table 11.13** (`be1113.csv`), EDP debt by counterpart
+sector, and *not* Tesoro's own holder table, because of the perimeter:
+
+| | Perimeter | Dec-2025 |
+|---|---|---|
+| BdE 11.13 | consolidated general government, EDP face value | €1,698.2bn |
+| Tesoro table 07 | book-entry State debt only | €1,480.6bn |
+
+BdE is the **same aggregate as the Eurostat headline already in the bundle**, so the split
+closes at 100% against the number the page shows — and `extract_holders.js` asserts that
+equality rather than trusting it. Tesoro table 07 is ~€218bn narrower (no regional, local or
+social-security debt, no loans or FX debt, stripped bonds at principal only), so a donut
+built from it could not honestly be labelled a split of the headline. Its finer 12-way
+investor split (households, insurers, pension funds) is worth a second panel one day, on
+its own clearly-labelled perimeter.
+
+- **The published series are nested, not siblings.** `Banco de España` sits *inside*
+  `instituciones financieras`. Adding the six series as a partition double-counts €346.6bn.
+  The four exclusive slices are BdE, financial-institutions **minus** BdE, other residents,
+  and rest of the world. Both identities are asserted to the euro.
+- **Units are thousands of euros**, unlike everything else in the debt layer.
+- **ISO-8859-1**, and some files in this catalogue mix latin-1 and UTF-8 within one line.
+  latin-1 decodes any byte at all, so a sentinel check catches mojibake rather than letting
+  `Banco de EspaÃ±a` reach the labels.
+- **The last two rows are `FUENTE` and `NOTAS`** and are asserted before being dropped.
+- **Bonds held by the ECB itself count as rest of the world**, not as central-bank
+  holdings — only the Banco de España's own Eurosystem portfolio is in `bde`.
+- **Series break at 2016** in every Spanish holder table (Iberclear → Securities Holdings
+  Statistics), documented by both publishers. Only the reference quarter is published here,
+  so no unbroken series is drawn across it.
+
+The reference quarter is not hardcoded: it is Q4 of whatever year the EDP headline already
+quotes, so the donut and the hero figure can never be a year apart.
+
 ## Data vintages — check these before assuming a year is missing
 
 Sources publish on different clocks. As of August 2026:
@@ -238,6 +357,8 @@ Sources publish on different clocks. As of August 2026:
 | CONPREL local liquidations (definitive) | 2024 |
 | AEAT `DistribucionesIRPF.xlsx` (IRPF by decile/percentile) | **2023** — re-checked 2026-08-31 |
 | AEAT IRPF *tramos de rendimiento* (`who.irpf.brackets`) | 2023 |
+| Eurostat `gov_10dd_edpt1` (EDP debt stock, by instrument and tier) | 2025 |
+| Eurostat `gov_10a_main` D41PAY (interest) | 2025 |
 
 **The IRPF decile series is genuinely stuck at 2023, not missed.** Re-downloaded and
 re-extracted on 2026-08-31: the current upstream file (`last-modified 2025-07-01`) still
