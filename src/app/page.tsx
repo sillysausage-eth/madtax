@@ -1,7 +1,7 @@
-export default function Home() {
-  return (
-    <main className="flex flex-1 items-center justify-center p-16">
-      <p className="font-mono text-sm">MADTAX — scaffold placeholder</p>
-    </main>
-  );
+import { redirect } from "next/navigation";
+import { DEFAULT_LOCALE } from "@/i18n";
+
+/** es-ES is the default locale; the URL always carries one. */
+export default function Root() {
+  redirect(`/${DEFAULT_LOCALE}`);
 }

@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # The gate. 121 tie-outs against data/derived/es-fiscal-bundle.json; a
+      # single failure exits non-zero and nothing downstream runs. `npm run build`
+      # re-runs this through `prebuild`, so a bundle that fails a tie-out cannot
+      # produce a site here or anywhere else.
+      - name: Verify the bundle (121 tie-outs)
+        run: npm run data:verify
+
+      - name: Split the bundle into per-mode sections
+        run: npm run data:split
+
+      - run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - run: npm run build

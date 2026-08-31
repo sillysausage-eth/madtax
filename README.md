@@ -8,7 +8,7 @@ Pilot country: **Spain**. The architecture is country-agnostic; the content is n
 
 ## Status
 
-Planning complete, pre-implementation.
+Planning complete. Migration to Next.js under way — see [Web app](#web-app).
 
 | Document | What it covers |
 |---|---|
@@ -57,9 +57,12 @@ the site never mixes two lenses in one chart without saying so.
 ```bash
 node pipeline/spain/verify.js
 ```
-76 tie-out checks over the published bundle — accounting identities, no-double-counting
-assertions, COFOG and regional sums, bridge arithmetic. Exits non-zero on failure.
-Currently **76 pass / 0 fail**.
+Tie-out checks over the published bundle — accounting identities, no-double-counting
+assertions, COFOG and regional sums, bridge arithmetic, debt perimeters and stamps. Exits
+non-zero on failure. Currently **121 pass / 0 fail**.
+
+It is also the build gate: `npm run build` runs it first (`prebuild`), so a bundle that
+fails a tie-out cannot produce a site — locally or in CI.
 
 ## Prototype
 
@@ -81,7 +84,51 @@ Three metrics, year scrubber, bilingual ES/EN, keyboard navigable. One self-cont
 Pipeline that produced its data: `pipeline/spain/` (read its README before rerunning —
 the source has several traps).
 
-## Getting started
+## Web app
 
-Not yet scaffolded. See [the plan](docs/03-implementation-plan.md#part-d--phasing) for
-Phase 0. Copy `.env.example` to `.env.local` and fill in Supabase credentials when it is.
+The production site is a Next.js 16 app at the repo root (`src/`). It is being ported from
+the prototype milestone by milestone; **`prototype/console.html` remains the reference
+implementation** and the thing every port is diffed against. Nothing in `prototype/`,
+`pipeline/` or `data/` is edited to make the app easier to write.
+
+### Dev loop
+
+```bash
+npm install
+npm run dev            # http://localhost:3000 → /es/revenue
+```
+
+`predev` splits the bundle if `src/data/generated/` is missing; it does not re-run the
+121 tie-outs on every restart. `npm run build` does, through `prebuild`.
+
+| Script | What it does |
+|---|---|
+| `npm run dev` | Dev server |
+| `npm run build` | `data:verify` → `data:split` → `next build` |
+| `npm run lint` | ESLint (app only; `pipeline/`, `prototype/`, `data/` are ignored) |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run data:verify` | `node pipeline/spain/verify.js` — the 121-check gate |
+| `npm run data:split` | Bundle → `src/data/generated/*.json` |
+
+### How data reaches the screen
+
+```
+pipeline/spain/*            extractors and merges (read-only here)
+  └─ data/derived/es-fiscal-bundle.json      the single source of truth, committed
+       └─ pipeline/spain/verify.js           121 tie-outs — the gate
+            └─ scripts/split-bundle.mjs      partition, no arithmetic
+                 └─ src/data/generated/{map,revenue,spending,debt,who,meta}.json
+                      └─ src/app/[locale]/{revenue,spending,debt}   static pages
+```
+
+`src/data/generated/` is **gitignored**: the bundle stays the only committed data artifact,
+and each route code-splits on its own section. The split performs no arithmetic, rounding
+or defaulting — a key missing from the bundle fails the build loudly rather than rendering
+an empty panel. The site reads no database at runtime or build time.
+
+Routing is path-prefix locales with no middleware — `/` → `/es` → `/es/revenue`; `es` and
+`en` are prerendered. UI strings live in `src/i18n/{es,en}.ts`, extracted verbatim from the
+prototype's `T` table.
+
+Copy `.env.example` to `.env.local` for Supabase credentials. The V1 app makes zero
+PostgREST calls; the DB is a mirror (see the migration plan).

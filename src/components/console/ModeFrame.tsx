@@ -1,0 +1,21 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { isMode, DEFAULT_MODE, type Mode } from "@/lib/modes";
+
+/**
+ * Carries the active mode as a `data-mode` attribute so one CSS rule remaps the
+ * accent for the whole screen — the prototype's `body.exp` / `body.debt`, moved
+ * onto an element a layout can own.
+ *
+ * A layout cannot read the URL on the server, so this reads it on the client;
+ * `children` stay server components and are passed straight through. The value is
+ * resolved during prerender, so the static HTML already carries the right accent —
+ * no flash on load.
+ */
+export default function ModeFrame({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname() ?? "";
+  const segment = pathname.split("/")[2] ?? "";
+  const mode: Mode = isMode(segment) ? segment : DEFAULT_MODE;
+  return <div data-mode={mode}>{children}</div>;
+}

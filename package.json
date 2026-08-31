@@ -3,10 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/ensure-generated.mjs",
     "dev": "next dev",
+    "prebuild": "npm run data:verify && npm run data:split",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "data:verify": "node pipeline/spain/verify.js",
+    "data:split": "node scripts/split-bundle.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",

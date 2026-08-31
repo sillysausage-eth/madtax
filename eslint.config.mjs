@@ -12,6 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Read-only territory. The pipeline and the prototype are the reference
+    // implementations this app is ported from; they are plain Node/browser
+    // scripts and are not held to the app's TypeScript rules.
+    "pipeline/**",
+    "prototype/**",
+    "data/**",
+    // Emitted by scripts/split-bundle.mjs.
+    "src/data/generated/**",
   ]),
 ]);
 

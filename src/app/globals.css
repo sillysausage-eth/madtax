@@ -1,26 +1,386 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   MadTax design system — "OPEN SOURCE"
+   Dark tactical console. No light mode: the palette is the product, not a theme.
+   Every colour below is the prototype's (prototype/console.tpl.html `:root`),
+   copied value-for-value. Tailwind supplies layout utilities; the console
+   surfaces (banner, masthead, mode tabs, hero tiles) stay plain CSS so they
+   remain diffable against the reference implementation.
+   ========================================================================= */
+
+@theme {
+  --color-bg: #070b0e;
+  --color-panel: #0b1218;
+  --color-panel2: #0f1a22;
+  --color-raise: #142230;
+  --color-grid: #12212b;
+  --color-rule: #1b2e3a;
+  --color-rule2: #274150;
+
+  --color-ink: #c9dce5;
+  --color-ink2: #8fa9b6;
+  --color-mute: #5a7280;
+  --color-dim: #3e525e;
+
+  --color-cy: #3fc8dc;
+  --color-cy-hi: #7beeff;
+  --color-cy-dim: #1b5c6b;
+  --color-am: #f0a82e;
+  --color-am-dim: #6b4a12;
+  --color-rd: #e8455f;
+  --color-rd-dim: #5e1c27;
+  --color-gn: #5fd08a;
+  --color-mag: #b47be8;
+
+  --font-sans: var(--font-barlow), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jbmono), ui-monospace, monospace;
+  --font-cond: var(--font-saira), Impact, sans-serif;
+}
+
+/* The prototype's short names, aliased onto the theme tokens. Ported CSS below
+   reads these, so a rule can be diffed against the prototype line for line —
+   and `data-mode` can remap the accent in one place, exactly as `body.exp` and
+   `body.debt` do there. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: var(--color-bg);
+  --panel: var(--color-panel);
+  --panel2: var(--color-panel2);
+  --raise: var(--color-raise);
+  --grid: var(--color-grid);
+  --rule: var(--color-rule);
+  --rule2: var(--color-rule2);
+  --ink: var(--color-ink);
+  --ink2: var(--color-ink2);
+  --mute: var(--color-mute);
+  --dim: var(--color-dim);
+  --cy: var(--color-cy);
+  --cy-hi: var(--color-cy-hi);
+  --cy-dim: var(--color-cy-dim);
+  --am: var(--color-am);
+  --am-dim: var(--color-am-dim);
+  --rd: var(--color-rd);
+  --rd-dim: var(--color-rd-dim);
+  --gn: var(--color-gn);
+  --mag: var(--color-mag);
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Mode accent. Revenue keeps the cyan default.
+   Spending recolours the data accent, semantics stay put. */
+[data-mode="spending"] {
+  --cy: #f0a82e;
+  --cy-hi: #ffd98a;
+  --cy-dim: #6b4a12;
+}
+/* Debt mode takes the violet accent: distinct from revenue cyan and spending
+   amber, and deliberately not red — the colour should identify the screen,
+   not grade it. */
+[data-mode="debt"] {
+  --cy: #b47be8;
+  --cy-hi: #d9b8f5;
+  --cy-dim: #3e2a55;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:
+    64px 64px,
+    64px 64px;
+  background-position: -1px -1px;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.cond {
+  font-family: var(--font-cond);
+}
+
+/* ---------- classification banner ---------- */
+.class-bar {
+  background: var(--cy);
+  color: #04181d;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 10.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 3px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.class-bar.bottom {
+  background: var(--rule2);
+  color: var(--ink2);
+}
+
+/* ---------- shell ---------- */
+.shell {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 clamp(14px, 1.6vw, 32px) 40px;
+}
+.mast {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 2px 12px;
+  border-bottom: 1px solid var(--rule2);
+}
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.brand h1 {
+  font-family: var(--font-cond);
+  font-weight: 800;
+  font-size: clamp(28px, 4.4vw, 44px);
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  margin: 0;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+.brand h1 a {
+  color: inherit;
+  text-decoration: none;
+}
+.brand h1 em {
+  color: var(--cy);
+  font-style: normal;
+}
+.codename {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--am);
+  border: 1px solid var(--am-dim);
+  padding: 3px 7px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.mast-right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.langsw {
+  display: flex;
+  border: 1px solid var(--rule2);
+}
+.langsw a {
+  background: transparent;
+  border: 0;
+  color: var(--mute);
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  padding: 5px 9px;
+  text-transform: uppercase;
+}
+.langsw a[aria-current="true"] {
+  background: var(--cy);
+  color: #04181d;
+  font-weight: 700;
+}
+
+/* ---------- hero stats ---------- */
+/* One column per tile, however many a mode has — the prototype's rule that a row
+   must never strand a dead cell, expressed for a variable tile count. */
+.hero {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin-top: 14px;
+}
+@media (max-width: 720px) {
+  .hero {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+  }
+  .stat .v {
+    font-size: 26px;
+  }
+}
+.stat {
+  background: var(--panel);
+  padding: 12px 14px 13px;
+  position: relative;
+  overflow: hidden;
+}
+.stat .k {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  color: var(--mute);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 5px;
+}
+.stat .v {
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.stat .v.cy {
+  color: var(--cy);
+}
+.stat .v.am {
+  color: var(--am);
+}
+.stat .v.rd {
+  color: var(--rd);
+}
+.stat .s {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  margin-top: 4px;
+  letter-spacing: 0.06em;
+}
+
+/* ---------- mode tabs: fused to the top of the composition panel ---------- */
+.modebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding: 0 8px 0 3px;
+  border: 1px solid var(--rule);
+  border-bottom: 0;
+  background: var(--panel2);
+}
+.modetabs {
+  display: flex;
+  gap: 2px;
+}
+.modetabs a {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--mute);
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  padding: 8px 16px 6px;
+  text-transform: uppercase;
+}
+.modetabs a:hover {
+  color: var(--ink2);
+  background: var(--raise);
+}
+.modetabs a[aria-current="page"] {
+  color: var(--cy);
+  border-bottom-color: var(--cy);
+  background: var(--panel);
+}
+@media (max-width: 560px) {
+  .modebar {
+    padding: 0 6px 0 3px;
+  }
+  .modetabs {
+    flex: 1 1 auto;
+  }
+  .modetabs a {
+    flex: 1;
+    padding: 8px 6px 6px;
+    font-size: 14px;
+    text-align: center;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---------- panels ---------- */
+.pane {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  position: relative;
+}
+.pane-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel2);
+}
+.pane-h .t {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  color: var(--ink2);
+  text-transform: uppercase;
+}
+.pane-h .x {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+}
+.pane-b {
+  padding: 10px;
+}
+
+/* Milestone marker for the console area still to be ported. It states what is
+   absent rather than leaving a blank frame — same rule the data follows. */
+.pending {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mute);
+  border: 1px dashed var(--rule2);
+  padding: 18px 14px;
+  text-align: center;
+}
+
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 1px solid var(--cy);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
