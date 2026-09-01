@@ -1,0 +1,12 @@
+# MadTax — Supabase CLI project config.
+#
+# This project is NEVER run locally: every command targets the hosted project over
+# the direct Postgres connection, e.g.
+#
+#   npx supabase db push --db-url "$SUPABASE_DB_URL" --yes
+#
+# There is no `supabase link`, no access token and no MCP dependency, so the only
+# setting the CLI actually needs here is a project name for its own bookkeeping.
+# Deliberately minimal — see supabase/README.md.
+
+project_id = "madtax"

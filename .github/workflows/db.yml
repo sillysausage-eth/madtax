@@ -1,0 +1,55 @@
+name: Supabase DB refresh
+
+# Manual only (plan §3 / M4): the Supabase mirror is a read-only copy of the
+# bundle with no runtime readers yet, so there is nothing that needs it kept
+# continuously in sync. Refreshing it is a deliberate, visible action, not a
+# side effect of every push to main.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: db-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # The bundle is the source of truth end to end: a bundle that fails its
+      # own tie-outs must not be pushed into the mirror either.
+      - name: Verify the bundle (121 tie-outs)
+        run: npm run data:verify
+
+      # supabase/migrations/*.sql -> the live project. No `supabase link`, no
+      # access token: everything goes over the direct Postgres connection, per
+      # supabase/config.toml.
+      - name: Apply migrations
+        run: npx supabase db push --db-url "$SUPABASE_DB_URL" --yes
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+      # Truncate-then-reload every section table from the bundle, service
+      # role, asserting row counts as it goes. See scripts/seed-supabase.mjs.
+      - name: Seed
+        run: node scripts/seed-supabase.mjs
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      # Recomputes ≥15 identities from the database over the anon key and
+      # checks them against the bundle; also proves anon writes are rejected.
+      # See scripts/verify-db.mjs.
+      - name: Verify the mirror
+        run: node scripts/verify-db.mjs
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
