@@ -39,7 +39,12 @@ export const PART_COLOR: Record<string, string> = {
   corp: "#E170A8", //          pink
   sales: "#30B59B", //         teal
   excise: "#E2D75A", //        yellow
-  eu: "#CD6CD0", //            orchid
+  /* EU blue, because the flag's own azure is what everyone reads "Europe" as.
+     Not #003399 exactly: the official azure sits at 1.82:1 on this background,
+     under the 3:1 a graphical object needs. This is the nearest dark blue that
+     clears the floor (3.12:1) — and the coin's twelve-star emblem removes any
+     doubt against the other blues. */
+  eu: "#3355CC", //            EU blue
   otherProd: "#2F87C6", //     azure
   propInc: "#72CA97", //       spring green
   propTax: "#9EEBFA", //       ice

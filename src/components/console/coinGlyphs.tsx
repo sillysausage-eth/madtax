@@ -61,51 +61,44 @@ export function EuEmblem({ r }: { r: number }) {
 /* -------------------------------------------------------------- Spain ----- */
 
 /**
- * The Spanish state mark on the map coin.
+ * The Spanish state mark on the map coin: the official escudo, as published.
  *
- * NOT the official coat of arms. The escudo is quartered heraldry — castle,
- * lion, chains, pomegranate, an inescutcheon of fleurs-de-lis, the Pillars of
- * Hercules with their scroll, and a royal crown — and none of it survives at the
- * ~44px this coin is drawn at. A traced approximation would be a mangled version
- * of a state emblem, which is worse than not drawing it, so this is a plain
- * heraldic shield carrying the flag's own bands and proportions: red, gold at
- * double height, red. It says "the Spanish state" without imitating the escudo.
+ * An earlier version drew a plain red-gold-red heraldic shield instead, on the
+ * grounds that the real arms — quartered castle, lion, chains and pomegranate,
+ * an inescutcheon of fleurs-de-lis, the Pillars of Hercules and a royal crown —
+ * could not survive coin size and that tracing them would produce a mangled
+ * state emblem. Half of that still holds: the fine detail does blur. But the
+ * arms are vector all the way down, so the silhouette, crown and quartering
+ * read at 40px and resolve completely on zoom, and using the emblem itself is
+ * honest in a way an approximation of it never is.
  *
- * Colours are the flag's: Rojo #AA151B, Gualda #F1BF00. The outline takes a
- * lighter gold so the silhouette holds against the dark console background.
- *
- * `uid` makes the clip path unique on a page that draws more than one shield. It
- * is passed explicitly rather than generated, so the server and the client agree.
+ * Gualda #F1BF00 stays exported: the panel's bars use it for the share this
+ * coin holds, so the bar and the coin are the same colour.
  */
-export const SHIELD_RED = "#AA151B";
 export const SHIELD_GOLD = "#F1BF00";
-export const SHIELD_EDGE = "#F6D24A";
 
-/** A 24 × 28 Iberian shield: square shoulders, sides falling to a round point. */
-const SHIELD_PATH =
-  "M2 2H22V14.6C22 20.2 17.6 24.4 12 26.6 6.4 24.4 2 20.2 2 14.6Z";
+/* The real emblem, served as a static asset rather than inlined: the official
+   escudo is 494 paths, and at ~150KB it belongs in the browser cache, not in
+   the JS bundle. It is the arms as published, not a tracing — the detail below
+   coin size blurs, but the silhouette, crown and quartering read, and zooming
+   resolves it properly because it stays vector all the way down. */
+const ESCUDO_HREF = "/escudo-espana.svg";
 
-export function SpainShield({ r, uid }: { r: number; uid: string }) {
-  /* The shield box is 24 wide by 28 high; scale it to sit inside a disc of
-     radius `r` with the same margin top and bottom. */
-  const s = (r * 2) / 30;
-  const id = `essh-${uid}`;
+export function SpainShield({ r }: { r: number }) {
+  /* Square, centred on the coin, filling most of the disc — the arms need the
+     room. `pointer-events: none` keeps the button underneath clickable. */
+  const side = r * 2 * 0.96;
   return (
-    <g
+    <image
       className="es-shield"
-      transform={`translate(${(-12 * s).toFixed(3)} ${(-14 * s).toFixed(3)}) scale(${s.toFixed(4)})`}
-    >
-      <defs>
-        <clipPath id={id}>
-          <path d={SHIELD_PATH} />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${id})`}>
-        <rect x="0" y="0" width="24" height="28" fill={SHIELD_RED} />
-        <rect x="0" y="8.2" width="24" height="12.3" fill={SHIELD_GOLD} />
-      </g>
-      <path d={SHIELD_PATH} fill="none" stroke={SHIELD_EDGE} strokeWidth="1.4" />
-    </g>
+      href={ESCUDO_HREF}
+      x={-side / 2}
+      y={-side / 2}
+      width={side}
+      height={side}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ pointerEvents: "none" }}
+    />
   );
 }
 

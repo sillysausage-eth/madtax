@@ -98,7 +98,7 @@ export default function MapCoins({
             <circle className="coin-face" cx={cx} cy={cy} r={R} />
             {c.glyph === "gov" ? (
               <g transform={`translate(${cx} ${cy})`}>
-                <SpainShield r={R - 6} uid={`rail-${c.id}`} />
+                <SpainShield r={R - 1} />
               </g>
             ) : (
               <g
