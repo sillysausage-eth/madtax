@@ -33,9 +33,22 @@ export interface MapCoin {
 
 /** Coin geometry, in map units. `WIDTH` is the rail the map is shifted right by. */
 export const COIN_RAIL_WIDTH = 150;
-const R = 27;
-const PITCH = 118;
-const TOP = 132;
+const R = 44;
+/** Coin bottom to the first title baseline, then the line box of each text row. */
+const LABEL_GAP = 20;
+const LINE = 19;
+const AMOUNT = 24;
+/** Gap between one coin's last text row and the next coin's disc. */
+const GAP = 34;
+/**
+ * The map's own height in map units. The rail spans it in full: the Canaries
+ * inset sits at x≥174, clear of the 150-unit rail, so nothing else competes for
+ * this column and the coins can use all of it.
+ */
+const RAIL_H = 700;
+
+/** Disc plus the text rows beneath it, for a title of `lines` lines. */
+const blockH = (lines: number) => 2 * R + LABEL_GAP + lines * LINE + AMOUNT;
 
 const GLYPH: Record<CoinGlyph, React.ReactNode> = {
   social: (
@@ -73,10 +86,24 @@ export default function MapCoins({
   width?: number;
 }) {
   const cx = width / 2;
+  /* Lay the coins out as one group centred down the rail. With a single coin —
+     the usual case since the components moved into the legend — that puts it in
+     the middle of the empty column beside the mainland rather than tucked up
+     against the top edge. Each block is measured from its own title, so a
+     two-line name does not push the next coin into it. */
+  const heights = items.map((c) => blockH(c.title.split("\n").length));
+  const groupH =
+    heights.reduce((a, h) => a + h, 0) + GAP * Math.max(0, items.length - 1);
+  let cursor = Math.max(0, (RAIL_H - groupH) / 2);
+  const centres = heights.map((h) => {
+    const cy = cursor + R;
+    cursor += h + GAP;
+    return cy;
+  });
   return (
     <g id="coins">
       {items.map((c, i) => {
-        const cy = TOP + i * PITCH;
+        const cy = centres[i];
         const on = selected === c.id;
         return (
           <g
@@ -116,14 +143,21 @@ export default function MapCoins({
                 caller; the amount then drops by one line rather than colliding
                 with it. */}
             {c.title.split("\n").map((line, j) => (
-              <text className="coin-t" key={j} x={cx} y={cy + R + 18 + j * 19}>
+              <text
+                className="coin-t"
+                key={j}
+                x={cx}
+                y={cy + R + LABEL_GAP + j * LINE}
+              >
                 {line}
               </text>
             ))}
+            {/* One line below the last title line — the same constants `blockH`
+                measures with, so the centring cannot drift from what is drawn. */}
             <text
               className="coin-v"
               x={cx}
-              y={cy + R + 38 + (c.title.split("\n").length - 1) * 19}
+              y={cy + R + LABEL_GAP + c.title.split("\n").length * LINE}
             >
               {c.value}
             </text>
