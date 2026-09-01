@@ -8,7 +8,8 @@ Pilot country: **Spain**. The architecture is country-agnostic; the content is n
 
 ## Status
 
-Planning complete. Migration to Next.js under way — see [Web app](#web-app).
+Planning complete. Migration to Next.js under way — see [Web app](#web-app). All three
+consoles — revenue, spending and debt — are ported and verified against the prototype.
 
 | Document | What it covers |
 |---|---|
@@ -91,6 +92,12 @@ the prototype milestone by milestone; **`prototype/console.html` remains the ref
 implementation** and the thing every port is diffed against. Nothing in `prototype/`,
 `pipeline/` or `data/` is edited to make the app easier to write.
 
+All three consoles are ported: **revenue** (map, off-map coins, dossier, composition ring
+with the ESA drill and the who-pays tables), **spending** (COFOG composition and its 69
+sub-functions, regional spending map, the four remainder coins, per-region dossier) and
+**debt** (stock, five stats, the 31-year debt/GDP trend, four rings, the 28-year maturity
+ladder). Debt is behind a flag and off in production builds — see [Feature flags](#feature-flags).
+
 ### Dev loop
 
 ```bash
@@ -143,9 +150,25 @@ disagree about it. They live in `src/lib/flags.ts`.
 |---|---|---|
 | `NEXT_PUBLIC_FLAG_DEBT` | on in `dev`, **off in production builds** | `1` shows the Deuda / Debt mode; `0` hides it. While off, the tab is not rendered and `/[locale]/debt` returns 404 — no tab that leads nowhere, and no route reachable by guessing the URL. |
 
-The debt screen's figures are real and its port is scheduled for M3; the flag keeps it out
-of a production build until then. Turning it on is one env var and a rebuild:
+The debt console is complete and its figures are verified against the prototype
+field for field; the flag keeps the screen out of a production build until the user says it
+ships. **Remember it is off by default:** a plain `npm run build` prerenders no debt route
+and renders no Deuda tab, so verify that screen against `npm run dev`. Turning it on is one
+env var and a rebuild:
 
 ```bash
 NEXT_PUBLIC_FLAG_DEBT=1 npm run build
 ```
+
+### Modes
+
+| Route | What it shows | State in the URL |
+|---|---|---|
+| `/[locale]/revenue` | Public revenue by component, its territorial split, and who generates each one | `?y=` year · `?r=` region or coin · `?f=` component |
+| `/[locale]/spending` | General-government spending by COFOG function and its regional tier | `?y=` year · `?r=` region or coin · `?f=` function |
+| `/[locale]/debt` | What is owed on one reference date, to whom, when it falls due and at what rate | none — debt is a stock, so the screen carries no fiscal year and no picker |
+
+Console state travels through `history.replaceState`, not the router: the App Router has no
+shallow navigation, so `router.replace` would remount the island and leave the console an
+interaction behind the reader. Spanish writes a plain year everywhere; "FY" is an English
+accounting habit and says nothing to a Spanish reader.

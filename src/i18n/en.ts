@@ -64,7 +64,13 @@ export const en = {
     scopeState:'State debt',
     scopeGG:'All levels of government',
     gapTag:'Not published',
-    faceTag:'Face value versus market value'
+    faceTag:'Face value versus market value',
+    // The prototype writes these three gap texts inline instead of putting them in
+    // its table. They are strings on screen like any other, so here they are keys.
+    gapHold:'The holder split is not in this bundle yet. It is not estimated: once the official '+
+      'source is wired in it will appear here with its own reference date and perimeter.',
+    gapMat:'The redemption calendar is not in this bundle yet. It is not interpolated.',
+    gapIntSplit:'Eurostat has not yet published this year’s split by level of government.'
   },
   taxLbl:'TAX HEAD',fnLbl:'SPENDING FUNCTION',
   mapRev:'TACTICAL MAP · COLLECTION',mapExp:'TACTICAL MAP · REGIONAL SPENDING',
@@ -147,6 +153,11 @@ export const en = {
   coinSoc:'Social Security',
   coinEu:'EU Funding',
   coinRest:'Other revenues',
+  // The same, for spending's four coins.
+  coinOsSoc:'Social Security',
+  coinOsCentral:'Central government',
+  coinOsLocal:'Councils',
+  coinOsAdj:'Between tiers',
   pt:{
     social:['Social contributions','Employer and employee payments into Social Security'],
     irpf:['Personal income tax','Tax on wages, pensions, self-employment and savings income'],

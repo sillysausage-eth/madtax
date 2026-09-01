@@ -106,8 +106,6 @@ export interface RegionRevenue {
   rev2: unknown;
   /** Unified revenue by `PARTS` key, by year, plus the region's `total`. */
   parts: Record<YearKey, Record<PartKey, number | null>>;
-  /** Economic-transaction split by year, ordered as `econKeys`. */
-  econ: Record<YearKey, number[]>;
 }
 
 /**
@@ -163,35 +161,62 @@ export interface RevenueSection {
   coverage: Coverage;
   euNote: string;
   national2: Record<YearKey, National2Year>;
-  econKeys: string[];
-  econES: Record<string, string>;
-  econEN: Record<string, string>;
   regions: Record<string, RegionRevenue>;
 }
 
 /* ---------------------------------------------------------------- spending -- */
 
-/** Per-region spending payload. Tightened in M3. */
+/**
+ * Per-region spending payload.
+ *
+ * A year is `null` where the region has no regional government at all — Ceuta and
+ * Melilla, whose spending is recorded in the local subsector. Absent, not zero:
+ * the map flags them and the dossier says why.
+ */
 export interface RegionSpending {
   /** COFOG divisions by year; index 0 is the total, 1..10 follow `divisions`. */
-  spend: Record<YearKey, number[]>;
+  spend: Record<YearKey, number[] | null>;
+  /** Economic-transaction split by year, ordered as `econKeys`. */
+  econ: Record<YearKey, number[] | null>;
+  gdp: number;
+  pop: number;
+}
+
+/**
+ * How much of a COFOG division the map can show, and where the rest is spent.
+ * `mapped + central + local + socsec + adj = nat`; the negative `adj` is the
+ * inter-tier transfer that national accounts eliminate. Nothing is rescaled.
+ */
+export interface SpendAggEntry {
+  nat: Millions;
+  mapped: Millions;
+  central: Millions;
+  local: Millions;
+  socsec: Millions;
+  adj: Millions;
 }
 
 export interface SpendingSection {
   spendYears: YearKey[];
   /** Index 0 is the total, 1..10 follow `divisions`. */
   spendNational: Record<YearKey, number[]>;
-  spendBySector: Record<string, unknown>;
+  /** COFOG by government tier. Carried by the bundle; the console does not read it. */
+  spendBySector: Record<string, number[]>;
   /** COFOG division codes, "01".."10". */
   divisions: string[];
   divES: Record<string, string>;
   divEN: Record<string, string>;
-  spendSub: Record<YearKey, unknown>;
+  /** Flat map of COFOG codes to amounts: `GF07` and its `GF07xx` children alike. */
+  spendSub: Record<YearKey, Record<string, number>>;
   spendSubES: Record<string, string>;
   spendSubEN: Record<string, string>;
   spendNoteES: Record<string, string>;
   spendNoteEN: Record<string, string>;
-  spendAgg: Record<YearKey, unknown>;
+  /** Keyed `TOTAL` and `GF01`..`GF10`. */
+  spendAgg: Record<YearKey, Record<string, SpendAggEntry>>;
+  econKeys: string[];
+  econES: Record<string, string>;
+  econEN: Record<string, string>;
   regions: Record<string, RegionSpending>;
 }
 
@@ -214,30 +239,42 @@ export interface DebtTier {
   elim: Millions;
 }
 
+/**
+ * Interest paid in a year. Eurostat can publish the consolidated total before the
+ * split by tier lands, so everything but the total is optional — the console
+ * drops the ring and names the gap rather than drawing an empty one.
+ */
 export interface DebtInterestYear {
   total: Millions;
-  S1311: Millions;
-  S1312: Millions;
-  S1313: Millions;
-  S1314: Millions;
-  gross: Millions;
-  elim: Millions;
+  S1311?: Millions;
+  S1312?: Millions;
+  S1313?: Millions;
+  S1314?: Millions;
+  gross?: Millions;
+  elim?: Millions;
 }
 
-/** Every narrower-perimeter block stamps its own scope and reference date. */
+/**
+ * Every narrower-perimeter block stamps its own scope and reference date.
+ *
+ * `rows` is the redemption calendar, one `[year, amount]` per year that has one.
+ * The first year is partial — it carries only what is left to fall due after
+ * `asOf` — which is why `totalLaddered` is published rather than summed here.
+ */
 export interface DebtMaturity {
   asOf: string;
-  avgLife: number;
+  avgLife: number | null;
   avgLifeAsOf: string;
   rows: CodedRow[];
+  totalLaddered?: Millions;
+  nSecurities?: number;
   scope?: string;
-  [k: string]: unknown;
 }
 
 export interface DebtCost {
   asOf: string;
-  avgCost: number;
-  avgCostNew: number;
+  avgCost: number | null;
+  avgCostNew: number | null;
   scope: string;
 }
 
@@ -268,11 +305,14 @@ export interface DebtSection {
     /** A true partition, asserted to the euro for every year. */
     instr: Record<YearKey, CodedRow[]>;
     tier: Record<YearKey, DebtTier>;
-    interest: Record<YearKey, DebtInterestYear>;
+    interest: Record<YearKey, DebtInterestYear | undefined>;
     srcEDP: { dataset: string; unit: string; basis: string };
-    maturity: DebtMaturity;
-    cost: DebtCost;
-    holders: DebtHolders;
+    /* The three narrower-perimeter blocks are all present today. They stay
+       optional so the console's named-gap paths remain reachable: when a source
+       is withdrawn the screen says so, it does not fall back to a guess. */
+    maturity?: DebtMaturity;
+    cost?: DebtCost;
+    holders?: DebtHolders;
   };
 }
 

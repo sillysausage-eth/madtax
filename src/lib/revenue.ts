@@ -1,5 +1,5 @@
-import type { Dict, Locale } from "@/i18n";
-import { eur, nf, nf0 } from "@/lib/format";
+import type { Dict } from "@/i18n";
+import type { Metric } from "@/lib/metric";
 import type {
   MapAggEntry,
   Millions,
@@ -132,8 +132,9 @@ export function sliceLabel(t: Dict, i: number): string {
     : t.pt[REV_SLICES[i].k as keyof Dict["pt"]][0];
 }
 
-/** Which metric the map and dossier read. The prototype's `metric`. */
-export type Metric = "total" | "pc" | "gdp";
+/* The metric and its formatter are mode-agnostic and live in `lib/metric`; they
+   are re-exported here so the revenue components keep one import. */
+export { fmtMetric, type Metric } from "@/lib/metric";
 
 /** The prototype's `metricVal`. Per-capita converts € millions to € per resident. */
 export function metricVal(
@@ -148,20 +149,6 @@ export function metricVal(
   if (metric === "pc") return r.pop ? (v * 1e6) / r.pop : null;
   return r.gdp ? (v / r.gdp) * 100 : null;
 }
-
-/** The prototype's `fmtMetric`. */
-export const fmtMetric = (
-  locale: Locale,
-  metric: Metric,
-  v: number | null,
-): string =>
-  v == null
-    ? "—"
-    : metric === "total"
-      ? eur(locale, v)
-      : metric === "pc"
-        ? "€" + nf0(locale, v)
-        : nf(locale, v, 1) + "%";
 
 /** Revenue absolute totals get the harder gamma; the other two metrics do not. */
 export const metricGamma = (metric: Metric): number =>

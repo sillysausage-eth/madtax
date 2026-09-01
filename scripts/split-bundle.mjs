@@ -48,11 +48,13 @@ const SECTION_KEYS = {
   revenue: [
     "revYears", "revTaxes", "revNational", "gg", "natRev", "PARTS", "natParts",
     "natSub", "subLab", "subSrc", "mapAgg", "coverage", "euNote", "national2",
-    "econKeys", "econES", "econEN",
   ],
+  /* The economic-transaction split (`econ*`) travels with spending: the only screen
+   * that renders it is the spending dossier's "what it is spent on" block. */
   spending: [
     "spendYears", "spendNational", "spendBySector", "divisions", "divES", "divEN",
     "spendSub", "spendSubES", "spendSubEN", "spendNoteES", "spendNoteEN", "spendAgg",
+    "econKeys", "econES", "econEN",
   ],
   who: ["who", "irpfScale", "madridScale"],
   debt: ["debt"],
@@ -71,8 +73,8 @@ if (missing.length) {
 /* Region records carry three sections' worth of data on one object. The geometry
  * stays in map.json; the numbers travel with the mode that renders them. */
 const GEOM_FIELDS = ["id", "nuts", "es", "en", "d", "cx", "cy", "bbox", "inset", "foral"];
-const REV_FIELDS = ["rev", "rev2", "parts", "gdp", "pop", "econ"];
-const SPEND_FIELDS = ["spend"];
+const REV_FIELDS = ["rev", "rev2", "parts", "gdp", "pop"];
+const SPEND_FIELDS = ["spend", "econ", "gdp", "pop"];
 
 if (!Array.isArray(B.regions) || B.regions.length === 0) {
   fail("bundle.regions is not a non-empty array");

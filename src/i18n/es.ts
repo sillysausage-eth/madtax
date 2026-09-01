@@ -62,7 +62,13 @@ export const es = {
     scopeState:'Deuda del Estado',
     scopeGG:'Todas las administraciones',
     gapTag:'Dato no publicado',
-    faceTag:'Valor nominal frente a valor de mercado'
+    faceTag:'Valor nominal frente a valor de mercado',
+    // The prototype writes these three gap texts inline instead of putting them in
+    // its table. They are strings on screen like any other, so here they are keys.
+    gapHold:'El reparto por tenedores no está en este bundle todavía. No se estima: '+
+      'cuando se incorpore la fuente oficial, aparecerá aquí con su fecha y su perímetro.',
+    gapMat:'El calendario de vencimientos no está en este bundle todavía. No se interpola.',
+    gapIntSplit:'Eurostat aún no ha publicado el desglose por administración de este ejercicio.'
   },
   taxLbl:'FIGURA TRIBUTARIA',fnLbl:'FUNCIÓN DEL GASTO',
   mapRev:'MAPA TÁCTICO · RECAUDACIÓN',mapExp:'MAPA TÁCTICO · GASTO AUTONÓMICO',
@@ -145,6 +151,11 @@ export const es = {
   coinSoc:'Seguridad Social',
   coinEu:'Fondos UE',
   coinRest:'Otros ingresos',
+  // The same, for spending's four coins.
+  coinOsSoc:'Seguridad Social',
+  coinOsCentral:'Estado central',
+  coinOsLocal:'Ayuntamientos',
+  coinOsAdj:'Entre niveles',
   pt:{
     social:['Cotizaciones sociales','Cuotas de empresas y trabajadores a la Seguridad Social'],
     irpf:['IRPF · Renta de las personas','Impuesto sobre la renta de nóminas, pensiones, autónomos y ahorro'],
