@@ -213,7 +213,7 @@ function GroupView({ d, per, ...s }: Shared & { d: DecileYear; per: number }) {
               <StaleTag text={s.stale} />
             </th>
             <th>{s.t.wPeople}</th>
-            <th>{s.t.wIncome}</th>
+            <th className="colopt">{s.t.wIncome}</th>
             <SortTh col="tax" label={s.t.wTax} sort={s.sort} onSort={s.onSort} />
             <SortTh col="share" label={s.t.wShare} sort={s.sort} onSort={s.onSort} />
           </tr>
@@ -225,7 +225,7 @@ function GroupView({ d, per, ...s }: Shared & { d: DecileYear; per: number }) {
               <tr key={i}>
                 <td>{label(g)}</td>
                 <td>{nf0(s.locale, g.n)}</td>
-                <td>{eur(s.locale, g.income / 1e6)}</td>
+                <td className="colopt">{eur(s.locale, g.income / 1e6)}</td>
                 <td>
                   <b>{eur(s.locale, g.tax / 1e6)}</b>
                 </td>
@@ -239,7 +239,7 @@ function GroupView({ d, per, ...s }: Shared & { d: DecileYear; per: number }) {
           <tr className="tot">
             <td>{s.t.wTotalRow}</td>
             <td>{nf0(s.locale, T.n)}</td>
-            <td>{eur(s.locale, T.income / 1e6)}</td>
+            <td className="colopt">{eur(s.locale, T.income / 1e6)}</td>
             <td>
               <b>{eur(s.locale, T.tax / 1e6)}</b>
             </td>
@@ -328,7 +328,7 @@ function TopView({ d, ...s }: Shared & { d: DecileYear }) {
             </th>
             <th className="grp">{s.t.wGroupCol}</th>
             <th>{s.t.wPeople}</th>
-            <th>{s.t.wIncome}</th>
+            <th className="colopt">{s.t.wIncome}</th>
             <SortTh col="tax" label={s.t.wTax} sort={s.sort} onSort={s.onSort} />
             <SortTh col="share" label={s.t.wShare} sort={s.sort} onSort={s.onSort} />
           </tr>
@@ -341,7 +341,7 @@ function TopView({ d, ...s }: Shared & { d: DecileYear }) {
                 <td>{label(r)}</td>
                 <td className="grp">{r.pos}</td>
                 <td>{nf0(s.locale, r.x.n)}</td>
-                <td>{eur(s.locale, r.x.income / 1e6)}</td>
+                <td className="colopt">{eur(s.locale, r.x.income / 1e6)}</td>
                 <td>
                   <b>{eur(s.locale, r.x.tax / 1e6)}</b>
                 </td>
@@ -356,7 +356,7 @@ function TopView({ d, ...s }: Shared & { d: DecileYear }) {
             <td>{s.t.wTotalRow}</td>
             <td />
             <td>{nf0(s.locale, dec.n)}</td>
-            <td>{eur(s.locale, dec.income / 1e6)}</td>
+            <td className="colopt">{eur(s.locale, dec.income / 1e6)}</td>
             <td>
               <b>{eur(s.locale, dec.tax / 1e6)}</b>
             </td>
@@ -386,13 +386,13 @@ function WhoCompany({ c, ...s }: Shared & { c?: CorpYear }) {
     return (
       <tr key={key}>
         <td>{lab}</td>
-        <td>{eur(s.locale, Math.round(d.profit))}</td>
+        <td className="colopt">{eur(s.locale, Math.round(d.profit))}</td>
         <td>{eur(s.locale, Math.round(d.base))}</td>
         <td>
           <b>{eur(s.locale, Math.round(d.tax))}</b>
         </td>
         <td>{d.rateBase != null ? nf(s.locale, d.rateBase, 1) + "%" : "—"}</td>
-        <td>{d.rateProfit != null ? nf(s.locale, d.rateProfit, 1) + "%" : "—"}</td>
+        <td className="colopt">{d.rateProfit != null ? nf(s.locale, d.rateProfit, 1) + "%" : "—"}</td>
       </tr>
     );
   };
@@ -404,11 +404,11 @@ function WhoCompany({ c, ...s }: Shared & { c?: CorpYear }) {
             {s.t.wCoType}
             <StaleTag text={s.stale} />
           </th>
-          <th>{s.t.wProfit}</th>
+          <th className="colopt">{s.t.wProfit}</th>
           <th>{s.t.wBase}</th>
           <th>{s.t.wTax}</th>
           <th>{s.t.wRateBase}</th>
-          <th>{s.t.wRateProfit}</th>
+          <th className="colopt">{s.t.wRateProfit}</th>
         </tr>
       </thead>
       <tbody>

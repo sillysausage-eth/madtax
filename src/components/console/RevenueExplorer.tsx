@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import type { Locale } from "@/i18n";
-import { PARTS, revYears } from "@/data/revenue";
+import { PARTS, natParts, revYears } from "@/data/revenue";
 import { OPENING_YEAR } from "@/lib/revenue";
 import { regions } from "@/data/map";
 import RevenueConsole from "./RevenueConsole";
@@ -15,13 +15,21 @@ import type { Tab } from "./WhoBlock";
 /**
  * The revenue mode island: it owns the console's state and nothing else.
  *
- * Year, selection and focus live in the query string (`?y=&r=&f=`) so a reload
+ * Year, selection and filter live in the query string (`?y=&r=&f=`) so a reload
  * and the browser's back button land where the reader was. Anything the URL
  * cannot vouch for is dropped rather than trusted — an unknown year, a region id
  * that is not on the map, a component that is not in `PARTS`.
+ *
+ * `?f=` is the same parameter M2 used for the open explainer; since M5 it is the
+ * map filter, because the control that writes it is the same control.
  */
 
-
+/** Whether a component carries a figure in this year, and so can be filtered on. */
+function partInYear(year: string, k: string): boolean {
+  const n = natParts[year];
+  const v = n ? (n as Record<string, unknown>)[k] : undefined;
+  return typeof v === "number" && Math.abs(v) > 0;
+}
 
 export default function RevenueExplorer({ locale }: { locale: Locale }) {
   const [url, setUrl] = useUrlState<{
@@ -32,7 +40,7 @@ export default function RevenueExplorer({ locale }: { locale: Locale }) {
 
   /* The who-pays tab and sort are view state, not an address: they are the
      prototype's module-level `whoTab` / `whoSort`, kept here so a sort survives
-     a change of focused component. */
+     a change of filtered component. */
   const [tab, setTab] = useState<Tab>("dec");
   const [sort, setSort] = useState<WhoSort>(null);
 
@@ -41,10 +49,22 @@ export default function RevenueExplorer({ locale }: { locale: Locale }) {
     url.r && (OFF_MAP_IDS.includes(url.r) || regions.some((g) => g.id === url.r))
       ? url.r
       : null;
-  const focus = url.f && PARTS.includes(url.f) ? url.f : null;
+  /* A component with no figure this year has no coin to press and no map to
+     draw — Eurostat folds 2025's income and consumption taxes into two pending
+     aggregates — so the filter is not honoured for a year that does not carry
+     it. It is cleared rather than silently ignored, so the address and the
+     screen never disagree. */
+  const focus =
+    url.f && PARTS.includes(url.f) && partInYear(year, url.f) ? url.f : null;
 
-  const onYear = useCallback((y: string) => setUrl({ y }), [setUrl]);
-  /* Clicking the same thing again clears it — the prototype's `select()`. */
+  /* Scrubbing to a year that does not publish the filtered component drops the
+     filter with the year change, in one history entry rather than two. */
+  const onYear = useCallback(
+    (y: string) =>
+      setUrl(url.f && !partInYear(y, url.f) ? { y, f: null } : { y }),
+    [setUrl, url.f],
+  );
+  /* Pressing the same thing again clears it — the prototype's `select()`. */
   const onSelect = useCallback(
     (id: string) => setUrl({ r: sel === id ? null : id }),
     [setUrl, sel],
@@ -55,11 +75,12 @@ export default function RevenueExplorer({ locale }: { locale: Locale }) {
   );
   const onSort = useCallback((col: string) => setSort((s) => nextSort(s, col)), []);
 
-  /* Escape unwinds one level: it closes an open explainer first, and only clears
-     the map selection once nothing is open. */
+  /* Escape unwinds one level: it clears the map selection first, and only lifts
+     the filter once nothing is selected. The filter is the broader reading, so
+     it is the last thing to go. */
   const onEscape = useCallback(() => {
-    if (focus) setUrl({ f: null });
-    else if (sel) setUrl({ r: null });
+    if (sel) setUrl({ r: null });
+    else if (focus) setUrl({ f: null });
   }, [focus, sel, setUrl]);
 
   useKeyboardNav({ years: revYears, year, onYear, onEscape });

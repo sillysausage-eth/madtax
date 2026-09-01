@@ -103,15 +103,18 @@ export function BarBlock({
   children,
   gap = 8,
 }: {
-  caption: string;
+  /** Omit where the block reads as a decomposition of the figure above it. */
+  caption?: string;
   children: React.ReactNode;
   gap?: number;
 }) {
   return (
     <div className="bars">
-      <span className="sub" style={{ display: "block", marginBottom: gap }}>
-        {caption}
-      </span>
+      {caption ? (
+        <span className="sub" style={{ display: "block", marginBottom: gap }}>
+          {caption}
+        </span>
+      ) : null}
       {children}
     </div>
   );

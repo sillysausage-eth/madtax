@@ -34,6 +34,8 @@ export default function Donut({
   focus = null,
   onFocus,
   totalRow,
+  showLegend = true,
+  children,
 }: {
   rows: DonutSlice[];
   total: number;
@@ -54,6 +56,14 @@ export default function Donut({
   focus?: string | null;
   onFocus?: (k: string) => void;
   totalRow?: { label: string; value: string };
+  /**
+   * Revenue replaces the text legend with its grid of pressable component
+   * coins, which is the console's filter control. The ring, the centre figure
+   * and the focus dimming are the same either way.
+   */
+  showLegend?: boolean;
+  /** What stands beside the ring instead of the text legend. */
+  children?: React.ReactNode;
 }) {
   const shares = rows.map((r) =>
     Math.max(floor, ((absShares ? Math.abs(r.v) : r.v) / total) * 100),
@@ -106,6 +116,9 @@ export default function Donut({
         </div>
       </div>
 
+      {!showLegend ? (
+        children
+      ) : (
       <div className="clegend">
         {rows.map((r) =>
           interactive ? (
@@ -141,6 +154,7 @@ export default function Donut({
           </div>
         ) : null}
       </div>
+      )}
     </div>
   );
 }

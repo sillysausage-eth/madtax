@@ -6,28 +6,31 @@ import {
   PART_COLOR,
   REV_SLICES,
   fmtMetric,
-  mapAggOf,
   metricVal,
   natVal,
   revVal,
   sliceLabel,
   type Metric,
 } from "@/lib/revenue";
-import { PARTS, natParts, regionRevenue } from "@/data/revenue";
+import { PARTS, regionRevenue } from "@/data/revenue";
 import type { RegionGeometry, YearKey } from "@/lib/types";
 import { Advisory, BarBlock, DossierBlank, KvGrid, PartBars, type BarRow } from "./Dossier";
 
 /**
- * The per-region dossier and its off-map counterpart, ported from the
- * prototype's `paintDossier()` and `paintOffmapDossier()`.
+ * The per-region dossier, ported from the prototype's `paintDossier()`.
  *
  * A component with no territorial figure for a region is left out of the bars —
  * absent, not zero. The share, rank and per-capita readings are the prototype's
  * own arithmetic over published figures; nothing is filled in.
+ *
+ * Its off-map counterpart is no longer here: since M5 there is one off-map coin,
+ * the Spanish state, and what sits behind it is stated by `RevenuePanel` where
+ * the disclosure can be written per component.
  */
 
-/** The off-map selections, in the order their coins are stacked. */
-export const OFF_MAP_IDS = ["social", "eu", "rest"];
+/** The single off-map selection: the Spanish state coin beside the map. */
+export const SHIELD_ID = "gov";
+export const OFF_MAP_IDS = [SHIELD_ID];
 
 export default function RevenueDossier({
   selected,
@@ -46,11 +49,8 @@ export default function RevenueDossier({
   slice: number;
   metric: Metric;
 }) {
-  if (!selected) return <DossierBlank hint={t.hint} />;
-  if (OFF_MAP_IDS.includes(selected))
-    return (
-      <OffMapDossier id={selected} locale={locale} t={t} year={year} slice={slice} />
-    );
+  if (!selected || OFF_MAP_IDS.includes(selected))
+    return <DossierBlank hint={t.hint} />;
 
   const geo = regions.find((x) => x.id === selected);
   const r = geo && regionRevenue[geo.id];
@@ -111,82 +111,7 @@ export default function RevenueDossier({
   );
 }
 
-/**
- * The card behind an off-map figure: what it is, how big it is against the
- * national total, and why the map cannot show it. The "rest" card breaks itself
- * down into the components that make it up, so the residual is never a
- * mystery bucket.
- */
-function OffMapDossier({
-  id,
-  locale,
-  t,
-  year,
-  slice,
-}: {
-  id: string;
-  locale: Locale;
-  t: Dict;
-  year: YearKey;
-  slice: number;
-}) {
-  const n = natParts[year];
-  const k = REV_SLICES[slice].k;
-  const m = mapAggOf(year, k);
-  const socOff = k === "total" ? (n.social as number) : k === "social" ? (n.social as number) : 0;
-  const euOff = k === "total" ? (n.eu as number) : k === "eu" ? (n.eu as number) : 0;
-  const rest = m.offmap - socOff - euOff;
-
-  /* The heading matches the coin the reader pressed; the long-form sentence
-     that used to be the card's title is the advisory at the foot. */
-  const spec: Record<string, { v: number; t: string; d: string }> = {
-    social: { v: socOff, t: t.coinSoc, d: t.omSocD },
-    eu: { v: euOff, t: t.coinEu, d: t.omEuD },
-    rest: { v: rest, t: t.coinRest, d: t.omRestD },
-  };
-  const s = spec[id];
-  if (!s) return null;
-
-  const restRows: BarRow[] =
-    id === "rest"
-      ? PARTS.filter((p) => p !== "social" && p !== "eu")
-          .map((p) => ({ key: p, v: mapAggOf(year, p).offmap }))
-          .filter((x) => Math.abs(x.v) > 20)
-          .sort((a, b) => b.v - a.v)
-          .map(({ key, v }) => ({
-            key,
-            label: t.pt[key as keyof Dict["pt"]][0],
-            value: v,
-            colour: PART_COLOR[key] || "var(--mute)",
-          }))
-      : [];
-
-  return (
-    <>
-      <h2 className="name">{s.t}</h2>
-      <div className="sub">
-        {fy(locale, year)} · {t.omNoTerr}
-      </div>
-      <div className="big" style={{ color: "var(--am)" }}>
-        <span className="bigv">{eur(locale, s.v)}</span>
-        {n.total ? (
-          <span className="bigpct">
-            {nf(locale, (s.v / n.total) * 100, 2)}% · {t.shr}
-          </span>
-        ) : null}
-      </div>
-      <div className="bigsub">{t.omOfTotal}</div>
-      {restRows.length ? (
-        <BarBlock caption={t.restWhat}>
-          <PartBars rows={restRows} total={s.v} locale={locale} />
-        </BarBlock>
-      ) : null}
-      <Advisory tag={t.omWhy} text={s.d} mag style={{ marginTop: 12 }} />
-    </>
-  );
-}
-
-/** The code shown in the dossier pane header: the NUTS id, or `OFF-MAP`. */
+/** The code shown in the panel header: the NUTS id, or the off-map coin. */
 export function dossierCode(
   selected: string | null,
   regions: RegionGeometry[],

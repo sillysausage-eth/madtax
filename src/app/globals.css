@@ -376,6 +376,51 @@ button:focus-visible,
   }
 }
 
+/* Revenue's panel holds everything the explainer used to hold below the fold,
+   so it takes every pixel the map can spare — but never one the map needs. The
+   map's own floor is `svg.map { min-width }`: below it the SVG stops shrinking
+   and the pane scrolls sideways instead, which is the wrong trade on a desktop.
+   So the panel only widens at the widths where the map still clears that floor
+   after the panel and the 12px gap are taken out. Under 1340px the columns are
+   M2's exactly, and the ≤860px stack is untouched.
+
+   These rules sit after the shared ones above so they win, and they are scoped
+   to `.revmain`: spending's grid is unchanged. */
+@media (min-width: 1340px) {
+  .revmain {
+    grid-template-columns: minmax(0, 1fr) 400px;
+  }
+}
+@media (min-width: 1500px) {
+  .revmain {
+    grid-template-columns: minmax(0, 1fr) 470px;
+  }
+}
+@media (min-width: 1700px) {
+  .revmain {
+    grid-template-columns: minmax(0, 1fr) 560px;
+  }
+}
+
+/* The panel scrolls inside itself rather than running the page down past the
+   map: with a component filtered it can hold a sub-breakdown and a six-column
+   who-pays table, and the map it describes has to stay on screen. */
+@media (min-width: 861px) {
+  .revpanel {
+    position: sticky;
+    top: 6px;
+  }
+  .revpanel .pane-b {
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+/* Stacked, the panel is full width and the page is the scroll. */
+.revpanel .pane-b {
+  container-type: inline-size;
+}
+
 /* ---------- map ---------- */
 .mapwrap {
   position: relative;
@@ -874,6 +919,137 @@ footer.foot {
   text-align: right;
 }
 
+/* ---------- the component coins: legend and filter in one control ----------
+   Beside the ring, one pressable coin per revenue component. Each carries its
+   component's palette colour on the ring and its own glyph, so colour and shape
+   both identify it — a reader who cannot separate two hues still has the shape.
+   Every coin prints its amount and its share: the icon is the handle, never a
+   replacement for the figure. */
+.pcoins-wrap {
+  flex: 1 1 340px;
+  min-width: 0;
+}
+.pcoins {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 1px 12px;
+}
+.pcoin {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 4px 5px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition:
+    background 0.14s ease,
+    opacity 0.14s ease;
+}
+.pcoin:hover {
+  background: var(--raise);
+}
+.pcoin.on {
+  background: var(--raise);
+  border-color: var(--rule2);
+}
+/* Pressing one coin does not hide the others — the composition is still the
+   point — but it steps them back so the pressed one reads first. */
+.pcoin.dim {
+  opacity: 0.5;
+}
+.pcoin.dim:hover {
+  opacity: 1;
+}
+.pcoin-f {
+  display: block;
+  width: 40px;
+  height: 40px;
+}
+.pcoin-face {
+  fill: #0c1720;
+  stroke-width: 1.8;
+  transition: stroke-width 0.14s ease;
+}
+.pcoin.on .pcoin-face {
+  fill: #14232e;
+  stroke-width: 3;
+}
+.pcoin-gl {
+  pointer-events: none;
+}
+.pcoin-b {
+  display: block;
+  min-width: 0;
+}
+.pcoin-n {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.25;
+  color: var(--ink2);
+  overflow-wrap: anywhere;
+}
+.pcoin.on .pcoin-n {
+  color: var(--ink);
+  font-weight: 600;
+}
+.pcoin-r {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.pcoin-v {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.pcoin-p {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+.pcoins-tot {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 8px 5px 2px;
+  margin-top: 8px;
+  border-top: 1px solid var(--rule2);
+}
+.pcoins-tot .nm {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.pcoins-tot .vv {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cy);
+}
+.pcoins-tot .pp {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--mute);
+  min-width: 46px;
+  text-align: right;
+}
+.pcoins-hint {
+  margin: 7px 5px 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--dim);
+}
+
 /* ---------- off-map coins: revenue with no territory ----------
    They live inside the map SVG, in a rail to the left of the country, because
    they are part of the same number: the regions on the map plus these coins are
@@ -944,6 +1120,29 @@ footer.foot {
 .coin:focus-visible .coin-face {
   stroke: var(--cy-hi);
   stroke-width: 3;
+}
+
+/* Revenue's single coin is the Spanish state, not an attention item, so it
+   takes the flag's own gold rather than the console amber. The flag red is
+   confined to the shield glyph: --rd stays reserved for a negative figure. */
+.coin.gov .coin-face {
+  fill: #150c0d;
+  stroke: #6d4b13;
+}
+.coin.gov:hover .coin-face {
+  fill: #1e1210;
+  stroke: #f1bf00;
+}
+.coin.gov.on .coin-face {
+  fill: #241407;
+  stroke: #f1bf00;
+  stroke-width: 2.6;
+}
+.coin.gov .coin-v {
+  fill: #f6d24a;
+}
+.es-shield {
+  pointer-events: none;
 }
 
 /* ---------- explainer ---------- */
@@ -1216,6 +1415,76 @@ footer.foot {
 .wgap b {
   color: var(--ink2);
   font-weight: 600;
+}
+
+/* ---------- the revenue panel ----------
+   The component's colour runs down the side of its name, the way the explainer
+   swatch used to, so the panel and the coin that opened it read as one thing. */
+.pnl-h {
+  display: grid;
+  grid-template-columns: 5px minmax(0, 1fr);
+  gap: 0 10px;
+  align-items: stretch;
+}
+.pnl-sw {
+  border-radius: 2px;
+}
+
+/* Outside the explainer's grid these blocks are plain children; the column
+   placement they carry there is meaningless here and is dropped so the rules
+   cannot drift apart. */
+.subs.flat,
+.revpanel .who {
+  grid-column: auto;
+}
+
+/* Tables in the panel are the same tables, in a narrower column. They get there
+   on padding and column strategy — never by going under the accessibility floor
+   of 12px for table data and 11px for anything informational. */
+.revpanel .wtab td {
+  padding: 2.5px 0;
+}
+.revpanel .wtab th {
+  padding: 0 0 4px;
+}
+/* Columns that would otherwise run into one another in a 350px panel. The gutter
+   is on the left of every column but the first, so the row still starts flush. */
+.revpanel .wtab th + th,
+.revpanel .wtab td + td {
+  padding-left: 7px;
+}
+.revpanel .wtab td,
+.revpanel .wtab td:first-child {
+  font-size: 12px;
+}
+.revpanel .wtab th {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.revpanel .wtabs {
+  margin: 2px 0 8px;
+}
+.revpanel .wtb {
+  padding: 5px 8px 6px;
+}
+.revpanel .subrow {
+  grid-template-columns: minmax(0, 1fr) auto 46px;
+  gap: 8px;
+  padding: 2.5px 0;
+}
+.revpanel .subrow .sbar {
+  display: none;
+}
+/* At the narrowest panel width the five- and six-column who-pays tables cannot
+   hold every column at a legible size. One column goes rather than the type:
+   the row's own bands, its headcount, its tax and its share stay; the gross
+   income the tax was charged on, and the corporation-tax profit line, are the
+   ones dropped — both are restated in full in the wider layouts and in the
+   stacked one, and neither is what the table is being read for. */
+@container (max-width: 400px) {
+  .revpanel .wtab .colopt {
+    display: none;
+  }
 }
 
 /* ---------- full-width footnote: a gap, stated in place ---------- */

@@ -151,6 +151,29 @@ export const es = {
   coinSoc:'Seguridad Social',
   coinEu:'Fondos UE',
   coinRest:'Otros ingresos',
+  // ---- M5: the component filter and the Spanish-state coin ----------------
+  // Added for the unified revenue interaction; not in the prototype, which has
+  // neither a filter control nor a single off-map coin.
+  coinHint:'Pulsa una partida para filtrar el mapa y abrir su desglose. Púlsala otra vez para quitarlo.',
+  fltOn:'FILTRO',
+  // The coin's title is drawn inside the map, where the rail is narrower than
+  // the name: the line break is where it is allowed to fall.
+  shieldTitle:'Gobierno\nde España',
+  shieldName:'Gobierno de España',
+  shieldH:'QUÉ HAY DENTRO DE ESTA CIFRA',
+  shieldMix:'Esta cifra agrupa dinero que recaudan o reciben organismos distintos: las cotizaciones que ingresa la Tesorería General de la Seguridad Social, los fondos que la Comisión Europea paga al Estado y la recaudación asignada de forma centralizada por la AEAT y otras administraciones. Aparecen juntos porque ninguno se publica por comunidad autónoma, no porque compartan recaudador.',
+  shieldBucket:'Es la parte de {N} que ninguna fuente publicada asigna a una comunidad autónoma. Se recauda o se recibe de forma centralizada y sólo se publica como cifra nacional.',
+  // The two tiers the figure is split between. Not a statement about the map:
+  // it is the published split between the communities and the centre.
+  tierAut:'Comunidades Autónomas',
+  // Used only where a region is selected, so the national split underneath a
+  // regional headline cannot be read as that region's own.
+  splitNat:'REPARTO NACIONAL DE ESTA PARTIDA',
+  noSplitTag:'SIN REPARTO TERRITORIAL PUBLICADO',
+  noSplitTxt:'Ninguna fuente publica {N} por comunidad autónoma. La cifra entera, {V}, queda aquí en el Gobierno de España, y cada comunidad se dibuja como sin dato, no como cero.',
+  regNoFig:'No hay cifra publicada para esta comunidad en esta partida.',
+  pnlNatOf:'del total nacional',
+  pnlBucketOf:'de esta partida',
   // The same, for spending's four coins.
   coinOsSoc:'Seguridad Social',
   coinOsCentral:'Estado central',

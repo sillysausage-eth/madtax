@@ -153,6 +153,29 @@ export const en = {
   coinSoc:'Social Security',
   coinEu:'EU Funding',
   coinRest:'Other revenues',
+  // ---- M5: the component filter and the Spanish-state coin ----------------
+  // Added for the unified revenue interaction; not in the prototype, which has
+  // neither a filter control nor a single off-map coin.
+  coinHint:'Press a component to filter the map and open its breakdown. Press it again to clear.',
+  fltOn:'FILTER',
+  // The coin's title is drawn inside the map, where the rail is narrower than
+  // the name: the line break is where it is allowed to fall.
+  shieldTitle:'Spanish\ngovernment',
+  shieldName:'Spanish government',
+  shieldH:'WHAT IS INSIDE THIS FIGURE',
+  shieldMix:'This figure groups money collected or received by different bodies: the contributions taken in by the Social Security Treasury, the funds the European Commission pays to the State, and collection assigned centrally by AEAT and other administrations. They appear together because none of them is published by autonomous community, not because they share a collector.',
+  shieldBucket:'This is the part of {N} that no published source assigns to an autonomous community. It is collected or received centrally and published only as a national figure.',
+  // The two tiers the figure is split between. Not a statement about the map:
+  // it is the published split between the communities and the centre.
+  tierAut:'Autonomous communities',
+  // Used only where a region is selected, so the national split underneath a
+  // regional headline cannot be read as that region's own.
+  splitNat:'NATIONAL SPLIT OF THIS COMPONENT',
+  noSplitTag:'NO TERRITORIAL SPLIT PUBLISHED',
+  noSplitTxt:'No source publishes {N} by autonomous community. The whole figure, {V}, stays here with the Spanish government, and every community is drawn as no data, not as zero.',
+  regNoFig:'No figure is published for this community for this component.',
+  pnlNatOf:'of the national total',
+  pnlBucketOf:'of this component',
   // The same, for spending's four coins.
   coinOsSoc:'Social Security',
   coinOsCentral:'Central government',
