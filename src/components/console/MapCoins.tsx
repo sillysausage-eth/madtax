@@ -46,6 +46,13 @@ const GAP = 34;
  * this column and the coins can use all of it.
  */
 const RAIL_H = 700;
+/**
+ * The mainland's leftmost point sits about 31 units right of where the rail
+ * ends, so the empty column a reader sees is wider than the rail itself.
+ * Centring on the rail alone pushes the coins hard against the panel edge with
+ * a gap to their right; this shares the overhang between both sides.
+ */
+const RAIL_OVERHANG = 31;
 
 /** Disc plus the text rows beneath it, for a title of `lines` lines. */
 const blockH = (lines: number) => 2 * R + LABEL_GAP + lines * LINE + AMOUNT;
@@ -85,7 +92,7 @@ export default function MapCoins({
   onSelect: (id: string) => void;
   width?: number;
 }) {
-  const cx = width / 2;
+  const cx = (width + RAIL_OVERHANG) / 2;
   /* Lay the coins out as one group centred down the rail. With a single coin —
      the usual case since the components moved into the legend — that puts it in
      the middle of the empty column beside the mainland rather than tucked up
@@ -94,12 +101,13 @@ export default function MapCoins({
   const heights = items.map((c) => blockH(c.title.split("\n").length));
   const groupH =
     heights.reduce((a, h) => a + h, 0) + GAP * Math.max(0, items.length - 1);
-  let cursor = Math.max(0, (RAIL_H - groupH) / 2);
-  const centres = heights.map((h) => {
-    const cy = cursor + R;
-    cursor += h + GAP;
-    return cy;
-  });
+  /* Written as a fold rather than a running accumulator: reassigning a local
+     during render trips react-hooks/immutability, and the list is three items
+     at most so the quadratic walk costs nothing. */
+  const top = Math.max(0, (RAIL_H - groupH) / 2);
+  const centres = heights.map(
+    (_, i) => top + heights.slice(0, i).reduce((a, h) => a + h + GAP, 0) + R,
+  );
   return (
     <g id="coins">
       {items.map((c, i) => {
