@@ -73,6 +73,9 @@ export default function RevenueExplorer({ locale }: { locale: Locale }) {
     (k: string) => setUrl({ f: focus === k ? null : k }),
     [setUrl, focus],
   );
+  /* The total is a state to ask for, not the absence of one: pressing it lifts
+     the filter whatever was pressed before. */
+  const onTotal = useCallback(() => setUrl({ f: null }), [setUrl]);
   const onSort = useCallback((col: string) => setSort((s) => nextSort(s, col)), []);
 
   /* Escape unwinds one level: it clears the map selection first, and only lifts
@@ -92,6 +95,7 @@ export default function RevenueExplorer({ locale }: { locale: Locale }) {
       onYear={onYear}
       onSelect={onSelect}
       onFocus={onFocus}
+      onTotal={onTotal}
       onTab={setTab}
       onSort={onSort}
     />

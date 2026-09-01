@@ -113,25 +113,6 @@ body {
   font-family: var(--font-cond);
 }
 
-/* ---------- classification banner ---------- */
-.class-bar {
-  background: var(--cy);
-  color: #04181d;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  text-align: center;
-  padding: 3px 8px;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.class-bar.bottom {
-  background: var(--rule2);
-  color: var(--ink);
-}
-
 /* ---------- shell ---------- */
 .shell {
   width: 100%;
@@ -139,18 +120,28 @@ body {
   margin: 0;
   padding: 0 clamp(14px, 1.6vw, 32px) 40px;
 }
+/* Wordmark, mode switch, language switch. A three-column grid rather than
+   `space-between`, so the tabs sit on the page's centre line instead of on the
+   midpoint between two sides that measure differently in each language. The tab
+   strip is bottom-aligned: the pressed tab's underline meets the masthead rule,
+   which is what makes it read as a tab. */
 .mast {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
   gap: 16px;
-  flex-wrap: wrap;
-  padding: 14px 2px 12px;
+  padding: 14px 2px 0;
   border-bottom: 1px solid var(--rule2);
+}
+.brand,
+.mast-right {
+  padding-bottom: 12px;
 }
 .brand {
   display: flex;
-  align-items: baseline;
+  /* The badge reads as a label on the wordmark, so it sits on the wordmark's
+     centre line rather than on its baseline. */
+  align-items: center;
   gap: 12px;
 }
 .brand h1 {
@@ -185,6 +176,8 @@ body {
   display: flex;
   gap: 10px;
   align-items: center;
+  justify-content: flex-end;
+  justify-self: end;
   flex-wrap: wrap;
 }
 .langsw {
@@ -210,21 +203,10 @@ body {
 }
 
 /* ---------- mode tabs: fused to the top of the composition panel ---------- */
-.modebar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 14px;
-  padding: 0 8px 0 3px;
-  border: 1px solid var(--rule);
-  border-bottom: 0;
-  background: var(--panel2);
-}
 .modetabs {
   display: flex;
   gap: 2px;
+  justify-self: center;
 }
 .modetabs a {
   background: transparent;
@@ -237,7 +219,7 @@ body {
   font-weight: 700;
   font-size: 15px;
   letter-spacing: 0.14em;
-  padding: 8px 16px 6px;
+  padding: 8px 16px 10px;
   text-transform: uppercase;
 }
 .modetabs a:hover {
@@ -249,16 +231,24 @@ body {
   border-bottom-color: var(--cy);
   background: var(--panel);
 }
-@media (max-width: 560px) {
-  .modebar {
-    padding: 0 6px 0 3px;
+@media (max-width: 720px) {
+  .mast {
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+  }
+  .mast-right {
+    grid-row: 1;
+    grid-column: 2;
   }
   .modetabs {
-    flex: 1 1 auto;
+    grid-row: 2;
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    border-top: 1px solid var(--rule);
   }
   .modetabs a {
     flex: 1;
-    padding: 8px 6px 6px;
+    padding: 8px 6px 10px;
     font-size: 14px;
     text-align: center;
   }
@@ -358,16 +348,29 @@ button:focus-visible,
 }
 
 /* ---------- main grid ---------- */
+:root {
+  /* The map canvas was cropped to its ink — `CANVAS_W` in src/data/map.ts — and
+     is now this fraction of the coordinate space it used to span. The map column
+     below is narrowed by the same fraction, so the two cancel: the pane is
+     narrower on the page and nothing drawn on it changes size. The freed width
+     goes to the dossier, which is the panel that wanted it.
+
+     Each track reads: this share of the space the two panes divide, plus the
+     cropped remainder of the width the dossier had. */
+  --map-crop: 0.88;
+}
 .main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 348px;
+  grid-template-columns: minmax(0, 1fr)
+    calc((100% - 12px) * (1 - var(--map-crop)) + 348px * var(--map-crop));
   gap: 12px;
   margin-top: 12px;
   align-items: start;
 }
 @media (max-width: 1180px) {
   .main {
-    grid-template-columns: minmax(0, 1fr) 310px;
+    grid-template-columns: minmax(0, 1fr)
+      calc((100% - 12px) * (1 - var(--map-crop)) + 310px * var(--map-crop));
   }
 }
 @media (max-width: 860px) {
@@ -388,17 +391,20 @@ button:focus-visible,
    to `.revmain`: spending's grid is unchanged. */
 @media (min-width: 1340px) {
   .revmain {
-    grid-template-columns: minmax(0, 1fr) 400px;
+    grid-template-columns: minmax(0, 1fr)
+      calc((100% - 12px) * (1 - var(--map-crop)) + 400px * var(--map-crop));
   }
 }
 @media (min-width: 1500px) {
   .revmain {
-    grid-template-columns: minmax(0, 1fr) 470px;
+    grid-template-columns: minmax(0, 1fr)
+      calc((100% - 12px) * (1 - var(--map-crop)) + 470px * var(--map-crop));
   }
 }
 @media (min-width: 1700px) {
   .revmain {
-    grid-template-columns: minmax(0, 1fr) 560px;
+    grid-template-columns: minmax(0, 1fr)
+      calc((100% - 12px) * (1 - var(--map-crop)) + 560px * var(--map-crop));
   }
 }
 
@@ -433,8 +439,9 @@ svg.map {
   height: auto;
   /* Text inside an SVG scales with the canvas. Below this width the labels drop
      under the readable minimum, so the map keeps its size and the panel scrolls
-     sideways instead. */
-  min-width: 880px;
+     sideways instead. Cropped with the canvas (see `--map-crop`), so the floor
+     still means the same rendered label size it did before the crop. */
+  min-width: 774px;
 }
 .reg {
   fill: var(--cy-dim);
@@ -507,6 +514,22 @@ svg.map {
   font-size: 11px;
   letter-spacing: 0.12em;
   fill: var(--dim);
+}
+/* The hover plate: console chrome, in the mode's accent, and inert — it must
+   never eat the pointer that summoned it. */
+.nameplate {
+  pointer-events: none;
+}
+.nameplate rect {
+  fill: #08131a;
+  stroke: var(--cy-dim);
+  stroke-width: 1;
+}
+.nameplate text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  fill: var(--ink);
 }
 .retic {
   pointer-events: none;
@@ -736,6 +759,19 @@ svg.map {
   color: #cdb6e0;
 }
 
+/* The source names are links to the published series. The rule under them is
+   the mode's own dim accent, so the cue reads as chrome rather than as body
+   copy turned blue. */
+footer.foot a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--cy-dim);
+}
+footer.foot a:hover,
+footer.foot a:focus-visible {
+  color: var(--cy);
+  border-bottom-color: var(--cy);
+}
 footer.foot {
   margin-top: 16px;
   padding: 12px 2px;
@@ -760,8 +796,19 @@ footer.foot {
   padding: 16px 14px 14px;
   margin-top: 14px;
 }
-.modebar + .comp {
-  margin-top: 0;
+.comp-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.comp-hk {
+  min-width: 0;
+}
+.comp-h .head-s {
+  margin-bottom: 0;
 }
 .head-k {
   font-family: var(--font-mono);
@@ -929,10 +976,30 @@ footer.foot {
   flex: 1 1 340px;
   min-width: 0;
 }
+/* Four across, four down: sixteen coins — the total and the fifteen components —
+   read as one block rather than as three full rows and an orphan. The column
+   count is stepped by hand rather than left to auto-fill, because the grid is
+   the composition's shape and it should not change under the reader at every
+   width. */
 .pcoins {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px 12px;
+}
+@media (max-width: 1180px) {
+  .pcoins {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 860px) {
+  .pcoins {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .pcoins {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .pcoin {
   display: grid;
@@ -963,6 +1030,17 @@ footer.foot {
 }
 .pcoin.dim:hover {
   opacity: 1;
+}
+/* The total reads as the whole, not as a sixteenth part — and it never dims: it
+   is the way back from a filter. Its face is the one neutral in the set, because
+   the mode accent is also social contributions' own colour and the two coins sat
+   side by side wearing the same cyan. */
+.pcoin-total .pcoin-n {
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+.pcoin-total .pcoin-p {
+  color: var(--ink2);
 }
 .pcoin-f {
   display: block;
@@ -1013,41 +1091,6 @@ footer.foot {
   font-size: 11.5px;
   color: var(--dim);
   font-variant-numeric: tabular-nums;
-}
-.pcoins-tot {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 10px;
-  align-items: baseline;
-  padding: 8px 5px 2px;
-  margin-top: 8px;
-  border-top: 1px solid var(--rule2);
-}
-.pcoins-tot .nm {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--mute);
-}
-.pcoins-tot .vv {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--cy);
-}
-.pcoins-tot .pp {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: var(--mute);
-  min-width: 46px;
-  text-align: right;
-}
-.pcoins-hint {
-  margin: 7px 5px 0;
-  font-size: 11.5px;
-  line-height: 1.45;
-  color: var(--dim);
 }
 
 /* ---------- off-map coins: revenue with no territory ----------

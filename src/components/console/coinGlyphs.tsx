@@ -251,4 +251,14 @@ export const PART_GLYPH: Record<string, React.ReactNode> = {
      the badge that says the detail is still to come. */
   taxProdPending: pending(cart),
   taxIncPending: pending(payslip),
+  /* The whole reading: the ring itself, with the parts it is cut into. Not one
+     of the components — the coin that stands for all of them. */
+  total: (
+    <>
+      <circle cx="12" cy="12" r="9.2" />
+      <path d="M12 12V2.8" />
+      <path d="M12 12l8 4.6" />
+      <path d="M12 12L4 16.6" />
+    </>
+  ),
 };

@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { dict, type Locale } from "@/i18n";
 import { eur, fy } from "@/lib/format";
 import { fmtMetric, type Metric } from "@/lib/metric";
-import { MODES, type Mode } from "@/lib/modes";
 import { RAMP_EXP, makeIntensity, makeRamp, makeScale, rampTop } from "@/lib/ramp";
 import {
   SPEND_GAMMA,
@@ -15,11 +14,11 @@ import {
   spendYear,
 } from "@/lib/spending";
 import { divisions, regionSpending, spendYears } from "@/data/spending";
-import { CB, H, W, labelNudge, regionAbbr, regions } from "@/data/map";
+import { CANVAS_W, CB, H, labelNudge, regionAbbr, regions } from "@/data/map";
 import type { YearKey } from "@/lib/types";
 import ConsoleFooter from "./ConsoleFooter";
+import { SOURCE_LINKS } from "@/lib/sources";
 import Donut from "./Donut";
-import ModeBar from "./ModeBar";
 import MapCoins, { COIN_RAIL_WIDTH, type MapCoin } from "./MapCoins";
 import SpainMap, { RampLegend, type MapFlag } from "./SpainMap";
 import SpendingDossier, { spendingDossierCode } from "./SpendingDossier";
@@ -68,17 +67,6 @@ export default function SpendingConsole({
 }) {
   const t = dict(locale);
   const { year, sel, focus } = state;
-
-  const labels = useMemo(
-    () =>
-      Object.fromEntries(
-        MODES.map((m) => [
-          m,
-          m === "revenue" ? t.modeRev : m === "spending" ? t.modeExp : t.modeDebt,
-        ]),
-      ) as Record<Mode, string>,
-    [t],
-  );
 
   /* ---- composition -------------------------------------------------------- */
   const M = spendCompModel(locale, t, year);
@@ -176,21 +164,25 @@ export default function SpendingConsole({
 
   return (
     <>
-      <ModeBar locale={locale} labels={labels}>
-        <YearScrubber
-          years={spendYears}
-          year={year}
-          label={t.fYear}
-          optionLabel={(y) => fy(locale, y)}
-          onChange={onYear}
-        />
-      </ModeBar>
-
       <section className="comp" id="comp" role="tabpanel">
-        <div className="head-k">
-          {t.sExp.tot} · {fy(locale, shown)}
+        {/* The year picker sits in this header, beside the figures it governs.
+            The caption keeps its own year because it is the year the COFOG split
+            is published for, which is not always the year asked for. */}
+        <div className="comp-h">
+          <div className="comp-hk">
+            <div className="head-k">
+              {t.sExp.tot} · {fy(locale, shown)}
+            </div>
+            <div className="head-s">{M.sub}</div>
+          </div>
+          <YearScrubber
+            years={spendYears}
+            year={year}
+            label={t.fYear}
+            optionLabel={(y) => fy(locale, y)}
+            onChange={onYear}
+          />
         </div>
-        <div className="head-s">{M.sub}</div>
         <Donut
           rows={M.rows}
           total={M.total}
@@ -223,7 +215,7 @@ export default function SpendingConsole({
             <span className="x">{fy(locale, year)}</span>
           </div>
           <SpainMap
-            W={W}
+            W={CANVAS_W}
             H={H}
             CB={CB}
             regions={regions}
@@ -267,7 +259,12 @@ export default function SpendingConsole({
         </aside>
       </div>
 
-      <ConsoleFooter source={t.footExp1} perimeter={t.footExp2} build={t.foot3} />
+      <ConsoleFooter
+        source={t.footExp1}
+        sourceLinks={{ Eurostat: SOURCE_LINKS.gov_10a_exp }}
+        perimeter={t.footExp2}
+        build={t.foot3}
+      />
     </>
   );
 }

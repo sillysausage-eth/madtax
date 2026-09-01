@@ -29,6 +29,18 @@ export interface MapFlag {
 }
 
 
+/**
+ * How far the drawing is pulled back out of the space the coin rail reserves.
+ *
+ * Cropping the canvas to the geography (`CANVAS_W`) left the country flush
+ * against the panel beside it while all the slack stayed on the coin side: 46
+ * units to the coin, 10 to the edge. This moves the whole drawing — country,
+ * Canaries inset, HUD and graticule together — back by half that difference, so
+ * both gaps come out at 28. It shifts content inside the canvas; the viewBox is
+ * untouched, so nothing is rescaled and the crop is unaffected.
+ */
+const PULL = 18;
+
 export default function SpainMap({
   W,
   H,
@@ -87,18 +99,22 @@ export default function SpainMap({
   const [hover, setHover] = useState<string | null>(null);
 
   /* The grid runs across the rail too, so the coins sit on the same graticule
-     as the country rather than on a blank margin. */
-  const gridLeft = -Math.ceil(railWidth / 50) * 50;
+     as the country rather than on a blank margin — and it runs `PULL` further
+     right than the map's own width, because the pull moves the whole group left
+     and the graticule still has to reach the edge of the canvas. */
+  const gridLeft = -Math.ceil((railWidth - PULL) / 50) * 50;
+  const gridRight = W + PULL;
   const grid: React.ReactNode[] = [];
-  for (let x = gridLeft; x <= W; x += 50)
+  for (let x = gridLeft; x <= gridRight; x += 50)
     grid.push(<line key={`v${x}`} x1={x} y1={0} x2={x} y2={H} />);
   for (let y = 0; y <= H; y += 50)
-    grid.push(<line key={`h${y}`} x1={gridLeft} y1={y} x2={W} y2={y} />);
+    grid.push(<line key={`h${y}`} x1={gridLeft} y1={y} x2={gridRight} y2={y} />);
 
   /* The console's selection may be an off-map coin, which is not a region: match
      against the geometry rather than against a naming convention. */
   const selRegion = selected ? (regions.find((r) => r.id === selected) ?? null) : null;
   const sel = selRegion ? selRegion.id : null;
+  const hoverRegion = hover ? (regions.find((r) => r.id === hover) ?? null) : null;
 
   return (
     <div className="mapwrap">
@@ -119,7 +135,7 @@ export default function SpainMap({
           </filter>
         </defs>
 
-        <g transform={`translate(${railWidth} 0)`}>
+        <g transform={`translate(${railWidth - PULL} 0)`}>
         <g className="mgrid">{grid}</g>
         <rect className="inset-box" x={CB.x} y={CB.y} width={CB.w} height={CB.h} />
         <text className="inset-lbl" x={CB.x + 4} y={CB.y - 5}>
@@ -168,9 +184,7 @@ export default function SpainMap({
                 }}
                 onMouseEnter={() => setHover(r.id)}
                 onMouseLeave={() => setHover((h) => (h === r.id ? null : h))}
-              >
-                <title>{name(r)}</title>
-              </path>
+              />
             );
           })}
         </g>
@@ -222,7 +236,7 @@ export default function SpainMap({
           })}
         </g>
 
-        <Reticle W={W} H={H} region={selRegion ?? null} />
+        <Reticle W={W + PULL} H={H} region={selRegion ?? null} />
 
         <g id="hud">
           {/* The frame grows with however many rows the mode gives it. */}
@@ -272,8 +286,64 @@ export default function SpainMap({
 
         {/* Last, so it sits above the graticule and the country outlines. */}
         {rail}
+
+        {/* Above even the rail: whatever is under the pointer says its own name,
+            and no flag, reticle, HUD frame or coin can be drawn over it. */}
+        {hoverRegion ? (
+          <NamePlate
+            region={hoverRegion}
+            text={name(hoverRegion)}
+            W={W}
+            H={H}
+            dx={railWidth - PULL}
+          />
+        ) : null}
       </svg>
     </div>
+  );
+}
+
+/**
+ * The hovered region's full name, on a plate drawn after everything else.
+ *
+ * It replaces the SVG `<title>` this map used to carry. A `<title>` is drawn by
+ * the browser, not by us: it is unstyled, it arrives a second late, and it lands
+ * where the browser chooses rather than beside the thing it names. The accessible
+ * name is unaffected — every region already carries `aria-label`.
+ *
+ * The plate sits above the region's bounding box, not over its centre, so it
+ * never covers the abbreviation and figure already on the region; and it is
+ * clamped to the canvas, so a region at an edge pushes it inwards instead of off
+ * the map. The width is derived from the string because SVG cannot lay out a box
+ * around text on its own — the text is centred in it, so any error is symmetric.
+ */
+function NamePlate({
+  region,
+  text,
+  W,
+  H,
+  dx,
+}: {
+  region: RegionGeometry;
+  text: string;
+  W: number;
+  H: number;
+  dx: number;
+}) {
+  const PAD = 10;
+  const BOX = 23;
+  /* JetBrains Mono at 12px with 0.08em tracking: 0.6em per glyph plus the
+     tracking. */
+  const w = Math.ceil(text.length * (12 * 0.6 + 0.96)) + PAD * 2;
+  const x = Math.min(Math.max(region.cx - w / 2, 2), W - w - 2);
+  const y = Math.min(Math.max(region.bbox[1] - BOX - 9, 2), H - BOX - 2);
+  return (
+    <g className="nameplate" transform={`translate(${dx} 0)`}>
+      <rect x={x} y={y} width={w} height={BOX} />
+      <text x={x + w / 2} y={y + BOX / 2 + 4.2} textAnchor="middle">
+        {text}
+      </text>
+    </g>
   );
 }
 

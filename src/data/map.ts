@@ -14,6 +14,30 @@ export const mapSection = raw as unknown as MapSection;
 export const { W, H, CB, regions } = mapSection;
 
 /**
+ * How far the canvas extends past the easternmost geography. It clears the
+ * selection brackets and the sweep, both of which are drawn 7 units outside a
+ * region's own bounding box.
+ */
+const INK_MARGIN = 10;
+
+/**
+ * The width the console actually draws in.
+ *
+ * The pipeline's `W` is the projection's canvas, and it leaves ~148 units of
+ * empty sea east of Menorca — the map was as wide as its coordinate space rather
+ * than as wide as its content. This is the same canvas cropped to the ink, which
+ * is what lets the map pane be narrower on the page without anything on the map
+ * being drawn smaller: the pane loses exactly the fraction the canvas loses, so
+ * the scale between them is unchanged. `globals.css` carries the other half of
+ * that pair and names the ratio.
+ *
+ * Derived, not typed in: if the projection ever changes, the crop follows it.
+ */
+export const CANVAS_W = Math.ceil(
+  Math.max(...regions.map((r) => r.bbox[2])) + INK_MARGIN,
+);
+
+/**
  * The short form of each community's name, as Spanish usage writes it. The map
  * labels a territory with the name people call it by, not with its statistical
  * code — `ES30` identifies a row in a Eurostat table, `MAD` identifies a place.

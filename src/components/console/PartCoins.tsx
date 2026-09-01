@@ -11,6 +11,11 @@ import { EuEmblem, PART_GLYPH } from "./coinGlyphs";
  * Filtering is never a side effect of reading something else — you press the
  * thing you want.
  *
+ * The total is a coin like the others, first in the grid: asking for the whole
+ * back is the same gesture as asking for a part, not a separate widget under the
+ * legend. It carries no amount, because the amount it stands for is the figure in
+ * the middle of the ring beside it.
+ *
  * Each coin carries its component's palette colour on the ring and its own
  * glyph, so colour and shape both identify it. Every coin prints its amount and
  * its share of the total: the icon is a handle, never a substitute for the
@@ -30,6 +35,13 @@ export interface PartCoin {
   pct: string;
   colour: string;
 }
+
+/**
+ * The total's face colour: a bright neutral, not the mode accent. The accent is
+ * cyan, which is also social contributions' palette colour — the two coins are
+ * neighbours in the grid, and one of them has to be the odd one out.
+ */
+const TOTAL_INK = "#EAFAFF";
 
 const FACE = 44;
 const C = FACE / 2;
@@ -62,24 +74,60 @@ function CoinFace({ p }: { p: PartCoin }) {
   );
 }
 
+/** The total's face: the neutral ring, not a component colour. */
+function TotalFace() {
+  return (
+    <svg className="pcoin-f" viewBox={`0 0 ${FACE} ${FACE}`} aria-hidden="true">
+      <circle className="pcoin-face" cx={C} cy={C} r={R} style={{ stroke: TOTAL_INK }} />
+      <g
+        className="pcoin-gl"
+        transform={`translate(${C - 12} ${C - 12})`}
+        fill="none"
+        stroke={TOTAL_INK}
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {PART_GLYPH.total}
+      </g>
+    </svg>
+  );
+}
+
 export default function PartCoins({
   items,
   selected,
   onSelect,
   total,
-  hint,
+  onTotal,
 }: {
   items: PartCoin[];
   /** The component being filtered on, or nothing. */
   selected: string | null;
   onSelect: (k: string) => void;
-  /** The row under the grid: the figure the shares are shares of. */
-  total: { label: string; value: string };
-  hint: string;
+  /** The first coin: the whole the shares are shares of. */
+  total: { label: string; desc: string };
+  /** Press the total coin: back to the unfiltered reading. */
+  onTotal: () => void;
 }) {
   return (
     <div className="pcoins-wrap">
       <div className="pcoins">
+        <button
+          type="button"
+          className={`pcoin pcoin-total${selected ? "" : " on"}`}
+          aria-pressed={!selected}
+          title={total.desc}
+          onClick={onTotal}
+        >
+          <TotalFace />
+          <span className="pcoin-b">
+            <span className="pcoin-n">{total.label}</span>
+            <span className="pcoin-r">
+              <span className="pcoin-p">100%</span>
+            </span>
+          </span>
+        </button>
         {items.map((p) => {
           const on = selected === p.k;
           return (
@@ -104,12 +152,6 @@ export default function PartCoins({
           );
         })}
       </div>
-      <div className="pcoins-tot">
-        <span className="nm">{total.label}</span>
-        <span className="vv">{total.value}</span>
-        <span className="pp">100%</span>
-      </div>
-      <p className="pcoins-hint">{hint}</p>
     </div>
   );
 }

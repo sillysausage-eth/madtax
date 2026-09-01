@@ -4,15 +4,12 @@
 // changes there it must be re-ported here, never edited in one place only.
 
 export const es = {
-  classTop:'UNCLASSIFIED // PUBLIC RELEASE // OPEN SOURCE — DATOS PÚBLICOS',
-  classBot:'MADTAX // PROTOTIPO DE INTERFAZ // DATOS REALES SIN MODELIZAR',
   ctrl:'CONTROL',metric:'MÉTRICA',lo:'BAJO',hi:'ALTO',dos:'EXPEDIENTE',
   modeRev:'Ingresos',modeExp:'Gasto',modeDebt:'Deuda',
   footRev1:'Fuente: AEAT vía ISTAC · Eurostat · INE',
-  footRev2:'Recaudación líquida del Estado — no incluye cotizaciones sociales',
   footExp1:'Fuente: IGAE · Eurostat · INE',
   footExp2:'Gasto consolidado del conjunto de las administraciones (SEC 2010)',
-  foot3:'Prototipo UI · MadTax',
+  foot3:'MadTax',
   dbt:{
     foot1:'Fuente: Eurostat — Procedimiento de Déficit Excesivo (gov_10dd_edpt1, gov_10a_main)',
     foot2:'Deuda bruta consolidada a valor nominal · saldo vivo, no un flujo anual',
@@ -154,12 +151,11 @@ export const es = {
   // ---- M5: the component filter and the Spanish-state coin ----------------
   // Added for the unified revenue interaction; not in the prototype, which has
   // neither a filter control nor a single off-map coin.
-  coinHint:'Pulsa una partida para filtrar el mapa y abrir su desglose. Púlsala otra vez para quitarlo.',
   fltOn:'FILTRO',
   // The coin's title is drawn inside the map, where the rail is narrower than
   // the name: the line break is where it is allowed to fall.
-  shieldTitle:'Gobierno\nde España',
-  shieldName:'Gobierno de España',
+  shieldTitle:'Gobierno\nCentral',
+  shieldName:'Gobierno Central',
   shieldH:'QUÉ HAY DENTRO DE ESTA CIFRA',
   shieldMix:'Esta cifra agrupa dinero que recaudan o reciben organismos distintos: las cotizaciones que ingresa la Tesorería General de la Seguridad Social, los fondos que la Comisión Europea paga al Estado y la recaudación asignada de forma centralizada por la AEAT y otras administraciones. Aparecen juntos porque ninguno se publica por comunidad autónoma, no porque compartan recaudador.',
   shieldShort:'La parte de {N} que ninguna fuente publicada asigna a una comunidad autónoma: se recauda o se recibe de forma centralizada y sólo se publica como cifra nacional.',

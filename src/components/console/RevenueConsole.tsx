@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { dict, type Locale } from "@/i18n";
 import { eur, fy, nf } from "@/lib/format";
-import { MODES, type Mode } from "@/lib/modes";
 import { RAMP_REV, makeIntensity, makeRamp, makeScale, rampTop } from "@/lib/ramp";
 import {
   REV_SLICES,
@@ -15,11 +14,11 @@ import {
   type Metric,
 } from "@/lib/revenue";
 import { national2, regionRevenue, revYears } from "@/data/revenue";
-import { CB, H, W, labelNudge, regionAbbr, regions } from "@/data/map";
+import { CANVAS_W, CB, H, labelNudge, regionAbbr, regions } from "@/data/map";
 import type { YearKey } from "@/lib/types";
 import ConsoleFooter from "./ConsoleFooter";
+import { SOURCE_LINKS } from "@/lib/sources";
 import Donut from "./Donut";
-import ModeBar from "./ModeBar";
 import MapCoins, { COIN_RAIL_WIDTH, type MapCoin } from "./MapCoins";
 import PartCoins, { type PartCoin } from "./PartCoins";
 import RevenuePanel from "./RevenuePanel";
@@ -71,6 +70,7 @@ export default function RevenueConsole({
   onYear = noop,
   onSelect = noop,
   onFocus = noop,
+  onTotal = noop,
   onTab = noop,
   onSort = noop,
 }: {
@@ -79,22 +79,13 @@ export default function RevenueConsole({
   onYear?: (y: YearKey) => void;
   onSelect?: (id: string) => void;
   onFocus?: (k: string) => void;
+  /** Lift the filter: the total row asks for the whole reading back. */
+  onTotal?: () => void;
   onTab?: (t: Tab) => void;
   onSort?: (col: string) => void;
 }) {
   const t = dict(locale);
   const { year, sel, focus } = state;
-
-  const labels = useMemo(
-    () =>
-      Object.fromEntries(
-        MODES.map((m) => [
-          m,
-          m === "revenue" ? t.modeRev : m === "spending" ? t.modeExp : t.modeDebt,
-        ]),
-      ) as Record<Mode, string>,
-    [t],
-  );
 
   /* ---- composition -------------------------------------------------------- */
   const M = compModel(t, year);
@@ -181,21 +172,24 @@ export default function RevenueConsole({
 
   return (
     <>
-      <ModeBar locale={locale} labels={labels}>
-        <YearScrubber
-          years={revYears}
-          year={year}
-          label={t.fYear}
-          optionLabel={(y) => fy(locale, y)}
-          onChange={onYear}
-        />
-      </ModeBar>
-
       <section className="comp" id="comp" role="tabpanel">
-        <div className="head-k">
-          {t.rvTotalK} · {fy(locale, year)}
+        {/* The year picker sits in this header because the year is what the
+            figures under it are for. The caption no longer repeats it: the
+            control states the year, once. */}
+        <div className="comp-h">
+          <div className="comp-hk">
+            <div className="head-k">{t.rvTotalK}</div>
+            {/* Only when there is a gap to declare: see `CompModel.sub`. */}
+            {M.sub ? <div className="head-s">{M.sub}</div> : null}
+          </div>
+          <YearScrubber
+            years={revYears}
+            year={year}
+            label={t.fYear}
+            optionLabel={(y) => fy(locale, y)}
+            onChange={onYear}
+          />
         </div>
-        <div className="head-s">{M.sub}</div>
         <Donut
           rows={M.rows}
           total={M.total}
@@ -211,8 +205,8 @@ export default function RevenueConsole({
             items={coinItems}
             selected={focus}
             onSelect={onFocus}
-            total={{ label: t.rvTotalK, value: eur(locale, M.total) }}
-            hint={t.coinHint}
+            total={{ label: t.rvTotal, desc: t.rvTotalSub }}
+            onTotal={onTotal}
           />
         </Donut>
       </section>
@@ -227,7 +221,7 @@ export default function RevenueConsole({
             </span>
           </div>
           <SpainMap
-            W={W}
+            W={CANVAS_W}
             H={H}
             CB={CB}
             regions={regions}
@@ -275,7 +269,7 @@ export default function RevenueConsole({
 
       <ConsoleFooter
         source={t.footRev1}
-        perimeter={t.footRev2}
+        sourceLinks={{ Eurostat: SOURCE_LINKS.gov_10a_taxag }}
         build={t.foot3}
       />
     </>

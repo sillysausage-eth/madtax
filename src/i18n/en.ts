@@ -6,15 +6,12 @@
 import type { Dict } from "./es";
 
 export const en = {
-  classTop:'UNCLASSIFIED // PUBLIC RELEASE // OPEN SOURCE — PUBLIC DATA',
-  classBot:'MADTAX // INTERFACE PROTOTYPE // REAL DATA, NOT MODELLED',
   ctrl:'CONTROL',metric:'METRIC',lo:'LOW',hi:'HIGH',dos:'DOSSIER',
   modeRev:'Revenue',modeExp:'Spending',modeDebt:'Debt',
   footRev1:'Source: AEAT via ISTAC · Eurostat · INE',
-  footRev2:'Liquid State collection — excludes social contributions',
   footExp1:'Source: IGAE · Eurostat · INE',
   footExp2:'Consolidated general government expenditure (ESA 2010)',
-  foot3:'UI prototype · MadTax',
+  foot3:'MadTax',
   dbt:{
     foot1:'Source: Eurostat — Excessive Deficit Procedure (gov_10dd_edpt1, gov_10a_main)',
     foot2:'Consolidated gross debt at face value · a stock outstanding, not an annual flow',
@@ -156,12 +153,11 @@ export const en = {
   // ---- M5: the component filter and the Spanish-state coin ----------------
   // Added for the unified revenue interaction; not in the prototype, which has
   // neither a filter control nor a single off-map coin.
-  coinHint:'Press a component to filter the map and open its breakdown. Press it again to clear.',
   fltOn:'FILTER',
   // The coin's title is drawn inside the map, where the rail is narrower than
   // the name: the line break is where it is allowed to fall.
-  shieldTitle:'Spanish\ngovernment',
-  shieldName:'Spanish government',
+  shieldTitle:'Central\nGovernment',
+  shieldName:'Central Government',
   shieldH:'WHAT IS INSIDE THIS FIGURE',
   shieldMix:'This figure groups money collected or received by different bodies: the contributions taken in by the Social Security Treasury, the funds the European Commission pays to the State, and collection assigned centrally by AEAT and other administrations. They appear together because none of them is published by autonomous community, not because they share a collector.',
   shieldShort:'The part of {N} that no published source assigns to an autonomous community: it is collected or received centrally and published only as a national figure.',

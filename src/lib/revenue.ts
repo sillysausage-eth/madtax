@@ -104,7 +104,16 @@ export interface CompRow {
 
 export interface CompModel {
   total: Millions;
-  sub: string;
+  /**
+   * The line under the caption, or nothing.
+   *
+   * It is not a description of the perimeter — that is said once, in the footer.
+   * It carries one fact and only appears when that fact holds: the years
+   * Eurostat has not yet split by tax say so here, in place of a breakdown they
+   * cannot show. Where the detail is published there is nothing to declare and
+   * the line is absent.
+   */
+  sub: string | null;
   rows: CompRow[];
 }
 
@@ -117,7 +126,7 @@ export function compModel(t: Dict, year: YearKey): CompModel {
   const n = natParts[year];
   return {
     total: n.total,
-    sub: n.detail ? t.rvTotalSub : t.rvPending,
+    sub: n.detail ? null : t.rvPending,
     rows: PARTS.filter((k) => Math.abs(n[k] as number) > 0)
       .map((k) => ({
         k,

@@ -1,6 +1,5 @@
 import { dict, type Locale } from "@/i18n";
 import { eur, nf } from "@/lib/format";
-import { MODES, type Mode } from "@/lib/modes";
 import {
   DEBT_HOLD_C,
   DEBT_INSTR_C,
@@ -16,7 +15,6 @@ import type { Dict } from "@/i18n";
 import type { CodedRow } from "@/lib/types";
 import ConsoleFooter from "./ConsoleFooter";
 import Donut, { type DonutSlice } from "./Donut";
-import ModeBar from "./ModeBar";
 
 /**
  * The debt console, ported from the prototype's `paintDebt()`.
@@ -38,13 +36,6 @@ export default function DebtConsole({ locale }: { locale: Locale }) {
   const ref = B.ref;
   const total = B.total[ref];
   const pc = B.pcGdp[ref];
-
-  const labels = Object.fromEntries(
-    MODES.map((m) => [
-      m,
-      m === "revenue" ? t.modeRev : m === "spending" ? t.modeExp : t.modeDebt,
-    ]),
-  ) as Record<Mode, string>;
 
   const tierL = (c: keyof typeof X.tier) => X.tier[c] || c;
   const instrL = (c: string) => X.instr[c as keyof typeof X.instr] || c;
@@ -132,8 +123,6 @@ export default function DebtConsole({ locale }: { locale: Locale }) {
     <>
       {/* No year picker: debt is a stock on a reference date, so the control
           would have nothing to control. */}
-      <ModeBar locale={locale} labels={labels} />
-
       <div className="debtscreen">
         <div className="dhero">
           <div className="k">{X.heroK}</div>
