@@ -162,15 +162,14 @@ export const es = {
   shieldName:'Gobierno de España',
   shieldH:'QUÉ HAY DENTRO DE ESTA CIFRA',
   shieldMix:'Esta cifra agrupa dinero que recaudan o reciben organismos distintos: las cotizaciones que ingresa la Tesorería General de la Seguridad Social, los fondos que la Comisión Europea paga al Estado y la recaudación asignada de forma centralizada por la AEAT y otras administraciones. Aparecen juntos porque ninguno se publica por comunidad autónoma, no porque compartan recaudador.',
-  shieldBucket:'Es la parte de {N} que ninguna fuente publicada asigna a una comunidad autónoma. Se recauda o se recibe de forma centralizada y sólo se publica como cifra nacional.',
+  shieldShort:'La parte de {N} que ninguna fuente publicada asigna a una comunidad autónoma: se recauda o se recibe de forma centralizada y sólo se publica como cifra nacional.',
+  noSplitShort:'Ninguna fuente publica {N} por comunidad autónoma, así que la cifra entera queda sin reparto territorial y cada comunidad se dibuja como sin dato, no como cero.',
   // The two tiers the figure is split between. Not a statement about the map:
   // it is the published split between the communities and the centre.
   tierAut:'Comunidades Autónomas',
   // Used only where a region is selected, so the national split underneath a
   // regional headline cannot be read as that region's own.
   splitNat:'REPARTO NACIONAL DE ESTA PARTIDA',
-  noSplitTag:'SIN REPARTO TERRITORIAL PUBLICADO',
-  noSplitTxt:'Ninguna fuente publica {N} por comunidad autónoma. La cifra entera, {V}, queda aquí en el Gobierno de España, y cada comunidad se dibuja como sin dato, no como cero.',
   regNoFig:'No hay cifra publicada para esta comunidad en esta partida.',
   pnlNatOf:'del total nacional',
   pnlBucketOf:'de esta partida',

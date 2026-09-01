@@ -164,15 +164,14 @@ export const en = {
   shieldName:'Spanish government',
   shieldH:'WHAT IS INSIDE THIS FIGURE',
   shieldMix:'This figure groups money collected or received by different bodies: the contributions taken in by the Social Security Treasury, the funds the European Commission pays to the State, and collection assigned centrally by AEAT and other administrations. They appear together because none of them is published by autonomous community, not because they share a collector.',
-  shieldBucket:'This is the part of {N} that no published source assigns to an autonomous community. It is collected or received centrally and published only as a national figure.',
+  shieldShort:'The part of {N} that no published source assigns to an autonomous community: it is collected or received centrally and published only as a national figure.',
+  noSplitShort:'No source publishes {N} by autonomous community, so the whole figure is territorially unattributed and each community is drawn as no data, not as zero.',
   // The two tiers the figure is split between. Not a statement about the map:
   // it is the published split between the communities and the centre.
   tierAut:'Autonomous communities',
   // Used only where a region is selected, so the national split underneath a
   // regional headline cannot be read as that region's own.
   splitNat:'NATIONAL SPLIT OF THIS COMPONENT',
-  noSplitTag:'NO TERRITORIAL SPLIT PUBLISHED',
-  noSplitTxt:'No source publishes {N} by autonomous community. The whole figure, {V}, stays here with the Spanish government, and every community is drawn as no data, not as zero.',
   regNoFig:'No figure is published for this community for this component.',
   pnlNatOf:'of the national total',
   pnlBucketOf:'of this component',

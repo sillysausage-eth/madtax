@@ -10,7 +10,7 @@ import {
 } from "@/lib/revenue";
 import { PARTS, natParts, natSub, regionRevenue, subLab } from "@/data/revenue";
 import type { RegionGeometry, YearKey } from "@/lib/types";
-import { Advisory, BarBlock, KvGrid, PartBars, type BarRow } from "./Dossier";
+import { BarBlock, KvGrid, PartBars, type BarRow } from "./Dossier";
 import { SHIELD_GOLD } from "./coinGlyphs";
 import RevenueDossier, { SHIELD_ID } from "./RevenueDossier";
 import WhoBlock, { type Tab } from "./WhoBlock";
@@ -159,7 +159,7 @@ function ShieldCard({
           <PartBars rows={rows} total={agg.offmap} locale={locale} />
         </BarBlock>
       ) : null}
-      <Advisory tag={t.shieldH} text={t.shieldMix} mag style={{ marginTop: 12 }} />
+      <p className="subs-src" style={{ marginTop: 12 }}>{t.shieldMix}</p>
     </>
   );
 }
@@ -254,7 +254,7 @@ function BucketCard({
       <div className="bigsub">{head.sub.toUpperCase()}</div>
 
       {geo && rv == null ? (
-        <Advisory tag={t.noSplitTag} text={t.regNoFig} mag style={{ marginTop: 12 }} />
+        <p className="subs-src" style={{ marginTop: 12 }}>{t.regNoFig}</p>
       ) : null}
 
       {geo ? (
@@ -270,21 +270,12 @@ function BucketCard({
         />
       ) : null}
 
-      {/* What the map can and cannot draw of this component. */}
-      {noSplit ? (
-        <Advisory
-          tag={t.noSplitTag}
-          text={t.noSplitTxt
-            .replace("{N}", nm)
-            .replace("{V}", eur(locale, agg.offmap))}
-          mag
-          style={{ marginTop: 12 }}
-        />
-      ) : (
-        /* The two tiers this component is split between. With a region selected
-           the block sits under a regional headline, so it says whose split it
-           is; on its own it decomposes the national figure directly above it and
-           needs no caption. */
+      {/* The two tiers this component is split between. With a region selected
+          the block sits under a regional headline, so it says whose split it
+          is; on its own it decomposes the national figure directly above it and
+          needs no caption. Where nothing is territorially attributed there is no
+          split to draw — the note below carries it instead. */}
+      {noSplit ? null : (
         <BarBlock caption={geo ? t.splitNat : undefined}>
           <PartBars
             rows={[
@@ -297,18 +288,16 @@ function BucketCard({
         </BarBlock>
       )}
 
-      {/* The shield is on the map in every state, so what is behind it is stated
-          for this component in every state — including the specific published
-          reason where the source gives one. */}
-      <Advisory
-        tag={t.shieldH}
-        text={t.shieldBucket.replace("{N}", nm)}
-        mag
-        style={{ marginTop: 12 }}
-      />
-      {part === "social" || part === "eu" ? (
-        <p className="subs-src">{part === "social" ? t.omSocD : t.omEuD}</p>
-      ) : null}
+      {/* One line, always: what sits behind the shield for this component. The
+          published institutional reason where a source gives one, the general
+          rule otherwise — never both, since they said the same thing twice. */}
+      <p className="subs-src" style={{ marginTop: 12 }}>
+        {part === "social"
+          ? t.omSocD
+          : part === "eu"
+            ? t.omEuD
+            : (noSplit ? t.noSplitShort : t.shieldShort).replace("{N}", nm)}
+      </p>
 
       {subs.length > 1 ? (
         <div className="subs flat">
