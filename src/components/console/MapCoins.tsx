@@ -47,12 +47,19 @@ const GAP = 34;
  */
 const RAIL_H = 700;
 /**
- * The mainland's leftmost point sits about 31 units right of where the rail
- * ends, so the empty column a reader sees is wider than the rail itself.
- * Centring on the rail alone pushes the coins hard against the panel edge with
- * a gap to their right; this shares the overhang between both sides.
+ * How far the geography's leftmost point sits beyond the end of the rail. The
+ * empty column a reader sees is that much wider than the rail itself, so
+ * centring on the rail alone would push the coins toward the panel edge and
+ * leave the slack on their right; sharing the overhang splits it evenly.
+ *
+ * It is 13 because `SpainMap` pulls the whole map group left by `PULL` (18) —
+ * the geography starts at root 163, the rail ends at 150. **This tracks that
+ * pull**: change `PULL`, the canvas crop, or the projection, and this wants
+ * re-measuring as `regions.x − railWidth` in root coordinates. It is a constant
+ * rather than a derived value only because the rail cannot see the map's
+ * geometry from here.
  */
-const RAIL_OVERHANG = 31;
+const RAIL_OVERHANG = 13;
 
 /** Disc plus the text rows beneath it, for a title of `lines` lines. */
 const blockH = (lines: number) => 2 * R + LABEL_GAP + lines * LINE + AMOUNT;
