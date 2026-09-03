@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { dict, type Locale } from "@/i18n";
-import { eur, fy } from "@/lib/format";
+import { eur, fy, nf } from "@/lib/format";
 import { fmtMetric, type Metric } from "@/lib/metric";
 import { RAMP_EXP, makeIntensity, makeRamp, makeScale, rampTop } from "@/lib/ramp";
 import {
@@ -11,6 +11,8 @@ import {
   spendAggOf,
   spendCompModel,
   spendMetricVal,
+  spendNoSplit,
+  spendSlice,
   spendYear,
 } from "@/lib/spending";
 import { divisions, regionSpending, spendYears } from "@/data/spending";
@@ -18,37 +20,46 @@ import { CANVAS_W, CB, H, labelNudge, regionAbbr, regions } from "@/data/map";
 import type { YearKey } from "@/lib/types";
 import ConsoleFooter from "./ConsoleFooter";
 import { SOURCE_LINKS } from "@/lib/sources";
+import { COFOG_GLYPH } from "./coinGlyphs";
 import Donut from "./Donut";
 import MapCoins, { COIN_RAIL_WIDTH, type MapCoin } from "./MapCoins";
+import PartCoins, { type PartCoin } from "./PartCoins";
 import SpainMap, { RampLegend, type MapFlag } from "./SpainMap";
-import SpendingDossier, { spendingDossierCode } from "./SpendingDossier";
-import SpendingExplainer from "./SpendingExplainer";
+import { spendingDossierCode } from "./SpendingDossier";
+import SpendingPanel from "./SpendingPanel";
 import YearScrubber from "./YearScrubber";
 
 /**
- * The spending console, ported panel for panel from the prototype's `render()`
- * for `MODE==='exp'`: COFOG composition, map, coins, dossier, footer.
+ * The spending console.
+ *
+ * M6 brings this screen onto the interaction the revenue console has used since
+ * M5, so the two work identically: the text legend beside the ring is a grid of
+ * pressable coins, one per COFOG division, and pressing one is the console's
+ * filter control — the map re-cuts to that function, the four coins beside Spain
+ * re-cut with it, and the right-hand panel fills with that function's whole
+ * breakdown. The explainer that used to sit under the counter is gone; its
+ * content is in the panel.
+ *
+ * What is deliberately *not* symmetric with revenue: revenue has one off-map
+ * coin because its unattributed remainder does not decompose. Spending's does —
+ * into central government, councils, social security and the transfers between
+ * them — so the four rail coins stay. The interaction is unified; the taxonomy
+ * is not, because the taxonomies are genuinely different and flattening one to
+ * match the other would throw away published detail.
  *
  * Presentation only — every piece of state arrives as a prop, so the same tree
  * renders the static shell (with the console's opening state) and the live,
  * URL-driven island.
- *
- * As on the revenue screen the prototype exposes no metric or function control —
- * its `buildControls()` is never called — so the console reads the absolute
- * total, slice 0: the map is total regional spending whichever function is
- * focused. Focus re-cuts the coins, because the money with no territorial split
- * is a different set for each function.
  */
 
-const SLICE = 0;
 const METRIC: Metric = "total";
 const noop = () => {};
 
 export interface SpendingConsoleState {
   year: YearKey;
-  /** A region id, or a coin id, or nothing selected. */
+  /** A region id, or a rail coin id, or nothing selected. */
   sel: string | null;
-  /** The focused COFOG division, whose explainer is open. */
+  /** The COFOG division the console is filtered to. */
   focus: string | null;
 }
 
@@ -58,27 +69,66 @@ export default function SpendingConsole({
   onYear = noop,
   onSelect = noop,
   onFocus = noop,
+  onTotal = noop,
 }: {
   locale: Locale;
   state: SpendingConsoleState;
   onYear?: (y: YearKey) => void;
   onSelect?: (id: string) => void;
   onFocus?: (k: string) => void;
+  /** Lift the filter: the total coin asks for the whole reading back. */
+  onTotal?: () => void;
 }) {
   const t = dict(locale);
   const { year, sel, focus } = state;
 
+  /* The year actually read. Spending publishes a year later than revenue, so a
+     year that reached this screen from the other mode is never indexed blind. */
+  const sy = spendYear(year);
+
   /* ---- composition -------------------------------------------------------- */
-  const M = spendCompModel(locale, t, year);
-  const focusRow = focus ? M.rows.find((r) => r.k === focus) : undefined;
+  const M = spendCompModel(locale, t, sy);
+
+  /* One coin per COFOG division, largest first — the order the ring is drawn
+     in, so the grid and the arcs agree. The title carries the full name for the
+     widths where the label has to wrap. */
+  const coinItems: PartCoin[] = M.rows.map((r) => ({
+    k: r.k,
+    nm: r.nm,
+    desc: r.nm,
+    value: eur(locale, r.v),
+    pct: nf(locale, (r.v / M.total) * 100, 1),
+    colour: r.c,
+  }));
 
   /* ---- map ---------------------------------------------------------------- */
+  /* The filter drives the slice the region arrays are already laid out by, so
+     the map, the rail coins and the panel all read one number set. Slice 0 is
+     the whole of regional spending. */
+  const slice = spendSlice(focus);
+  const code = aggCode(focus);
+
+  /* Defence is spent entirely outside the tier the map draws. The region arrays
+     carry a literal zero there, but that zero is the absence of the function
+     from this tier rather than a measurement of any community, so the map is
+     given nothing to draw and the panel says so in place.
+
+     Derived inside the memo from the two pieces of state it actually depends on,
+     rather than from the locals above: those locals also feed the rail coins,
+     whose aggregate is a bundle object the compiler cannot prove is never
+     mutated, and a dependency it cannot vouch for is a memo it will not keep. */
   const values = useMemo(() => {
     const m = new Map<string, number | null>();
+    const y = spendYear(year);
+    const i = spendSlice(focus);
+    const blank = spendNoSplit(y, aggCode(focus));
     for (const g of regions)
-      m.set(g.id, spendMetricVal(regionSpending[g.id], year, SLICE, METRIC));
+      m.set(
+        g.id,
+        blank ? null : spendMetricVal(regionSpending[g.id], y, i, METRIC),
+      );
     return m;
-  }, [year]);
+  }, [year, focus]);
 
   const ramp = useMemo(() => makeRamp(RAMP_EXP), []);
   const list = useMemo(() => [...values.values()], [values]);
@@ -87,9 +137,12 @@ export default function SpendingConsole({
 
   /* A region whose spending is not published for this year is flagged, not left
      to read as an empty outline. Ceuta and Melilla have no regional government at
-     all, so they carry it every year; the dossier says why. */
+     all, so they carry it every year; the dossier says why. The flag tracks the
+     region's own publication, not the filter: where a whole function is absent
+     from this tier the panel states it once rather than pinning nineteen
+     markers to a blank country. */
   const flags: MapFlag[] = regions
-    .filter((g) => !regionSpending[g.id]?.spend[year])
+    .filter((g) => !regionSpending[g.id]?.spend[sy])
     .map((g) => ({
       id: g.id,
       /* The flag sits opposite the label: Melilla's name is nudged to the right
@@ -104,23 +157,21 @@ export default function SpendingConsole({
     }));
 
   /* The HUD states where the picture comes from, which year it is on and which
-     COFOG cut is drawn. The cut follows the slice, not the focus: focusing a
-     function opens its explainer and re-cuts the coins, it does not re-colour the
-     map, so anything else here would misdescribe what is on screen. The national
-     and on-map totals the prototype also carried are said in full in the
-     composition panel and on the coins — repeating them made the map a summary of
-     a summary. */
+     COFOG cut is drawn. Since the coins filter the map, the cut follows the
+     filter — anything else would misdescribe what is on screen. The national and
+     on-map totals the prototype also carried are said in full in the composition
+     panel and on the coins. */
   const hudRows: [string, string][] = [
     ["PROJ", "MERCATOR / ETRS89"],
     ["SRC", "IGAE COFOG · EUROSTAT"],
     [
       t.fYear.toUpperCase(),
-      `${year} · COFOG ${SLICE ? divisions[SLICE - 1] : "ALL"}`,
+      `${sy} · COFOG ${slice ? divisions[slice - 1] : "ALL"}`,
     ],
   ];
 
   /* ---- coins: the spending with no territorial split ---------------------- */
-  const agg = spendAggOf(year, aggCode(focus));
+  const agg = spendAggOf(sy, code);
   const coins: MapCoin[] = [];
   if (agg) {
     if (agg.socsec > 50)
@@ -157,10 +208,7 @@ export default function SpendingConsole({
       });
   }
 
-  /* The year actually read. It differs from the year asked for only if state ever
-     gets out of step with the mode — spending publishes a year later than
-     revenue — and the console then says which year it is showing. */
-  const shown = spendYear(year);
+  const fnName = slice ? M.rows.find((r) => r.k === focus)?.nm : null;
 
   return (
     <>
@@ -171,7 +219,7 @@ export default function SpendingConsole({
         <div className="comp-h">
           <div className="comp-hk">
             <div className="head-k">
-              {t.sExp.tot} · {fy(locale, shown)}
+              {t.sExp.tot} · {fy(locale, sy)}
             </div>
             <div className="head-s">{M.sub}</div>
           </div>
@@ -188,31 +236,31 @@ export default function SpendingConsole({
           total={M.total}
           floor={0.4}
           centre={eur(locale, M.total)}
-          aria={`${t.sExp.tot} ${fy(locale, shown)}: ${eur(locale, M.total)}`}
+          aria={`${t.sExp.tot} ${fy(locale, sy)}: ${eur(locale, M.total)}`}
           locale={locale}
           focus={focus}
           onFocus={onFocus}
-          totalRow={{ label: t.sExp.tot, value: eur(locale, M.total) }}
-        />
-        <div id="expl">
-          {focusRow ? (
-            <SpendingExplainer
-              row={focusRow}
-              total={M.total}
-              locale={locale}
-              t={t}
-              year={year}
-              onClose={() => onFocus(focusRow.k)}
-            />
-          ) : null}
-        </div>
+          showLegend={false}
+        >
+          <PartCoins
+            items={coinItems}
+            selected={focus}
+            onSelect={onFocus}
+            total={{ label: t.fnAll, desc: t.expSub }}
+            onTotal={onTotal}
+            glyphs={COFOG_GLYPH}
+          />
+        </Donut>
       </section>
 
-      <div className="main" id="mainlayout">
+      <div className="main conmain" id="mainlayout">
         <section className="pane">
           <div className="pane-h">
             <span className="t">{t.mapExp}</span>
-            <span className="x">{fy(locale, year)}</span>
+            <span className="x">
+              {fy(locale, sy)}
+              {fnName ? ` · ${fnName}` : ""}
+            </span>
           </div>
           <SpainMap
             W={CANVAS_W}
@@ -239,21 +287,19 @@ export default function SpendingConsole({
           <RampLegend ramp={ramp} lo={t.lo} hi={t.hi} />
         </section>
 
-        <aside className="pane dossier">
+        <aside className="pane dossier conpanel">
           <div className="pane-h">
             <span className="t">{t.dos}</span>
             <span className="x">{spendingDossierCode(sel, focus, regions)}</span>
           </div>
           <div className="pane-b">
-            <SpendingDossier
+            <SpendingPanel
               selected={sel}
+              focus={focus}
               regions={regions}
               locale={locale}
               t={t}
-              year={year}
-              focus={focus}
-              slice={SLICE}
-              metric={METRIC}
+              year={sy}
             />
           </div>
         </aside>

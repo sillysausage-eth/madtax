@@ -13,14 +13,17 @@ import { useKeyboardNav } from "./useKeyboardNav";
 /**
  * The spending mode island: it owns the console's state and nothing else.
  *
- * Year, selection and focus live in the query string (`?y=&r=&f=`) so a reload
+ * Year, selection and filter live in the query string (`?y=&r=&f=`) so a reload
  * and the browser's back button land where the reader was. Anything the URL
  * cannot vouch for is dropped rather than trusted — a year the bundle has no
  * COFOG figures for, a region id that is not on the map, a function that is not
  * a COFOG division.
+ *
+ * `?f=` is the same parameter M3 used for the open explainer; since M6 it is the
+ * map filter, because the control that writes it is the same control.
  */
 
-/** `gf01`…`gf10` — the focus values the composition ring writes. */
+/** `gf01`…`gf10` — the filter values the coin grid and the ring write. */
 const FOCUS_KEYS = divisions.map((d) => "gf" + d);
 
 export default function SpendingExplorer({ locale }: { locale: Locale }) {
@@ -48,12 +51,20 @@ export default function SpendingExplorer({ locale }: { locale: Locale }) {
     (k: string) => setUrl({ f: focus === k ? null : k }),
     [setUrl, focus],
   );
+  /* The total is a state to ask for, not the absence of one: pressing it lifts
+     the filter whatever was pressed before. */
+  const onTotal = useCallback(() => setUrl({ f: null }), [setUrl]);
 
-  /* Escape unwinds one level: it closes an open explainer first, and only clears
-     the map selection once nothing is open. */
+  /* Escape unwinds one level: it clears the map selection first, and only lifts
+     the filter once nothing is selected. The filter is the broader reading, so
+     it is the last thing to go — the revenue console's rule, unchanged.
+
+     There is no year guard on the filter here, and none is needed: every COFOG
+     division carries a figure in every year the bundle publishes, so scrubbing
+     never strands the filter on a year that cannot honour it. */
   const onEscape = useCallback(() => {
-    if (focus) setUrl({ f: null });
-    else if (sel) setUrl({ r: null });
+    if (sel) setUrl({ r: null });
+    else if (focus) setUrl({ f: null });
   }, [focus, sel, setUrl]);
 
   useKeyboardNav({ years: spendYears, year, onYear, onEscape });
@@ -65,6 +76,7 @@ export default function SpendingExplorer({ locale }: { locale: Locale }) {
       onYear={onYear}
       onSelect={onSelect}
       onFocus={onFocus}
+      onTotal={onTotal}
     />
   );
 }

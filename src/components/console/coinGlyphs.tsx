@@ -1,6 +1,6 @@
 /**
- * The coin iconography: one monoline glyph per revenue component, the European
- * emblem, and the Spanish state mark.
+ * The coin iconography: one monoline glyph per revenue component and one per
+ * COFOG spending function, the European emblem, and the Spanish state mark.
  *
  * Every glyph is hand-composed SVG on a 24 × 24 box, drawn with a single stroke
  * weight and no fills, so the whole set reads as one family at coin size. The
@@ -138,6 +138,20 @@ const pending = (base: React.ReactNode) => (
 );
 
 /**
+ * The whole reading: the ring itself, with the parts it is cut into. Not one of
+ * the components — the coin that stands for all of them. Shared by both consoles
+ * because it means the same thing on each: lift the filter.
+ */
+const totalGlyph = (
+  <>
+    <circle cx="12" cy="12" r="9.2" />
+    <path d="M12 12V2.8" />
+    <path d="M12 12l8 4.6" />
+    <path d="M12 12L4 16.6" />
+  </>
+);
+
+/**
  * One glyph per key in `PARTS`, plus `total` for the unfiltered reading. `eu` is
  * null because the European emblem is a coloured mark, not a monoline glyph, and
  * is drawn by the coin itself.
@@ -251,14 +265,111 @@ export const PART_GLYPH: Record<string, React.ReactNode> = {
      the badge that says the detail is still to come. */
   taxProdPending: pending(cart),
   taxIncPending: pending(payslip),
-  /* The whole reading: the ring itself, with the parts it is cut into. Not one
-     of the components — the coin that stands for all of them. */
-  total: (
+  total: totalGlyph,
+};
+
+/* ------------------------------------------------------- COFOG glyphs ----- */
+
+/**
+ * One glyph per COFOG division, plus the same `total` the revenue grid uses.
+ *
+ * Same 24 × 24 box, same single stroke weight, no fills — the spending coins are
+ * the revenue coins' siblings, not a second visual language. Each names its
+ * division by the thing the division pays for, so a reader who cannot separate
+ * two of the ten palette hues still has ten different shapes; the amount and the
+ * share are printed beside every one either way.
+ *
+ * The four rail coins beside the map keep their own glyphs (`MapCoins`): they are
+ * tiers of government, not functions, and nothing here should suggest otherwise.
+ */
+export const COFOG_GLYPH: Record<string, React.ReactNode> = {
+  /* 01 general public services — the seat of general administration: executive
+     and legislative organs, foreign affairs, and the interest on the debt. */
+  gf01: (
     <>
-      <circle cx="12" cy="12" r="9.2" />
-      <path d="M12 12V2.8" />
-      <path d="M12 12l8 4.6" />
-      <path d="M12 12L4 16.6" />
+      <path d="M12 4.2v1.6" />
+      <path d="M7.6 10.4a4.4 4.4 0 0 1 8.8 0" />
+      <path d="M6.2 10.4h11.6" />
+      <path d="M8.2 10.4v6.6M12 10.4v6.6M15.8 10.4v6.6" />
+      <path d="M5 17.6h14M3.4 20.4h17.2" />
     </>
   ),
+  /* 02 defence — a shield, chevroned so it cannot be read as the Social Security
+     mark on the rail. */
+  gf02: (
+    <>
+      <path d="M12 3.4 19 5.9v6.2c0 4.2-2.8 7.4-7 8.6-4.2-1.2-7-4.4-7-8.6V5.9Z" />
+      <path d="M8.4 12.2 12 9l3.6 3.2" />
+      <path d="M8.4 15.8 12 12.6l3.6 3.2" />
+    </>
+  ),
+  /* 03 public order and safety — police, fire, courts and prisons: the scales. */
+  gf03: (
+    <>
+      <path d="M12 4.4v14.6" />
+      <path d="M7.4 19.6h9.2" />
+      <path d="M4.6 8.2h14.8" />
+      <path d="M5.6 8.2v4.4M18.4 8.2v4.4" />
+      <path d="M2.8 12.6a2.8 2.8 0 0 0 5.6 0Z" />
+      <path d="M15.6 12.6a2.8 2.8 0 0 0 5.6 0Z" />
+    </>
+  ),
+  /* 04 economic affairs — transport is its largest part: the road itself. */
+  gf04: (
+    <>
+      <path d="M3.6 20.4 9.6 4.4" />
+      <path d="M20.4 20.4 14.4 4.4" />
+      <path d="M12 6.2v2.4M12 11.2v2.6M12 16.6v3" />
+    </>
+  ),
+  /* 05 environmental protection — the leaf. */
+  gf05: (
+    <>
+      <path d="M4.8 19.2C4.8 11.2 11.2 4.8 19.2 4.8 19.2 12.8 12.8 19.2 4.8 19.2Z" />
+      <path d="M3.2 20.8 17.2 6.8" />
+    </>
+  ),
+  /* 06 housing and community amenities — dwellings and the street they stand on. */
+  gf06: (
+    <>
+      <path d="M4.4 20.4V8.6h7.2v11.8" />
+      <path d="M6.6 11.4h1.4M9 11.4h1.4M6.6 14.8h1.4M9 14.8h1.4" />
+      <path d="M12.6 13.6 16.6 10.2l4 3.4" />
+      <path d="M13.8 13.6v6.8h5.6v-6.8" />
+      <path d="M3.2 20.4h17.6" />
+    </>
+  ),
+  /* 07 health — the heart and the trace across it. */
+  gf07: (
+    <>
+      <path d="M12 20.2C12 20.2 3.6 15 3.6 9.8 3.6 7 5.8 4.8 8.6 4.8c1.9 0 3.1 1 3.4 1.8.3-.8 1.5-1.8 3.4-1.8 2.8 0 5 2.2 5 5 0 5.2-8.4 10.4-8.4 10.4Z" />
+      <path d="M5.4 11.8h3l1.6-3 2.2 5.4 1.6-2.4h4.6" />
+    </>
+  ),
+  /* 08 recreation, culture and religion — the mask. */
+  gf08: (
+    <>
+      <path d="M6.2 4.8h11.6v6.4c0 4.6-2.6 8.4-5.8 8.4s-5.8-3.8-5.8-8.4Z" />
+      <path d="M8.6 10.2c.6-1 1.8-1 2.4 0M13 10.2c.6-1 1.8-1 2.4 0" />
+      <path d="M9.4 14.4c1.4 1.4 3.8 1.4 5.2 0" />
+    </>
+  ),
+  /* 09 education — the mortarboard. */
+  gf09: (
+    <>
+      <path d="M2.8 9.4 12 5.4l9.2 4-9.2 4Z" />
+      <path d="M19.6 10.6v4.4" />
+      <path d="M6.6 11.6v4.6c0 1.6 2.4 2.8 5.4 2.8s5.4-1.2 5.4-2.8v-4.6" />
+    </>
+  ),
+  /* 10 social protection — pensions, unemployment, disability, family: a person
+     held up rather than a person alone. */
+  gf10: (
+    <>
+      <circle cx="12" cy="6.4" r="2.3" />
+      <path d="M8.6 12a3.5 3.5 0 0 1 6.8 0" />
+      <path d="M4 12.4v1.2c0 4 3.6 7 8 7s8-3 8-7v-1.2" />
+    </>
+  ),
+  total: totalGlyph,
 };

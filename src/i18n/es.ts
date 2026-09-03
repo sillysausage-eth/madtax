@@ -174,6 +174,28 @@ export const es = {
   coinOsCentral:'Estado central',
   coinOsLocal:'Ayuntamientos',
   coinOsAdj:'Entre niveles',
+  // ---- M6: the COFOG filter and its panel ---------------------------------
+  // The spending console now works exactly as the revenue one does: the legend
+  // beside the ring is a grid of pressable coins, and pressing one filters the
+  // map and fills the panel. The prototype has neither control, so none of these
+  // strings is ported — they are new, and stated in both locales.
+  pnlFuncOf:'de esta función',
+  expTierH:'QUIÉN GASTA ESTA FUNCIÓN',
+  // Used only where a region or a coin is selected, so the national split under
+  // a regional headline cannot be read as that region's own.
+  expTierNat:'REPARTO NACIONAL DE ESTA FUNCIÓN',
+  expElimH:'ELIMINACIÓN ENTRE NIVELES',
+  expElimTxt:'Los niveles de gobierno se solapan: el dinero que uno transfiere a otro aparece en los dos. '+
+    // Parentheses rather than em dashes: the figure carries a minus sign, and
+    // «—−€250,8 MM—» is two dashes fighting each other.
+    'La contabilidad nacional lo elimina ({E}) y con esa eliminación los cuatro niveles dan exactamente {N}, '+
+    'la cifra consolidada. Por eso los cuatro niveles no se suman entre sí en ninguna parte de esta pantalla.',
+  expSubsSrc:'Desglose oficial por códigos COFOG · Eurostat (gov_10a_exp). Las partes suman exactamente la cifra de arriba.',
+  expNoSplit:'Ninguna comunidad autónoma gasta en esta función: entera se contabiliza fuera del subsector '+
+    'autonómico que dibuja el mapa. Cada comunidad se muestra como sin dato y no como cero, porque un cero '+
+    'aquí no mediría el gasto de esa comunidad — es la ausencia de la función en su nivel de gobierno.',
+  expRegNoFig:'No hay cifra publicada para esta comunidad en esta función.',
+  expTierSrc:'Los cuatro niveles y la eliminación son cifras publicadas de IGAE/Eurostat. Ninguna se calcula aquí.',
   pt:{
     social:['Cotizaciones sociales','Cuotas de empresas y trabajadores a la Seguridad Social'],
     irpf:['IRPF · Renta de las personas','Impuesto sobre la renta de nóminas, pensiones, autónomos y ahorro'],

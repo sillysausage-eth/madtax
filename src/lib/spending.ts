@@ -114,6 +114,29 @@ export function spendAggOf(y: YearKey, code: string): SpendAggEntry | undefined 
 export const spendSubYear = (y: YearKey): YearKey =>
   spendSub[y] ? y : spendYears[spendYears.length - 1];
 
+/**
+ * The slice of `regions[].spend[year]` the filter selects: 0 is the whole of
+ * spending, 1…10 are the COFOG divisions in `divisions` order. The same index
+ * the national row `spendNational[year]` is laid out in, so the map, the coins
+ * and the panel all read one number set.
+ */
+export const spendSlice = (focus: string | null): number =>
+  focus && focus.startsWith("gf") ? divisions.indexOf(focus.slice(2)) + 1 : 0;
+
+/**
+ * Whether nothing at all of this function is spent through the tier the map
+ * draws — `spendAgg[...].mapped === 0`.
+ *
+ * Defence is the case: `GF02` is `mapped: 0` in every published year. The region
+ * arrays do carry a literal `0` there, but that zero is not a measurement of a
+ * community's defence spending — it is the absence of the function from the
+ * autonomous subsector altogether. Painting it as a zero would put nineteen
+ * measured-looking zeroes on the map, so the console reads it as no data and the
+ * panel says why, in place.
+ */
+export const spendNoSplit = (y: YearKey, code: string): boolean =>
+  (spendAggOf(y, code)?.mapped ?? 0) === 0;
+
 /** One COFOG division of the national headline, ready to draw. */
 export interface SpendRow {
   k: string;

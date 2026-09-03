@@ -211,7 +211,7 @@ export default function RevenueConsole({
         </Donut>
       </section>
 
-      <div className="main revmain" id="mainlayout">
+      <div className="main conmain" id="mainlayout">
         <section className="pane">
           <div className="pane-h">
             <span className="t">{t.mapRev}</span>
@@ -245,7 +245,7 @@ export default function RevenueConsole({
           <RampLegend ramp={ramp} lo={t.lo} hi={t.hi} />
         </section>
 
-        <aside className="pane dossier revpanel">
+        <aside className="pane dossier conpanel">
           <div className="pane-h">
             <span className="t">{t.dos}</span>
             <span className="x">{dossierCode(sel, regions)}</span>

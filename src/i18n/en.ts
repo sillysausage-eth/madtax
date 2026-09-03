@@ -176,6 +176,26 @@ export const en = {
   coinOsCentral:'Central government',
   coinOsLocal:'Councils',
   coinOsAdj:'Between tiers',
+  // ---- M6: the COFOG filter and its panel ---------------------------------
+  // The spending console now works exactly as the revenue one does: the legend
+  // beside the ring is a grid of pressable coins, and pressing one filters the
+  // map and fills the panel. The prototype has neither control, so none of these
+  // strings is ported — they are new, and stated in both locales.
+  pnlFuncOf:'of this function',
+  expTierH:'WHO SPENDS THIS FUNCTION',
+  // Used only where a region or a coin is selected, so the national split under
+  // a regional headline cannot be read as that region's own.
+  expTierNat:'NATIONAL SPLIT OF THIS FUNCTION',
+  expElimH:'INTER-TIER ELIMINATION',
+  expElimTxt:'The tiers of government overlap: money one tier transfers to another appears in both. '+
+    'National accounts eliminate it — {E} — and with that elimination the four tiers come to exactly {N}, '+
+    'the consolidated figure. That is why the four tiers are never added together anywhere on this screen.',
+  expSubsSrc:'Official COFOG code breakdown · Eurostat (gov_10a_exp). The parts sum exactly to the figure above.',
+  expNoSplit:'No autonomous community spends on this function: all of it is recorded outside the regional '+
+    'subsector the map draws. Each community is shown as no data rather than as zero, because a zero here '+
+    'would not measure that community\'s spending — it is the absence of the function from its tier of government.',
+  expRegNoFig:'No figure is published for this community for this function.',
+  expTierSrc:'The four tiers and the elimination are published IGAE/Eurostat figures. None of them is computed here.',
   pt:{
     social:['Social contributions','Employer and employee payments into Social Security'],
     irpf:['Personal income tax','Tax on wages, pensions, self-employment and savings income'],

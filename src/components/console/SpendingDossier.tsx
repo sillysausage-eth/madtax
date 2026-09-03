@@ -229,15 +229,16 @@ function OffMapDossier({
 }
 
 /**
- * The code shown in the dossier pane header: the NUTS id for a region, and the
- * COFOG code the remainder was cut by for a coin.
+ * The code shown in the panel pane header: the NUTS id for a region, and the
+ * COFOG code the reading is cut by otherwise — which since M6 is the filter's
+ * own code, because the filter is what the panel is showing.
  */
 export function spendingDossierCode(
   selected: string | null,
   focus: string | null,
   regions: RegionGeometry[],
 ): string {
-  if (!selected) return "ES—";
+  if (!selected) return focus ? aggCode(focus) : "ES—";
   if (OFF_MAP_IDS_EXP.includes(selected)) return aggCode(focus);
   const geo = regions.find((x) => x.id === selected);
   return geo ? geo.nuts : "ES—";
