@@ -4,13 +4,10 @@ import { LOCALES, DEFAULT_LOCALE, isLocale } from "@/i18n";
 import { modeMetadata } from "@/lib/meta";
 import { modeJsonLd } from "@/lib/jsonld";
 import JsonLd from "@/components/JsonLd";
-import { DEBT_ENABLED } from "@/lib/flags";
 import DebtConsole from "@/components/console/DebtConsole";
 
-/* Nothing is prerendered while the screen is switched off, and the page itself
-   404s, so the route cannot be reached by guessing the URL either. */
 export function generateStaticParams() {
-  return DEBT_ENABLED ? LOCALES.map((locale) => ({ locale })) : [];
+  return LOCALES.map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({
@@ -34,7 +31,7 @@ export default async function DebtPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!isLocale(locale) || !DEBT_ENABLED) notFound();
+  if (!isLocale(locale)) notFound();
 
   return (
     <>

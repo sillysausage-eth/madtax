@@ -1,7 +1,6 @@
 import { ImageResponse } from "next/og";
 import type { Locale } from "@/i18n";
-import type { Mode } from "@/lib/modes";
-import { ENABLED_MODES } from "@/lib/flags";
+import { MODES, type Mode } from "@/lib/modes";
 import { SITE_NAME, copy } from "@/lib/meta";
 
 /**
@@ -149,9 +148,8 @@ export function modeOgImage(locale: Locale, mode: Mode) {
 }
 
 /**
- * The card for the site itself, shared when no console is named. The strap lists
- * `ENABLED_MODES`, not every mode: a card should not advertise a screen that a
- * flag has switched off and that would 404 on arrival.
+ * The card for the site itself, shared when no console is named. The strap
+ * names every console the card can send a reader to.
  */
 export function siteOgImage(locale: Locale) {
   const c = copy(locale);
@@ -161,7 +159,7 @@ export function siteOgImage(locale: Locale) {
         accent={ACCENT.revenue}
         title={c.title}
         description={c.description}
-        strap={ENABLED_MODES.map((m) => c.modes[m].title).join(" · ")}
+        strap={MODES.map((m) => c.modes[m].title).join(" · ")}
         tag={locale}
       />
     ),
