@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Saira_Condensed, Barlow, JetBrains_Mono } from "next/font/google";
-import { LOCALES, dict, isLocale, type Locale } from "@/i18n";
+import { LOCALES, DEFAULT_LOCALE, dict, isLocale, type Locale } from "@/i18n";
 import ModeFrame from "@/components/console/ModeFrame";
 import ModeTabs from "@/components/console/ModeTabs";
 import LangSwitch from "@/components/console/LangSwitch";
 import { MODES, modeLabel, type Mode } from "@/lib/modes";
+import { siteMetadata } from "@/lib/meta";
 import "../globals.css";
 
 /* The prototype's three faces, self-hosted by next/font with the same weights the
@@ -40,13 +41,9 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "MadTax // Fuente Abierta",
-    description:
-      locale === "en"
-        ? "Spain's public finances from the published figures: revenue, spending and debt."
-        : "Las cuentas públicas de España a partir de las cifras publicadas: ingresos, gasto y deuda.",
-  };
+  /* An unknown locale still has to answer with something; the page below it
+     404s, and the default locale's copy is the honest fallback. */
+  return siteMetadata(isLocale(locale) ? locale : DEFAULT_LOCALE);
 }
 
 export default async function LocaleLayout({

@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { LOCALES, isLocale } from "@/i18n";
+import { LOCALES, DEFAULT_LOCALE, isLocale } from "@/i18n";
+import { modeMetadata } from "@/lib/meta";
 import { DEBT_ENABLED } from "@/lib/flags";
 import DebtConsole from "@/components/console/DebtConsole";
 
@@ -7,6 +9,15 @@ import DebtConsole from "@/components/console/DebtConsole";
    404s, so the route cannot be reached by guessing the URL either. */
 export function generateStaticParams() {
   return DEBT_ENABLED ? LOCALES.map((locale) => ({ locale })) : [];
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return modeMetadata(isLocale(locale) ? locale : DEFAULT_LOCALE, "debt");
 }
 
 /**

@@ -15,47 +15,37 @@ export const en = {
   dbt:{
     foot1:'Source: Eurostat — Excessive Deficit Procedure (gov_10dd_edpt1, gov_10a_main)',
     foot2:'Consolidated gross debt at face value · a stock outstanding, not an annual flow',
-    heroK:'Public debt · all levels of government',
+    heroK:'Total public debt',
     ofGdp:'of GDP',
-    asOf:'End of {Y} · Eurostat EDP',
+    asOf:'All government · end of {Y}',
     sInt:'Interest paid',            sIntN:'in {Y}',
-    sIntGdp:'Interest / GDP',        sIntGdpN:'in {Y}',
     sLife:'Average life',            sLifeN:'State debt',
-    sCost:'Average cost',            sCostN:'debt outstanding',
-    sCostNew:'Cost of new debt',     sCostNewN:'issued this year',
+    // The two axes the trend chart is read off, named once each on the chart.
+    unitBn:'€bn',                     unitPc:'% GDP',
     sYears:'years',
     noPub:'No published figure',
-    trendK:'Debt as a share of GDP, year by year',
-    trendSrc:'Eurostat, as published',
-    secShape:'The shape of the debt',
-    // The four questions the block answers, one at a time. Short, because they
+    trendK:'Debt over time',
+    trendSrc:'Eurostat',
+    // Said to a screen reader, and to anyone who tabs to the chart.
+    trendNav:'Use the left and right arrow keys to read a year.',
+    secShape:'Breakdown',
+    // The three questions the block answers, one at a time. Short, because they
     // are tab labels: the strip is the heading, so no view repeats its own title.
-    tWho:'Who owes it',
     tForm:'What form',
     tHold:'Who holds it',
     tMat:'When it’s due',
-    qWhoS:'By level of government, before consolidation',
     qFormS:'By type of instrument, as issued',
     qHoldS:'Holders of the outstanding stock',
-    qMat:'What falls due in each period, at face value · press a period for the years in it',
-    tier:{S1311:'Central government',S1312:'Autonomous Regions',
-          S1313:'Local councils',S1314:'Social security'},
+    qMat:'Amount falling due each year, at face value',
     instr:{GD_F32:'Long-term securities',GD_F31:'Short-term securities',
            GD_F42:'Long-term loans',GD_F41:'Short-term loans',
            GD_F2:'Currency and deposits'},
-    beforeCons:'before consolidation',
-    elimTag:'Consolidation',
-    elimTxt:'The four levels add to {G}. Of that, {E} is debt one level owes another; '+
-      'netting it out gives the {C} headline. It is never rescaled to make the total tie.',
-    matRest:'Rest of {A}',
-    matRange:'{A}–{B}',
-    matLater:'{A} and later',
     matNote:'State debt securities only: it excludes the debt of the Autonomous Regions, '+
       'local councils and social security, and the State’s own loans and foreign-currency '+
-      'debt. The first period is partial — it holds only what is left to mature from the '+
+      'debt. The first year is partial — it holds only what is left to mature from the '+
       'reference date.',
     scopeState:'State debt',
-    scopeGG:'All levels of government',
+    scopeGG:'All government',
     gapTag:'Not published',
     // A question the bundle cannot answer is still asked, and the gap named in
     // place of the chart. Nothing here is estimated or interpolated.

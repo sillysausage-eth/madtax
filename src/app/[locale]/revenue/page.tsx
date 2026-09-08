@@ -1,9 +1,20 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { LOCALES, isLocale } from "@/i18n";
+import { LOCALES, DEFAULT_LOCALE, isLocale } from "@/i18n";
+import { modeMetadata } from "@/lib/meta";
 import RevenueExplorer from "@/components/console/RevenueExplorer";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return modeMetadata(isLocale(locale) ? locale : DEFAULT_LOCALE, "revenue");
 }
 
 /**

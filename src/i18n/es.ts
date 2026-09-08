@@ -13,48 +13,37 @@ export const es = {
   dbt:{
     foot1:'Fuente: Eurostat — Procedimiento de Déficit Excesivo (gov_10dd_edpt1, gov_10a_main)',
     foot2:'Deuda bruta consolidada a valor nominal · saldo vivo, no un flujo anual',
-    heroK:'Deuda pública · todas las administraciones',
+    heroK:'Deuda pública total',
     ofGdp:'del PIB',
-    asOf:'Cierre de {Y} · Eurostat PDE',
+    asOf:'Todas las AAPP · cierre de {Y}',
     sInt:'Intereses pagados',        sIntN:'ejercicio {Y}',
-    sIntGdp:'Intereses / PIB',       sIntGdpN:'ejercicio {Y}',
     sLife:'Vida media',              sLifeN:'deuda del Estado',
-    sCost:'Coste medio',             sCostN:'deuda en circulación',
-    sCostNew:'Coste de emisión',     sCostNewN:'deuda nueva',
+    // The two axes the trend chart is read off, named once each on the chart.
+    unitBn:'€ MM',                    unitPc:'% PIB',
     sYears:'años',
     noPub:'Sin dato publicado',
-    trendK:'Deuda sobre PIB, año a año',
-    trendSrc:'Eurostat, dato publicado',
-    secShape:'La forma de la deuda',
-    // The four questions the block answers, one at a time. Short, because they
+    trendK:'La deuda en el tiempo',
+    trendSrc:'Eurostat',
+    // Said to a screen reader, and to anyone who tabs to the chart.
+    trendNav:'Usa las flechas izquierda y derecha para leer un año.',
+    secShape:'Desglose',
+    // The three questions the block answers, one at a time. Short, because they
     // are tab labels: the strip is the heading, so no view repeats its own title.
-    tWho:'Quién la debe',
     tForm:'En qué forma',
     tHold:'Quién la tiene',
     tMat:'Cuándo vence',
-    qWhoS:'Reparto por administración, antes de consolidar',
     qFormS:'Por tipo de instrumento, según emisión',
     qHoldS:'Tenedores del saldo vivo',
-    qMat:'Lo que vence en cada periodo, por valor nominal · pulsa un periodo para ver sus años',
-    tier:{S1311:'Administración central',S1312:'Comunidades Autónomas',
-          S1313:'Corporaciones locales',S1314:'Seguridad Social'},
+    qMat:'Importe que vence cada año, por valor nominal',
     instr:{GD_F32:'Valores a largo plazo',GD_F31:'Valores a corto plazo',
            GD_F42:'Préstamos a largo plazo',GD_F41:'Préstamos a corto plazo',
            GD_F2:'Efectivo y depósitos'},
-    beforeCons:'antes de consolidar',
-    elimTag:'Consolidación',
-    elimTxt:'Las cuatro administraciones suman {G}. De esa cifra, {E} es deuda de una '+
-      'administración en manos de otra; al eliminarla queda el titular de {C}. '+
-      'Nunca se reescala para cuadrar.',
-    matRest:'Resto de {A}',
-    matRange:'{A}–{B}',
-    matLater:'{A} y posteriores',
     matNote:'Solo deuda del Estado en valores: no incluye la deuda de comunidades autónomas, '+
       'corporaciones locales ni Seguridad Social, ni los préstamos y la deuda en divisas del '+
-      'propio Estado. El primer periodo es parcial: recoge solo lo que queda por vencer desde '+
+      'propio Estado. El primer año es parcial: recoge solo lo que queda por vencer desde '+
       'la fecha de referencia.',
     scopeState:'Deuda del Estado',
-    scopeGG:'Todas las administraciones',
+    scopeGG:'Todas las AAPP',
     gapTag:'Dato no publicado',
     // A question the bundle cannot answer is still asked, and the gap named in
     // place of the chart. Nothing here is estimated or interpolated.

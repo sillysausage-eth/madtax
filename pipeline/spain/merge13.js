@@ -45,6 +45,20 @@ if (!years.length) throw new Error('local_owntax.json carries no detailed year')
 b.local = b.local || { baseline: {} };
 const base = b.local.baseline;
 
+/* The AEAT-side tally kept alongside the parts. Restated from the extraction
+   whether the layer is being written or was already in: a year whose parts
+   arrived with the municipal layer already under them (2024) otherwise keeps a
+   null local tally, and national2 sums that year's councils as zero. */
+const tally = (r, y, l) => {
+  const v = r.rev2 && r.rev2[y];
+  if (!v) return;
+  v.lt = l.ownTax; v.ibi = l.ibi; v.lf = l.fees;
+  const have = v.st != null && v.rg != null && v.lt != null && v.lf != null;
+  v.total = have ? v.st[0] + v.rg + v.lt + v.lf : null;
+  v.partial = !have;
+  v.missing = [v.st == null && 'state', v.rg == null && 'regional', v.lt == null && 'local', v.lf == null && 'fees'].filter(Boolean);
+};
+
 const foralIds = new Set((b.foral && b.foral.ids) || []);
 const targets = (r, y) => {
   /* Every record that holds this region-year's parts: the live one, and for the
@@ -82,6 +96,8 @@ for (const y of years) {
       const ref = before[recs.length - 1];
       if (Math.abs(ref.propTax - l.ibi) > 1) mismatches.push(`${y} ${r.es}: IBI ${ref.propTax} -> ${l.ibi}`);
       if (st && Math.abs(ref.sales - (l.fees + st[6])) > 1) mismatches.push(`${y} ${r.es}: fees ${ref.sales - st[6]} -> ${l.fees}`);
+      /* Same data, so the tally is restated from it rather than left absent. */
+      tally(r, y, l);
       continue;
     }
     recs.forEach((p, i) => {
@@ -95,15 +111,7 @@ for (const y of years) {
     });
     (filled[y] ??= []).push(r.id);
 
-    /* The AEAT-side tally kept alongside the parts. */
-    const v = r.rev2 && r.rev2[y];
-    if (v) {
-      v.lt = l.ownTax; v.ibi = l.ibi; v.lf = l.fees;
-      const have = v.st != null && v.rg != null && v.lt != null && v.lf != null;
-      v.total = have ? v.st[0] + v.rg + v.lt + v.lf : null;
-      v.partial = !have;
-      v.missing = [v.st == null && 'state', v.rg == null && 'regional', v.lt == null && 'local', v.lf == null && 'fees'].filter(Boolean);
-    }
+    tally(r, y, l);
   }
   if (b.national2 && b.national2[y]) {
     const n = b.national2[y];
