@@ -18,7 +18,12 @@ export const en = {
     heroK:'Total public debt',
     ofGdp:'of GDP',
     asOf:'All government · end of {Y}',
-    sInt:'Interest paid',            sIntN:'in {Y}',
+    // The three series the chart draws, named in its legend. Each switch is
+    // labelled with the series it shows, not with the axis it is read off.
+    sLv:'Debt outstanding',          sInt:'Interest paid',
+    sPc:'Debt / GDP',
+    trendPick:'Series on the chart',
+    sIntN:'in {Y}',
     sLife:'Average life',            sLifeN:'State debt',
     // The two axes the trend chart is read off, named once each on the chart.
     unitBn:'€bn',                     unitPc:'% GDP',

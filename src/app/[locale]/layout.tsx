@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Saira_Condensed, Barlow, JetBrains_Mono } from "next/font/google";
@@ -8,6 +8,8 @@ import ModeTabs from "@/components/console/ModeTabs";
 import LangSwitch from "@/components/console/LangSwitch";
 import { MODES, modeLabel, type Mode } from "@/lib/modes";
 import { siteMetadata } from "@/lib/meta";
+import { siteJsonLd } from "@/lib/jsonld";
+import JsonLd from "@/components/JsonLd";
 import "../globals.css";
 
 /* The prototype's three faces, self-hosted by next/font with the same weights the
@@ -34,6 +36,13 @@ const jbmono = JetBrains_Mono({
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
 }
+
+/* The console is dark by design, not by preference: the browser chrome and the
+   address bar should match the ground the charts sit on. */
+export const viewport: Viewport = {
+  colorScheme: "dark",
+  themeColor: "#070b0e",
+};
 
 export async function generateMetadata({
   params,
@@ -70,6 +79,7 @@ export default async function LocaleLayout({
       className={`${saira.variable} ${barlow.variable} ${jbmono.variable}`}
     >
       <body>
+        <JsonLd data={siteJsonLd(locale)} />
         <ModeFrame>
           <div className="shell">
             <header className="mast">

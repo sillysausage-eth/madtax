@@ -1,5 +1,5 @@
 import { dict, type Locale } from "@/i18n";
-import { eur, nf } from "@/lib/format";
+import { eur } from "@/lib/format";
 import {
   DEBT_HOLD_C,
   DEBT_INSTR_C,
@@ -20,9 +20,9 @@ import type { TrendPoint } from "./DebtTrend";
  * absent rather than inert. The sources behind it are published on different
  * clocks, so every block states its own date instead of implying a shared one.
  *
- * The screen is the headline, the two figures that qualify it, the chart that
- * reads all three, and one block that answers three questions about the shape
- * of it — one at a time, because the reader asks one at a time.
+ * The screen is the headline, the chart the headline is read off, and one
+ * block that answers three questions about the shape of it — one at a time,
+ * because the reader asks one at a time.
  *
  * Every figure on it is a figure of the same consolidated stock. The tier split
  * that M3 opened on is gone: the four levels of government add to €2,061.1bn
@@ -30,8 +30,8 @@ import type { TrendPoint } from "./DebtTrend";
  * whose total is €363bn larger than the headline is a chart of a double count
  * however carefully it is captioned.
  *
- * The figures at the top move with the chart, so they and the block are the
- * route's only JavaScript.
+ * The headline moves with the chart, so it and the block are the route's only
+ * JavaScript.
  */
 export default function DebtConsole({ locale }: { locale: Locale }) {
   const t = dict(locale);
@@ -55,16 +55,6 @@ export default function DebtConsole({ locale }: { locale: Locale }) {
       total: B.total[y],
       interest: B.interest[y]?.total ?? null,
     }));
-
-  /* Average life is one figure at one date — the source publishes no annual
-     series — so it is the one stat that does not move with the chart. */
-  const life =
-    mat && mat.avgLife != null
-      ? {
-          v: nf(locale, mat.avgLife, 2) + " " + X.sYears,
-          n: X.sLifeN + " · " + (mat.avgLifeAsOf || mat.asOf || ""),
-        }
-      : { v: X.noPub, n: X.sLifeN, none: true };
 
   const views: DebtView[] = [];
 
@@ -151,13 +141,7 @@ export default function DebtConsole({ locale }: { locale: Locale }) {
   return (
     <>
       <div className="debtscreen">
-        <DebtOverview
-          points={points}
-          refYear={ref}
-          life={life}
-          locale={locale}
-          X={X}
-        />
+        <DebtOverview points={points} refYear={ref} locale={locale} X={X} />
 
         <DebtBreakdown title={X.secShape} views={views} locale={locale} />
       </div>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LOCALES, DEFAULT_LOCALE, isLocale } from "@/i18n";
 import { modeMetadata } from "@/lib/meta";
+import { modeJsonLd } from "@/lib/jsonld";
+import JsonLd from "@/components/JsonLd";
 import { DEBT_ENABLED } from "@/lib/flags";
 import DebtConsole from "@/components/console/DebtConsole";
 
@@ -34,5 +36,10 @@ export default async function DebtPage({
   const { locale } = await params;
   if (!isLocale(locale) || !DEBT_ENABLED) notFound();
 
-  return <DebtConsole locale={locale} />;
+  return (
+    <>
+      <JsonLd data={modeJsonLd(locale, "debt")} />
+      <DebtConsole locale={locale} />
+    </>
+  );
 }

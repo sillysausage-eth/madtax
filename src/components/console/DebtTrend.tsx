@@ -6,17 +6,26 @@ import { eur, nf, nf0 } from "@/lib/format";
 import type { YearKey } from "@/lib/types";
 
 /**
- * The stock over time, on two axes: what is owed in euros on the left, and what
- * it is as a share of GDP on the right.
+ * The debt over time: three published series, on two axes, each one switchable.
  *
- * Both are published figures — the ratio is Eurostat's own, not one divided out
- * here — and they are two different facts. The level has risen in all but two
- * years since 1995; the ratio fell through thirteen of them, because GDP was
- * growing faster than the debt was. One line would have to pick a story. Two,
- * each with its own labelled axis in its own colour, let the reader see both.
+ * What is owed and what it costs to owe it are both in euros and read off the
+ * left axis; the share of GDP is a ratio and reads off the right. All three are
+ * Eurostat's own figures — the ratio is published, not divided out here — and
+ * they are three different facts. The level has risen in all but two years
+ * since 1995; the ratio fell through thirteen of them, because GDP was growing
+ * faster than the debt was; the interest bill fell for most of the decade the
+ * stock doubled in, because rates fell faster than the stock grew. One line
+ * would have to pick a story.
  *
- * The earlier version was a 300×54 viewBox with three labels pinned over it: no
- * y axis, no x axis, no way to read any year but the three that carried a label.
+ * The switches are what make three series on two axes readable. Each axis is
+ * scaled to the series actually showing on it, so turning the stock off rescales
+ * the euro axis from €2,000bn to €50bn and the interest bill — 2% of the stock,
+ * a flat line against it — fills the chart. Nothing is rescaled to flatter a
+ * series while another shares its axis: the flatness is the fact.
+ *
+ * A null breaks the line rather than being bridged: an interpolated segment
+ * would draw a figure no source published. Every series is complete for
+ * 1995-2025 today, so the runs are one run each.
  *
  * The chart is drawn at measured pixel width rather than scaled from a fixed
  * viewBox, because SVG text scales with the canvas: a viewBox that fits a
@@ -25,8 +34,10 @@ import type { YearKey } from "@/lib/types";
  * hydrating client's alike — uses one constant, so the static HTML carries a
  * complete chart and nothing shifts under the reader except the width.
  *
- * The year being read is the parent's state, not this component's: the figures
- * above the chart are readings of the same year, so one place owns it.
+ * The year being read is the parent's state, not this component's: the headline
+ * above the chart is a reading of the same year, so one place owns it. Which
+ * series are showing is this component's own — it is how the chart is drawn, not
+ * what the screen is about.
  */
 
 const DEFAULT_W = 1120;
@@ -53,18 +64,36 @@ function axis(max: number): { step: number; top: number } {
   return { step: 10 * mag, top: 10 * mag * GAPS };
 }
 
-/**
- * One published year. Both series are plotted, and the stock and the interest
- * bill are also what the figures above the chart read.
- */
+/** One published year. Every series the chart can draw is a field on it. */
 export interface TrendPoint {
   year: YearKey;
   /** Debt as a share of GDP, per cent. */
   v: number;
   /** Consolidated gross debt, € millions. */
   total: number;
+  /** Interest paid in the year, € millions. */
   interest: number | null;
 }
+
+/**
+ * A year a series has no published figure for. The chip and the readout row are
+ * too narrow for the prose form, which the spoken text carries instead: nothing
+ * is drawn or written where no figure exists.
+ */
+const DASH = "—";
+
+/** The three series, in legend order. */
+const KEYS = ["lv", "int", "pc"] as const;
+type Key = (typeof KEYS)[number];
+
+/** Which axis each is read off: `l` is euros, `r` is per cent. */
+const AXIS: Record<Key, "l" | "r"> = { lv: "l", int: "l", pc: "r" };
+
+const VAL: Record<Key, (p: TrendPoint) => number | null> = {
+  lv: (p) => p.total,
+  int: (p) => p.interest,
+  pc: (p) => p.v,
+};
 
 export default function DebtTrend({
   points,
@@ -82,6 +111,11 @@ export default function DebtTrend({
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(DEFAULT_W);
+  const [on, setOn] = useState<Record<Key, boolean>>({
+    lv: true,
+    int: true,
+    pc: true,
+  });
 
   useEffect(() => {
     const el = box.current;
@@ -100,34 +134,78 @@ export default function DebtTrend({
   const h = narrow ? 210 : 260;
   const pad = narrow ? PAD_SM : PAD;
 
+  const shown = KEYS.filter((k) => on[k]);
+
+  const label: Record<Key, string> = { lv: X.sLv, int: X.sInt, pc: X.sPc };
+  const fmt: Record<Key, (v: number) => string> = {
+    lv: (v) => eur(locale, v),
+    int: (v) => eur(locale, v),
+    pc: (v) => `${nf(locale, v, 1)}%`,
+  };
+
   const g = useMemo(() => {
-    /* The level is held in € millions and read in € billions, which is what the
-       left axis is labelled in: the ticks stay four digits instead of seven. */
-    const L = axis(Math.max(...points.map((p) => p.total)) / 1000);
-    const P = axis(Math.max(...points.map((p) => p.v)));
+    /* Each axis is scaled to the series showing on it, so a switch is not a
+       cosmetic filter: it is what makes the remaining series readable. The
+       euro series are held in € millions and read in € billions, which is what
+       the left axis is labelled in — the ticks stay four digits, not seven. */
+    const div = (side: "l" | "r") => (side === "l" ? 1000 : 1);
+    const top = (side: "l" | "r") => {
+      const vals = KEYS.filter((k) => on[k] && AXIS[k] === side)
+        .flatMap((k) => points.map((p) => VAL[k](p)))
+        .filter((v): v is number => v != null);
+      return vals.length ? axis(Math.max(...vals) / div(side)) : null;
+    };
+    const L = top("l");
+    const R = top("r");
 
     const iw = w - pad.l - pad.r;
     const ih = h - pad.t - pad.b;
     const px = (i: number) => pad.l + (i * iw) / (n - 1);
     /** `f` is 0 at the baseline and 1 at the top of either axis. */
     const py = (f: number) => pad.t + (1 - f) * ih;
-    const yL = (m: number) => py(m / 1000 / L.top);
-    const yP = (v: number) => py(v / P.top);
+    /** A series' y, in the units of the axis it is read off. */
+    const y = (k: Key, v: number) => {
+      const a = AXIS[k];
+      const t = a === "l" ? L : R;
+      return py(v / div(a) / t!.top);
+    };
 
-    const path = (y: (v: number) => number, val: (p: TrendPoint) => number) =>
-      points
-        .map((p, i) => `${i ? "L" : "M"}${px(i).toFixed(1)} ${y(val(p)).toFixed(1)}`)
-        .join(" ");
+    /* One run per unbroken stretch of published years: a gap ends the run and
+       the next value opens a new one, so nothing is drawn across a year no
+       source has a figure for. */
+    const path = (k: Key) => {
+      let d = "";
+      let open = false;
+      points.forEach((p, i) => {
+        const v = VAL[k](p);
+        if (v == null) {
+          open = false;
+          return;
+        }
+        d += `${open ? "L" : "M"}${px(i).toFixed(1)} ${y(k, v).toFixed(1)} `;
+        open = true;
+      });
+      return d.trim();
+    };
 
-    const line = path(yL, (p) => p.total);
+    /* Only the stock carries a fill, and only where it is unbroken: a wash
+       under a series with a hole in it would shade a quantity nobody
+       published. */
+    const filled = points.map((p, i) => (VAL.lv(p) == null ? -1 : i)).filter((i) => i >= 0);
+    const solid = filled.length === n;
     const base = py(0).toFixed(1);
+    const area =
+      on.lv && L && solid
+        ? `${path("lv")} L${px(n - 1).toFixed(1)} ${base} L${px(0).toFixed(1)} ${base} Z`
+        : null;
 
-    /* One position per gridline; each axis labels it in its own unit. */
+    /* One position per gridline, whichever axes are showing; each labels it in
+       its own unit. Geometry, so the grid never disappears with a series. */
     const ticks = Array.from({ length: GAPS + 1 }, (_, i) => ({
       f: i / GAPS,
       y: py(i / GAPS),
-      bn: (L.top / GAPS) * i,
-      pc: (P.top / GAPS) * i,
+      bn: L ? (L.top / GAPS) * i : null,
+      pc: R ? (R.top / GAPS) * i : null,
     }));
 
     /* Every fifth year, and the last one whatever it is: the latest reading is
@@ -138,18 +216,8 @@ export default function DebtTrend({
       .map((p, i) => ({ i, year: p.year }))
       .filter(({ i, year }) => Number(year) % every === 0 || i === n - 1);
 
-    return {
-      px,
-      py,
-      yL,
-      yP,
-      line,
-      area: `${line} L${px(n - 1).toFixed(1)} ${base} L${px(0).toFixed(1)} ${base} Z`,
-      pcLine: path(yP, (p) => p.v),
-      ticks,
-      xTicks,
-    };
-  }, [h, n, narrow, pad, points, w]);
+    return { px, py, y, path, area, ticks, xTicks, hasL: !!L, hasR: !!R };
+  }, [h, n, narrow, on, pad, points, w]);
 
   /* The nearest year to the pointer, so the readout tracks the lines rather
      than needing a hit on a 4px dot. */
@@ -176,14 +244,44 @@ export default function DebtTrend({
 
   const cur = at != null ? points[at] : null;
   const last = points[n - 1];
-  /* Which end of the plot the lines have left free. Early years put both low or
-     mid, later years put both high, so one test on the higher of the two is
-     enough to keep the readout off them. */
+  /* The legend doubles as the readout, so it reads the year under the pointer
+     when there is one and the latest year when there is not. */
+  const read = cur ?? last;
+
+  /* Which end of the plot the series have left free, taken over the ones
+     actually showing: the readout carries every visible reading at once, so it
+     is pinned clear of them rather than chasing one of three crossing lines. */
+  const ys = cur
+    ? shown.map((k) => {
+        const v = VAL[k](cur);
+        return v == null ? Infinity : g.y(k, v);
+      })
+    : [];
   const readoutLow =
-    cur != null &&
-    Math.min(g.yL(cur.total), g.yP(cur.v)) < pad.t + (h - pad.t - pad.b) * 0.4;
+    ys.length > 0 && Math.min(...ys) < pad.t + (h - pad.t - pad.b) * 0.4;
+
   const say = (p: TrendPoint) =>
-    `${p.year}: ${eur(locale, p.total)}, ${nf(locale, p.v, 1)}% ${X.ofGdp}`;
+    [
+      `${p.year}:`,
+      ...shown.map((k) => {
+        const v = VAL[k](p);
+        return `${label[k]} ${v == null ? X.noPub : fmt[k](v)}`;
+      }),
+    ].join(" ");
+
+  /* The last series showing cannot be switched off: an empty chart is not a
+     reading, and a dead click is not an answer. The button says so rather than
+     ignoring the press. */
+  const sole = shown.length === 1;
+  const toggle = (k: Key) => {
+    if (on[k] && sole) return;
+    setOn((s) => ({ ...s, [k]: !s[k] }));
+  };
+
+  /* Each axis is tinted with its series' colour, so a reader never has to work
+     out which line a scale belongs to. With both euro series on one axis there
+     is no single owner, so it goes neutral rather than claiming one. */
+  const lTint = on.lv && on.int ? "" : on.lv ? " lv" : on.int ? " int" : "";
 
   return (
     <div className="dtrend">
@@ -192,6 +290,29 @@ export default function DebtTrend({
         <span className="x">
           {points[0].year}–{last.year} · {X.trendSrc}
         </span>
+      </div>
+
+      {/* The switches, each carrying its own reading of the year in view. With
+          the stock and the interest bill sharing an axis, the figure in the
+          legend is what keeps the smaller of the two legible while the larger
+          is showing. */}
+      <div className="lgnd" role="group" aria-label={X.trendPick}>
+        {KEYS.map((k) => {
+          const v = VAL[k](read);
+          return (
+            <button
+              key={k}
+              className={`lgb ${k}`}
+              aria-pressed={on[k]}
+              aria-disabled={on[k] && sole}
+              onClick={() => toggle(k)}
+            >
+              <i className="sw" aria-hidden />
+              <span className="nm">{label[k]}</span>
+              <b className="vv">{v == null ? DASH : fmt[k](v)}</b>
+            </button>
+          );
+        })}
       </div>
 
       <div
@@ -208,9 +329,8 @@ export default function DebtTrend({
         onBlur={() => onAt(null)}
       >
         <svg width={w} height={h} role="img" aria-hidden>
-          {/* One gridline per tick, labelled in € on the left and in per cent on
-              the right — each in its own series' colour, so the axis says which
-              line it belongs to with no legend to cross-reference. */}
+          {/* One gridline per tick, labelled in € on the left and in per cent
+              on the right — but only on the side that has a series to label. */}
           {g.ticks.map((tk) => (
             <g key={tk.f}>
               <line
@@ -220,28 +340,37 @@ export default function DebtTrend({
                 x2={w - pad.r}
                 y2={tk.y}
               />
-              <text className="yl lv" x={pad.l - 8} y={tk.y} dy="0.32em">
-                {nf0(locale, tk.bn)}
-              </text>
-              <text className="yl pc" x={w - pad.r + 8} y={tk.y} dy="0.32em">
-                {nf0(locale, tk.pc)}%
-              </text>
+              {tk.bn != null ? (
+                <text className={`yl l${lTint}`} x={pad.l - 8} y={tk.y} dy="0.32em">
+                  {nf0(locale, tk.bn)}
+                </text>
+              ) : null}
+              {tk.pc != null ? (
+                <text className="yl r pc" x={w - pad.r + 8} y={tk.y} dy="0.32em">
+                  {nf0(locale, tk.pc)}%
+                </text>
+              ) : null}
             </g>
           ))}
 
           {/* What each axis counts, once, at the head of it. Both are anchored
               to the canvas edge rather than to the tick column, so neither can
               be clipped by a gutter sized for the ticks alone. */}
-          <text className="au lv" x={0} y={pad.t - 13}>
-            {X.unitBn}
-          </text>
-          <text className="au pc" x={w} y={pad.t - 13}>
-            {X.unitPc}
-          </text>
+          {g.hasL ? (
+            <text className={`au l${lTint}`} x={0} y={pad.t - 13}>
+              {X.unitBn}
+            </text>
+          ) : null}
+          {g.hasR ? (
+            <text className="au r pc" x={w} y={pad.t - 13}>
+              {X.unitPc}
+            </text>
+          ) : null}
 
-          <path className="ar" d={g.area} />
-          <path className="ln lv" d={g.line} />
-          <path className="ln pc" d={g.pcLine} />
+          {g.area ? <path className="ar" d={g.area} /> : null}
+          {shown.map((k) => (
+            <path key={k} className={`ln ${k}`} d={g.path(k)} />
+          ))}
 
           {/* X axis: a tick and a year every five years. */}
           {g.xTicks.map(({ i, year }) => (
@@ -261,8 +390,18 @@ export default function DebtTrend({
 
           {/* The latest reading always carries its dots: they are where the
               figures at the top of the screen come from. */}
-          <circle className="pt lv" cx={g.px(n - 1)} cy={g.yL(last.total)} r="3" />
-          <circle className="pt pc" cx={g.px(n - 1)} cy={g.yP(last.v)} r="3" />
+          {shown.map((k) => {
+            const v = VAL[k](last);
+            return v == null ? null : (
+              <circle
+                key={k}
+                className={`pt ${k}`}
+                cx={g.px(n - 1)}
+                cy={g.y(k, v)}
+                r="3"
+              />
+            );
+          })}
 
           {cur ? (
             <g>
@@ -273,16 +412,25 @@ export default function DebtTrend({
                 x2={g.px(at!)}
                 y2={g.py(0)}
               />
-              <circle className="pt lv on" cx={g.px(at!)} cy={g.yL(cur.total)} r="4.5" />
-              <circle className="pt pc on" cx={g.px(at!)} cy={g.yP(cur.v)} r="4.5" />
+              {shown.map((k) => {
+                const v = VAL[k](cur);
+                return v == null ? null : (
+                  <circle
+                    key={k}
+                    className={`pt on ${k}`}
+                    cx={g.px(at!)}
+                    cy={g.y(k, v)}
+                    r="4.5"
+                  />
+                );
+              })}
             </g>
           ) : null}
         </svg>
 
-        {/* Pinned to whichever end of the plot the lines have left free, rather
-            than to either line: the box carries both readings, and chasing one
-            of two crossing lines with something this size would cover the
-            other. */}
+        {/* Pinned to whichever end of the plot the series have left free, rather
+            than to any one of them: the box carries every visible reading, and
+            chasing one line with something this size would cover the others. */}
         {cur ? (
           <div
             className={readoutLow ? "dtt low" : "dtt"}
@@ -292,10 +440,14 @@ export default function DebtTrend({
             }}
           >
             <i>{cur.year}</i>
-            <b className="lv">{eur(locale, cur.total)}</b>
-            <b className="pc">
-              {nf(locale, cur.v, 1)}% {X.ofGdp}
-            </b>
+            {shown.map((k) => {
+              const v = VAL[k](cur);
+              return (
+                <b key={k} className={k}>
+                  {v == null ? DASH : fmt[k](v)}
+                </b>
+              );
+            })}
           </div>
         ) : null}
 

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LOCALES, DEFAULT_LOCALE, isLocale } from "@/i18n";
 import { modeMetadata } from "@/lib/meta";
+import { modeJsonLd } from "@/lib/jsonld";
+import JsonLd from "@/components/JsonLd";
 import RevenueExplorer from "@/components/console/RevenueExplorer";
 
 export function generateStaticParams() {
@@ -33,6 +35,9 @@ export default async function RevenuePage({
   if (!isLocale(locale)) notFound();
 
   return (
-    <RevenueExplorer locale={locale} />
+    <>
+      <JsonLd data={modeJsonLd(locale, "revenue")} />
+      <RevenueExplorer locale={locale} />
+    </>
   );
 }

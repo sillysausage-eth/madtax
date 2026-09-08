@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LOCALES, DEFAULT_LOCALE, isLocale } from "@/i18n";
 import { modeMetadata } from "@/lib/meta";
+import { modeJsonLd } from "@/lib/jsonld";
+import JsonLd from "@/components/JsonLd";
 import SpendingExplorer from "@/components/console/SpendingExplorer";
 
 export function generateStaticParams() {
@@ -32,5 +34,10 @@ export default async function SpendingPage({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  return <SpendingExplorer locale={locale} />;
+  return (
+    <>
+      <JsonLd data={modeJsonLd(locale, "spending")} />
+      <SpendingExplorer locale={locale} />
+    </>
+  );
 }

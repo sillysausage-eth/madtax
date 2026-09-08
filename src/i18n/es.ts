@@ -16,7 +16,12 @@ export const es = {
     heroK:'Deuda pública total',
     ofGdp:'del PIB',
     asOf:'Todas las AAPP · cierre de {Y}',
-    sInt:'Intereses pagados',        sIntN:'ejercicio {Y}',
+    // The three series the chart draws, named in its legend. Each switch is
+    // labelled with the series it shows, not with the axis it is read off.
+    sLv:'Deuda viva',                sInt:'Intereses pagados',
+    sPc:'Deuda sobre PIB',
+    trendPick:'Series del gráfico',
+    sIntN:'ejercicio {Y}',
     sLife:'Vida media',              sLifeN:'deuda del Estado',
     // The two axes the trend chart is read off, named once each on the chart.
     unitBn:'€ MM',                    unitPc:'% PIB',
