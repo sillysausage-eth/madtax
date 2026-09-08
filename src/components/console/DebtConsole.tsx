@@ -174,7 +174,11 @@ export default function DebtConsole({ locale }: { locale: Locale }) {
   /* ---- when it falls due -------------------------------------------------- */
   /* A narrower perimeter than every other view: State debt securities, not all
      of government. The scope line carries its own total for that reason. */
-  if (mat && mat.rows && mat.rows.length) {
+  /* The periods are cut from the calendar's own reference date, so a calendar
+     with no usable date folds into nothing — and a calendar that folds into
+     nothing is a gap, stated as one, not an empty chart. */
+  const periods = mat && mat.rows ? matBuckets(mat.rows, mat.asOf) : [];
+  if (mat && periods.length) {
     const laddered =
       mat.totalLaddered != null
         ? mat.totalLaddered
@@ -184,7 +188,7 @@ export default function DebtConsole({ locale }: { locale: Locale }) {
       tab: X.tMat,
       sub: X.qMat,
       scope: `${eur(locale, laddered)} · ${X.scopeState} · ${mat.asOf || ""}`,
-      periods: matBuckets(mat.rows, mat.asOf).map((b) => ({
+      periods: periods.map((b) => ({
         k: b.k,
         label:
           b.to == null
