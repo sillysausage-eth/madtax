@@ -123,24 +123,11 @@ export default function RevenueConsole({
   );
   const intensity = useMemo(() => makeIntensity(list), [list]);
 
+  /* No advisory badges on the revenue map. The foral regime of the Basque
+     Country and Navarre is stated in full in the dossier once the reader selects
+     them; a one-glyph marker on the map said less and cluttered the country. Spending mode still pins its `?` where an
+     autonomous region has published nothing for the year. */
   const flags: MapFlag[] = [];
-  for (const g of regions) {
-    /* Madrid carries the headquarters advisory: the tax is declared where a
-       company is registered, not where the activity happened. */
-    if (g.id === "13")
-      flags.push({ id: g.id, dx: 30, dy: -16, r: 6, ty: 2.5, text: "!" });
-    if (g.foral)
-      flags.push({
-        id: g.id,
-        dx: 22,
-        dy: -12,
-        r: 5,
-        ty: 2.2,
-        text: "F",
-        fill: "var(--mag)",
-        textFill: "#150E1D",
-      });
-  }
 
   /* The HUD states where the picture comes from and which year it is on. The
      national and on-map totals it used to carry are said in full in the

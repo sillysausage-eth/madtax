@@ -362,6 +362,31 @@ async function main() {
     );
   }
 
+  // ---- N. region_macro carries the year's own denominators -------------------
+  console.log('\n=== N. REGION_MACRO: per-year population and GDP, bundle-exact ===');
+  {
+    const years = [...new Set([...B.revYears, ...B.spendYears])].sort();
+    for (const y of [years[0], years[years.length - 1]]) {
+      const rows = await select('region_macro', 'region_id,pop,gdp_mn', { year: Number(y) });
+      const dbPop = sum(rows.filter((r) => r.pop != null), 'pop');
+      const dbGdp = sum(rows.filter((r) => r.gdp_mn != null), 'gdp_mn');
+      const bPop = B.regions.reduce((a, r) => a + (r.macro.pop[y] ?? 0), 0);
+      const bGdp = B.regions.reduce((a, r) => a + (r.macro.gdp[y] ?? 0), 0);
+      check(
+        `region_macro Σpop and Σgdp_mn = bundle regions[].macro (${y})`,
+        rows.length === B.regions.length && allClose([[dbPop, bPop], [dbGdp, bGdp]]),
+        `${rows.length} regions; DB Σpop ${fmt(dbPop)} vs bundle ${fmt(bPop)}; DB Σgdp ${fmt(dbGdp)} vs bundle ${fmt(bGdp)}`
+      );
+    }
+    // The single-vintage scalars are gone from region: selecting them must fail.
+    const probe = await db.from('region').select('gdp_mn,pop').limit(1);
+    check(
+      'region no longer carries a single-vintage gdp_mn/pop',
+      probe.error != null,
+      probe.error ? `column lookup rejected (${probe.error.code ?? probe.error.message.slice(0, 40)})` : 'columns still present — 0007 not applied'
+    );
+  }
+
   // ---- M. anon writes must be rejected ---------------------------------------
   console.log('\n=== M. SECURITY: anon can read, cannot write (RLS + revoked grants) ===');
   {

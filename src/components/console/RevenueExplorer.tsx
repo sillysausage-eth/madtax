@@ -69,6 +69,12 @@ export default function RevenueExplorer({ locale }: { locale: Locale }) {
     (id: string) => setUrl({ r: sel === id ? null : id }),
     [setUrl, sel],
   );
+  /* Filtering to a component says nothing about who collects it: the panel opens
+     on the component's whole national figure, and the reader picks a region — or
+     the unsplit coin — for themselves. Earlier this auto-selected the unsplit
+     coin for components no source splits by autonomous region, which read as the
+     console answering a question the reader had not asked. The blank country
+     those components draw is stated in the panel's mapped/unattributed split. */
   const onFocus = useCallback(
     (k: string) => setUrl({ f: focus === k ? null : k }),
     [setUrl, focus],

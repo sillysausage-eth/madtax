@@ -5,10 +5,31 @@
    Eurostat ESA bucket for general government — the foral territories collect their
    own, and the ESA bucket is wider. We keep AEAT's own total so the gap is visible
    rather than papered over with a rescaling."""
-import openpyxl, re, json
+import openpyxl, re, json, unicodedata
 
-WB = 'who/Cuadros_IART24.xlsx'
+# The annexes of the Informe Anual de Recaudación Tributaria. AEAT renamed the
+# file between editions (Cuadros_IART24.xlsx, then Cuadros_IART25_es_es.xlsx),
+# so the name is not derived from the year.
+WB = 'who/Cuadros_IART25_es_es.xlsx'
 wb = openpyxl.load_workbook(WB, data_only=True)
+
+def squash(s):
+    s = unicodedata.normalize('NFKD', str(s or ''))
+    s = ''.join(c for c in s if not unicodedata.combining(c))
+    return re.sub(r'[^a-z0-9]', '', s.lower())
+
+def row_of(ws, label, after=1, before=None):
+    """The first row at or after `after` whose column-B label squashes to `label`.
+
+    Rows are found by label, never by position: the 2025 edition inserted the
+    e-cigarette liquid line into table 5.1 and pushed coal, plastic and
+    electricity down one row each, and re-ordered the adjustments block of 8.7.
+    A position-based read would have silently filed coal as e-cigarettes."""
+    before = before or ws.max_row
+    for r in range(after, before + 1):
+        if squash(ws.cell(r, 2).value) == label:
+            return r
+    raise SystemExit(f'{ws.title}: row "{label}" not found between {after} and {before}')
 
 def year_cols(ws):
     """Year headers run left to right and then give way to a percent-change block;
@@ -51,24 +72,45 @@ def block(ws, cols, total_row, rows, since=2012):
 
 # ---- 5.1 excise duties accrued, by product ----
 ws = wb['5.1']
-excise = block(ws, year_cols(ws), 23, [
-    (24, 'alcohol'), (25, 'beer'), (26, 'intermediate'), (27, 'fuel'),
-    (28, 'tobacco'), (29, 'coal'), (30, 'plastic'), (31, 'electricity')])
+tot = row_of(ws, 'impuestoespecialdevengadod2')
+EXCISE_LINES = [
+    ('alcoholybebidasderivadas', 'alcohol'), ('cerveza', 'beer'),
+    ('productosintermedios', 'intermediate'), ('hidrocarburos', 'fuel'),
+    ('laboresdeltabaco', 'tobacco'), ('liquidocigarrilloselectronicos', 'ecig'),
+    ('carbon', 'coal'), ('envasesdeplasticonoreutilizables', 'plastic'),
+    ('electricidad', 'electricity')]
+excise = block(ws, year_cols(ws), tot, [
+    (row_of(ws, lab, tot, tot + 12), k) for lab, k in EXCISE_LINES])
 
 # ---- 8.7 VAT accrued, by rate. The rate split is published for the general regime
 #      only; the special regimes and the foral adjustment sit outside it. ----
 ws = wb['8.7']
 cols = year_cols(ws)
-vat = block(ws, cols, 40, [
-    (41, 'r0'), (42, 'r25'), (43, 'rsuper'), (44, 'r5'),
-    (45, 'r75'), (46, 'rreduced'), (47, 'rgeneral')])
+accrued = row_of(ws, 'ivadevengadoenelperiodoivadivagivareaj')
+general = row_of(ws, 'ivaenelregimengeneralivagab', accrued)
+special = row_of(ws, 'ivaenlosregimenesespecialesivarecd', general)
+# The general-regime rate lines sit between the two subtotals. The 2% line is the
+# temporary rate on basic foods (Oct-Dec 2024); the 2024 edition labelled the
+# same row "Tipo 2,5" and the 2025 edition corrected it to "Tipo 2".
+RATE_LINES = [('tipo0', 'r0'), ('tipo25', 'r2'), ('tipo2', 'r2'), ('tiposuperreducido', 'rsuper'),
+              ('tipo5', 'r5'), ('tipo75', 'r75'), ('tiporeducido', 'rreduced'),
+              ('tipogeneral', 'rgeneral')]
+rate_rows, seen = [], set()
+for r in range(general + 1, special):
+    lab = squash(ws.cell(r, 2).value)
+    for pat, k in RATE_LINES:
+        if lab == pat and k not in seen:
+            rate_rows.append((r, k)); seen.add(k)
+vat = block(ws, cols, general, rate_rows)
 # context rows so the page can say what the rate split leaves out
+foral_row = row_of(ws, 'ivacorrespondientealosterritoriosforalese', special)
+other_row = row_of(ws, 'otrosf', special)
 for y, (c, _) in cols.items():
     if y in vat:
-        vat[y]['accrued'] = num(ws.cell(39, c).value)   # all accrued VAT
-        vat[y]['special'] = num(ws.cell(64, c).value)   # special regimes
-        vat[y]['foral']   = num(ws.cell(74, c).value)   # foral territories
-        vat[y]['adjOther']= num(ws.cell(75, c).value)   # other adjustments
+        vat[y]['accrued'] = num(ws.cell(accrued, c).value)   # all accrued VAT
+        vat[y]['special'] = num(ws.cell(special, c).value)   # special regimes
+        vat[y]['foral']   = num(ws.cell(foral_row, c).value) # foral territories
+        vat[y]['adjOther']= num(ws.cell(other_row, c).value) # other adjustments
 
 json.dump({'excise': excise, 'vat': vat}, open('aeat_detail.json', 'w'))
 

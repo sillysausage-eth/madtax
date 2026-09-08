@@ -23,12 +23,41 @@ export function DossierBlank({ hint }: { hint: string }) {
   );
 }
 
-export function KvGrid({ rows }: { rows: [string, string][] }) {
+/**
+ * The provisional marker: a `(p)` badge in the attention colour whose caveat —
+ * who flags the year provisional and what that means — appears on hover and on
+ * keyboard focus, and is the badge's accessible name. The label it sits after
+ * stays clean; the caveat is never dropped, only moved one hover away.
+ */
+export function ProvTag({ badge, text }: { badge: string; text: string }) {
+  return (
+    <span className="prov" tabIndex={0} role="note" aria-label={text}>
+      <span className="prov-b" aria-hidden="true">
+        {badge}
+      </span>
+      <span className="prov-tip" aria-hidden="true">
+        {text}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * One dossier row: label, value and — for a figure the source still flags
+ * provisional — the caveat sentence, rendered as a `ProvTag` after the label
+ * so `lib/` can build rows without JSX.
+ */
+export type KvRow = [label: string, value: string, prov?: string];
+
+export function KvGrid({ rows, provBadge }: { rows: KvRow[]; provBadge: string }) {
   return (
     <div className="kv">
-      {rows.map(([k, v], i) => (
+      {rows.map(([k, v, prov], i) => (
         <Fragment key={`kv${i}`}>
-          <span className="k">{k}</span>
+          <span className="k">
+            {k}
+            {prov ? <ProvTag badge={provBadge} text={prov} /> : null}
+          </span>
           <span className="v">{v}</span>
         </Fragment>
       ))}
@@ -116,6 +145,48 @@ export function BarBlock({
         </span>
       ) : null}
       {children}
+    </div>
+  );
+}
+
+/**
+ * A caveat that explains a discrepancy or an absence, one hover away.
+ *
+ * Every sentence of this kind — why a component's money is not on the map, why
+ * a region reads "—", why a published table is missing for a year — used to sit
+ * as body copy in the middle of the panel, where it repeated itself down the
+ * whole filter rail and pushed the figures it qualifies out of the first
+ * screen. None of it is dropped: the tag names the question in the panel's own
+ * chrome voice, and the sentence itself opens on hover and on keyboard focus,
+ * exactly as the provisional `(p)` marker does.
+ *
+ * `inline` is for a tip that sits mid-panel, next to the figure it qualifies,
+ * rather than closing the panel: it drops the closing rule and hangs the tip
+ * downward. The default closes the panel and opens upward, because hung
+ * downward there it would leave the scroll container.
+ */
+export function FootTip({
+  tag,
+  text,
+  inline = false,
+}: {
+  tag: string;
+  text: string;
+  inline?: boolean;
+}) {
+  return (
+    <div className={inline ? "foottip inline" : "foottip"}>
+      <span className="tip" tabIndex={0} role="note" aria-label={`${tag} ${text}`}>
+        <span className="tip-t" aria-hidden="true">
+          {tag}
+        </span>
+        <span className="tip-b" aria-hidden="true">
+          (i)
+        </span>
+        <span className="tip-x" aria-hidden="true">
+          {text}
+        </span>
+      </span>
     </div>
   );
 }

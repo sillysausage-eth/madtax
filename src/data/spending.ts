@@ -27,6 +27,8 @@ export const {
   econKeys,
   econES,
   econEN,
+  spendTerr,
+  localAreas,
 } = spending;
 
 /** Per-region spending, keyed by the same region id the geometry carries. */

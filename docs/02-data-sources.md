@@ -1,8 +1,8 @@
 # MadTax — Spain Data Source Map
 
-> Every source below was probed on 2026-08-29. "Verified" means I hit the endpoint or
-> page myself and confirmed the response, format and coverage — not that a search result
-> claimed it exists.
+> Every source below was probed on 2026-08-29 and re-probed on 2026-09-08. "Verified"
+> means I hit the endpoint or page myself and confirmed the response, format and coverage
+> — not that a search result claimed it exists.
 
 ## Legend
 
@@ -74,16 +74,39 @@ The Ministry's own hub covering all four tiers — national accounting, budgets,
 execution, liquidations, fiscal rules, tax collection, debt, personnel and pensions.
 Excel, PDF and PowerBI. Best used as a discovery index and cross-check.
 
-### 1.7 INE — Tempus3 statistical API · Grade A · **VERIFIED LIVE**
-`https://servicios.ine.es/wstempus/js/ES/OPERACIONES_DISPONIBLES` — returns JSON.
+### 1.7 Regional GDP and population — Eurostat · Grade A · **VERIFIED LIVE, INGESTED**
+`nama_10r_2gdp` (regional GDP at current market prices, 2007→2024, latest two years
+provisional) and `demo_r_pjanaggr3` (population on 1 January, 2007→2025), both by NUTS 2.
+These are the denominators behind every per-resident and %GDP reading, **by year** —
+until September 2026 the bundle carried one population (1 Jan 2024) and one GDP (2023)
+per region and divided every year's figure by them. Ingested by `pipeline/spain/merge14.js`.
 
-Not fiscal data, but essential: population (per-capita figures), GDP (% of GDP), and CPI
-(constant-price series). Without this, year toggling is misleading.
+INE's Tempus3 API (`https://servicios.ine.es/wstempus/js/ES/OPERACIONES_DISPONIBLES`)
+remains the route for CPI when constant-price series are needed.
 
-### 1.8 Gaps we must close for national completeness
-- **Haciendas Forales** (Basque Country, Navarre) — they collect their own taxes and are
-  excluded from most AEAT series. Separate portals, no unified API. Needed before we can
-  claim any figure is "Spain".
+### 1.8 Haciendas Forales · Grade B/C · **INTEGRATED, every published year**
+The Basque Country and Navarre collect their own taxes under the Concierto and the
+Convenio Económico and are excluded from most AEAT series, which carry only the residual
+the State still collects there. Both now feed the map directly:
+
+- **OCTE** — `https://www.euskadi.eus/recaudacion/web01-s2oga/es/` · annual PDF, 2012-2025,
+  by Diputación. AES-encrypted; filenames irregular; the listing page is JavaScript.
+- **Hacienda Foral de Navarra** — Memoria anual, Cuadro nº 15 · HTML table. Memorias
+  2016-2024 publish it, each with the prior year, so it reaches 2015; memoria-2015 and
+  earlier return 404.
+- **Ministerio de Hacienda, DGT — Recaudación y Estadísticas del Sistema Tributario
+  Español**, series Parte I (`.xlsm`, € millions, 1986-2023), which carries both
+  treasuries' collection tax by tax. Used for **Navarre 2012-2014 only**, and only
+  because `extract_foral.py` first proves it reproduces the memoria bucket by bucket
+  (within €2M) in every year both cover — nine years, 2015-2023. The dossier says
+  which years come from it.
+
+Ingested by `pipeline/spain/extract_foral.py`, folded in by `merge12.js`, tested in
+sections M and P of `verify.js`. The foral figure **supersedes** the AEAT residual rather
+than adding to it — both sides book the Concierto adjustment flows, so summing them would
+double-count with the wrong sign.
+
+### 1.9 Gaps we must close for national completeness
 - **Social Security (TGSS)** — €210bn of contributions, absent from AEAT data entirely.
   Sourced via IGAE and the Social Security budget.
 
@@ -113,6 +136,17 @@ tax base and final liability — so we can compute **effective tax rate by compa
 from official figures without modelling anything.
 
 This is exactly the "private companies by revenue bracket" ask, and it is available.
+
+**In the bundle since 2026-09-08** (`who.corp.years`, `pipeline/spain/extract_corp_brackets.py`):
+the *consolidated* edition (2016-), 17 turnover brackets with filers, turnover, profit,
+taxable base, gross and net tax and effective rates, tied out against the Informe Anual's
+table 8.5 every year. What it does **not** give, and nothing official does: a distribution
+by profit (so no profit deciles — they would need microdata) and company names. The top
+bracket is the ~280 companies and groups with turnover above €1bn; naming any of them means
+their own audited accounts (2.3), on their own bases, not this statistic. The finest cut
+that does exist inside a bracket is the **5-sector cross**, also in the bundle, which is
+what the console shows for the brackets above €100m. A handful of sector cells are withheld
+under statistical secrecy and are carried as absent, never as zero.
 
 ### 2.3 Named companies, lawfully
 - **CNMV XBRL filings** (`https://www.cnmv.es/portal/xbrl/`) — annual and interim financial
@@ -169,9 +203,19 @@ cross-classified by economic transaction, comparable across the EU. Our function
 ### 3.4 Local government budgets — CONPREL · Grade B · **VERIFIED**
 `https://serviciostelematicosext.hacienda.gob.es/SGFAL/CONPREL`
 
-**2002→2026**, per individual local entity at maximum detail, distinguishing town
-councils, provincial councils, island councils and metropolitan areas. Both budgets and
-liquidations.
+**2002→2024 definitive**, per individual local entity at maximum detail, distinguishing
+town councils, provincial councils, island councils and metropolitan areas. Both budgets
+and liquidations. The per-community aggregate (Tabla 2 of the `DescargaFichero` export)
+is the municipal layer of the revenue map for **2012-2024** — IBI, the other local own
+taxes and council fees — ingested by `extract_local.py` and `merge13.js`. The same table
+carries chapter 3 by article (30 basic services, 31 social and preferential services,
+32 local licences, 33 use of public space, 34 public prices, 35 special levies, 36 sales,
+38 refunds, 39 other income incl. fines), which `merge17.js` publishes as "what councils
+charge, by kind" per community; the articles reproduce the chapter exactly. The same
+export's Tabla 3 (expenditure by chapter and article) and Tabla 4 (by programme area) are
+the local tier of the **spending map** for 2012-2024, ingested by `extract_local_spend.py`
+and `merge18.js`, net of transfers to and from other tiers (docs/05). 2025 is not yet
+published.
 
 Formats: Excel for aggregates, **Microsoft Access (.mdb) for the per-entity detail**.
 Parsing requires `mdbtools`. Awkward but tractable, and it is the only route to

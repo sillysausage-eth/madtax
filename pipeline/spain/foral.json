@@ -1,0 +1,344 @@
+{
+ "16": {
+  "2012": {
+   "irpf": 4329195,
+   "corp": 1131784,
+   "vat": 4038258,
+   "inherit": 89532,
+   "otherCurr": 148277,
+   "otherProd": 212375,
+   "otherProdTax": -1,
+   "excise": 1349096,
+   "sales": 109708
+  },
+  "2013": {
+   "irpf": 4264991,
+   "corp": 1216937,
+   "vat": 4278687,
+   "inherit": 105417,
+   "otherCurr": 181211,
+   "otherProd": 195019,
+   "otherProdTax": 36776,
+   "excise": 1359476,
+   "sales": 113602
+  },
+  "2014": {
+   "irpf": 4390205,
+   "corp": 1159223,
+   "vat": 4791671,
+   "inherit": 112358,
+   "otherCurr": 162049,
+   "otherProd": 219637,
+   "otherProdTax": 41634,
+   "excise": 1339016,
+   "sales": 103970
+  },
+  "2015": {
+   "irpf": 4647680,
+   "corp": 1039051,
+   "vat": 4944358,
+   "inherit": 113688,
+   "otherCurr": 96426,
+   "otherProd": 238448,
+   "otherProdTax": 53459,
+   "excise": 1364243,
+   "sales": 115277
+  },
+  "2016": {
+   "irpf": 4839847,
+   "corp": 1002703,
+   "vat": 5014405,
+   "inherit": 110978,
+   "otherCurr": 158939,
+   "otherProd": 257611,
+   "otherProdTax": 49393,
+   "excise": 1396149,
+   "sales": 120701
+  },
+  "2017": {
+   "irpf": 5132194,
+   "corp": 1111661,
+   "vat": 6036326,
+   "inherit": 117912,
+   "otherCurr": 196460,
+   "otherProd": 286658,
+   "otherProdTax": 54219,
+   "excise": 1431700,
+   "sales": 106798
+  },
+  "2018": {
+   "irpf": 5407614,
+   "corp": 1476010,
+   "vat": 5835994,
+   "inherit": 132079,
+   "otherCurr": 217316,
+   "otherProd": 318845,
+   "otherProdTax": 53863,
+   "excise": 1421314,
+   "sales": 118510
+  },
+  "2019": {
+   "irpf": 5713671,
+   "corp": 1303792,
+   "vat": 6028588,
+   "inherit": 122339,
+   "otherCurr": 219478,
+   "otherProd": 323551,
+   "otherProdTax": 48102,
+   "excise": 1600391,
+   "sales": 109675
+  },
+  "2020": {
+   "irpf": 5650225,
+   "corp": 1042548,
+   "vat": 5163765,
+   "inherit": 122169,
+   "otherCurr": 227985,
+   "otherProd": 278980,
+   "otherProdTax": 60110,
+   "excise": 1327015,
+   "sales": 76453
+  },
+  "2021": {
+   "irpf": 6114393,
+   "corp": 1155151,
+   "vat": 6256924,
+   "inherit": 179944,
+   "otherCurr": 233668,
+   "otherProd": 354893,
+   "otherProdTax": 55314,
+   "excise": 1521389,
+   "sales": 91533
+  },
+  "2022": {
+   "irpf": 6497698,
+   "corp": 1351267,
+   "vat": 6921389,
+   "inherit": 152753,
+   "otherCurr": 278198,
+   "otherProd": 365734,
+   "otherProdTax": 160608,
+   "excise": 1367122,
+   "sales": 35948
+  },
+  "2023": {
+   "irpf": 7085533,
+   "corp": 1635679,
+   "vat": 6930344,
+   "inherit": 159013,
+   "otherCurr": 356118,
+   "otherProd": 356582,
+   "otherProdTax": 131200,
+   "excise": 1445340,
+   "sales": 112678
+  },
+  "2024": {
+   "irpf": 6972672,
+   "corp": 1739711,
+   "vat": 6873547,
+   "inherit": 179829,
+   "otherCurr": 368576,
+   "otherProd": 394215,
+   "otherProdTax": 170673,
+   "excise": 1507404,
+   "sales": 103402
+  },
+  "2025": {
+   "irpf": 7960502,
+   "corp": 1438397,
+   "vat": 7790258,
+   "inherit": 226116,
+   "otherCurr": 423804,
+   "otherProd": 452903,
+   "otherProdTax": 264567,
+   "excise": 1661904,
+   "sales": 106051
+  }
+ },
+ "15": {
+  "2015": {
+   "irpf": 1151108,
+   "corp": 217381,
+   "vat": 1213493,
+   "inherit": 56286,
+   "otherCurr": 54399,
+   "otherProd": 66460,
+   "excise": 388696,
+   "sales": 32074,
+   "otherProdTax": 18533
+  },
+  "2016": {
+   "irpf": 1183870,
+   "corp": 216198,
+   "vat": 1215643,
+   "inherit": 46317,
+   "otherCurr": 37158,
+   "otherProd": 73512,
+   "excise": 419058,
+   "sales": 29008,
+   "otherProdTax": 28967
+  },
+  "2017": {
+   "irpf": 1296142,
+   "corp": 256017,
+   "vat": 1353221,
+   "inherit": 43383,
+   "otherCurr": 46577,
+   "otherProd": 74526,
+   "excise": 545487,
+   "sales": 32030,
+   "otherProdTax": 35289
+  },
+  "2018": {
+   "irpf": 1347448,
+   "corp": 192587,
+   "vat": 1181680,
+   "inherit": 58603,
+   "otherCurr": 43146,
+   "otherProd": 100619,
+   "excise": 484958,
+   "sales": 29493,
+   "otherProdTax": 44420
+  },
+  "2019": {
+   "irpf": 1536757,
+   "corp": 274008,
+   "vat": 1324210,
+   "inherit": 48500,
+   "otherCurr": 38040,
+   "otherProd": 100807,
+   "excise": 527249,
+   "sales": 30511,
+   "otherProdTax": 61049
+  },
+  "2020": {
+   "irpf": 1530297,
+   "corp": 260316,
+   "vat": 1125473,
+   "inherit": 59815,
+   "otherCurr": 42578,
+   "otherProd": 89630,
+   "excise": 451047,
+   "sales": 25118,
+   "otherProdTax": 42805
+  },
+  "2021": {
+   "irpf": 1638543,
+   "corp": 320457,
+   "vat": 1441568,
+   "inherit": 57900,
+   "otherCurr": 37831,
+   "otherProd": 120270,
+   "excise": 485973,
+   "sales": 23578,
+   "otherProdTax": 44270
+  },
+  "2022": {
+   "irpf": 2137036,
+   "corp": 399282,
+   "vat": 1656445,
+   "inherit": 68847,
+   "otherCurr": 33348,
+   "otherProd": 122735,
+   "excise": 518559,
+   "sales": 28463,
+   "otherProdTax": 14743
+  },
+  "2023": {
+   "irpf": 2076153,
+   "corp": 504721,
+   "vat": 1694601,
+   "inherit": 59364,
+   "otherCurr": 48228,
+   "otherProd": 121196,
+   "excise": 528697,
+   "sales": 44121,
+   "otherProdTax": 27484
+  },
+  "2024": {
+   "irpf": 2319615,
+   "corp": 500166,
+   "vat": 1689818,
+   "inherit": 75292,
+   "otherCurr": 63548,
+   "otherProd": 133585,
+   "excise": 577051,
+   "sales": 32640,
+   "otherProdTax": 41319
+  },
+  "2012": {
+   "irpf": 1118360,
+   "corp": 201388,
+   "inherit": 44851,
+   "otherCurr": 44155,
+   "vat": 1067659,
+   "otherProd": 96606,
+   "otherProdTax": 1030,
+   "sales": 27311,
+   "excise": 325765
+  },
+  "2013": {
+   "irpf": 1054886,
+   "corp": 194286,
+   "inherit": 92632,
+   "otherCurr": 57894,
+   "vat": 919471,
+   "otherProd": 75403,
+   "otherProdTax": 25496,
+   "sales": 29591,
+   "excise": 465600
+  },
+  "2014": {
+   "irpf": 1079183,
+   "corp": 205435,
+   "inherit": 51763,
+   "otherCurr": 53590,
+   "vat": 1096283,
+   "otherProd": 63675,
+   "otherProdTax": 14802,
+   "sales": 29831,
+   "excise": 411714
+  }
+ },
+ "src": {
+  "16": "Órgano de Coordinación Tributaria de Euskadi — Recaudación de las Diputaciones Forales por tributos concertados",
+  "15": "Hacienda Foral de Navarra — Memoria anual, Cuadro nº 15",
+  "dgt": "Ministerio de Hacienda, Dirección General de Tributos — Recaudación y Estadísticas del Sistema Tributario Español, series Parte I (Haciendas Forales, recaudación por figura)",
+  "unit": "thousands of euros, cash basis",
+  "basis": "recaudación líquida (cash), as published by the collecting treasury"
+ },
+ "srcYear": {
+  "15": {
+   "2015": "memoria",
+   "2016": "memoria",
+   "2017": "memoria",
+   "2018": "memoria",
+   "2019": "memoria",
+   "2020": "memoria",
+   "2021": "memoria",
+   "2022": "memoria",
+   "2023": "memoria",
+   "2024": "memoria",
+   "2012": "dgt",
+   "2013": "dgt",
+   "2014": "dgt"
+  },
+  "16": {
+   "2012": "octe",
+   "2013": "octe",
+   "2014": "octe",
+   "2015": "octe",
+   "2016": "octe",
+   "2017": "octe",
+   "2018": "octe",
+   "2019": "octe",
+   "2020": "octe",
+   "2021": "octe",
+   "2022": "octe",
+   "2023": "octe",
+   "2024": "octe",
+   "2025": "octe"
+  }
+ },
+ "excluded": {}
+}

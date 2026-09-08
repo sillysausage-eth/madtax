@@ -208,6 +208,28 @@ The same rule removed social contributions from the map: €197bn, national only
 
 ## Unified territorial revenue (what the map does carry)
 
+### Fees, public prices and sales — the line whose name explains least
+
+€35.0bn in 2024, 5.2% of all public revenue, and the one component whose name says nothing
+a reader can picture. The console now explains it in plain words — what public bodies
+charge directly for something specific: tuition, a prescription co-payment, the refuse
+charge, a building permit, a museum ticket; not a tax, because it is paid in exchange for
+a service or a permit — and breaks it three ways, each cut published and each tied out:
+
+| Cut | 2024 | Source | Reconciles to |
+|---|---:|---|---|
+| Who charges it — State / regions / councils / Social Security | 9.4 / 15.9 / 9.7 / 0.1 | Eurostat `gov_10a_main` by subsector | the €35.0bn bucket, exactly |
+| What each regional government charges (P.11, P.12, P.131) | 17 communities | IGAE per-community accounts | the €15.9bn regional row, exactly, every year 2012–2024 |
+| What each community's councils charge, by kind (articles 30–39) | €10.1bn | CONPREL chapter 3 | the chapter total inside the map figure, ±rounding |
+
+Two honesty points the copy carries. **The regional governments' figure is not in the map.**
+The map's fee figure is cash — AEAT's territorial fee line plus council chapter 3 — so the
+€23.5bn "not split by region" for this line is mostly what regional governments and State
+agencies charge, published without a territorial split in those sources. The IGAE figure is
+shown beside the map figure with a sentence saying it is not added to it. **P.12 is not
+money received**: it is the imputed value of what a government produced for its own use,
+inside the national headline because Eurostat's `P11_P12` is; the label says so.
+
 Which administration collects a tax is an administrative detail, not something a citizen
 should have to learn. The console's headline is therefore **everything raised in a
 territory**, assembled from four sources chosen so they cannot overlap:
@@ -326,6 +348,60 @@ central government books the money it hands to the regions.
 Defence is the clean case: 100% central, nothing on the map, and the interface says so
 with a single off-map card rather than an empty map.
 
+### The map is a map of territories (M7)
+
+The table above is a split by *who spends*. The map is a split by *where*, and since M7
+it carries both tiers of government that have a territory: the regional government
+(IGAE COFOG, as before) **and the community's local entities** — town councils,
+provincial and island councils, comarcas, metropolitan areas and the two autonomous
+cities — from the same CONPREL definitive liquidations that feed the revenue map's
+municipal layer (`extract_local_spend.py`, `merge18.js`). One State coin holds the rest.
+
+| 2024 | € bn | |
+|---|---:|---|
+| Regional governments (17 communities, IGAE) | 268.1 | |
+| Local entities, net (19 territories, CONPREL) | 66.1 | |
+| **On the map** | **334.2** | |
+| State coin | 390.8 | = central 357.7 + Social Security 252.8 + councils' remainder 31.0 − elimination 250.8 |
+| **Consolidated national (S.13)** | **725.0** | asserted, every year 2012–2024 |
+
+What the local layer is, and what is taken out before it goes on the map:
+
+- **Chapters 1–7 only** (obligations recognised). Chapters 8 and 9 — financial assets and
+  debt repayment — are not expenditure in national accounts and the figure the map
+  reconciles to is a national-accounts figure.
+- **Transfers to another tier of government** come out (articles 42/72 State, 43/73 Social
+  Security, 45/75 community government, 46/76 other local entities). The Basque
+  Diputaciones Forales alone hand **€13.5bn** (2024) of concierto tax to the Basque
+  Government, which then spends it and is already on the map; counting it here too would
+  put the Basque Country ~€13bn too high.
+- **Transfers received from the community government** (income articles 45/75) come out,
+  because the community books them as its own spending in the IGAE figure and the council
+  books them again when it spends them. One leg is enough.
+
+What is *not* done: the regional tier's own transfers to the State (the Basque *cupo*, the
+Navarrese *aportación*) stay inside the IGAE per-community figure as published. Netting
+them would mean rebuilding regional accounts, and the project carries published figures.
+
+**Councils' remainder.** The net local layer runs at 66–75% of the national-accounts local
+tier every year and never exceeds it (asserted). The difference — basis (budget obligations
+against ESA accrual), perimeter, and the netted transfers themselves — is carried as its
+own named row inside the State coin, never spread across the map.
+
+**Named gaps.** CONPREL publishes an all-zero table for Navarre's local entities in 2013
+and 2014 and for Melilla in 2022. Those territory-years carry the regional tier only
+(Melilla: nothing), `spendTerr[y].partial` names them, the HUD marks the year `(P)`, and
+the dossier says so. Nothing is carried forward.
+
+**Per function, the map is still the regional tier.** Councils classify expenditure by
+the six programme areas of Orden EHA/3565/2008, not by COFOG function, and no published
+table maps one onto the other. So a function filter draws what the regional governments
+spend on that function and moves the councils' part into the coin, with the panel's
+closing tip stating how much, tier by tier. The identity *regions + coin = national* holds in both states; what
+changes is what the coin has to hold. Ceuta and Melilla, on the map with their own
+budgets unfiltered, read as no data under a function filter because the tier it draws
+does not exist there.
+
 ## Where spending actually goes, 2024
 
 | COFOG function | € bn | Regional share |
@@ -394,12 +470,40 @@ build. Groups:
 | COFOG divisions vs total, 2012/2020/2024 | **exact** |
 | AEAT tax heads vs total, 2012/2019/2024 | **exact** (after fix 1) |
 | Bridge ladder end value vs Eurostat S13 revenue | €673.7bn — **exact** |
-| Sum of regions vs AEAT national collection | €285.2bn vs €294.7bn — **€9.5bn unallocated**, published as a figure rather than smoothed away |
+| Sum of regions vs AEAT national collection | €285.2bn vs €294.7bn — **€9.5bn unallocated**, published as a figure rather than smoothed away (AEAT layer only; the foral substitution then replaces the two residuals) |
 
 ## Known gaps
-- **Foral revenue** is not yet integrated; Basque and Navarrese state figures are residual
-  and Navarre is negative. Their own tax authorities publish the real data separately.
-- **Ceuta and Melilla** have no regional government; their spending sits in local
-  government and is absent from the regional map by construction, not by omission.
-- **Regional spending is not the whole story for a territory** — it excludes what the
-  State, Social Security and councils spend there. Pensions, notably, do not appear.
+- **Foral revenue is integrated** (September 2026): the Basque Country from OCTE
+  (2012-2025) and Navarre from its Hacienda Foral's memorias (2015-2024), with 2012-2014
+  from the Ministry's DGT series, admitted only after it reproduced the memoria within
+  €2M on every bucket in every overlapping year. The AEAT residual for those two
+  communities is superseded, never summed. Both cover every published revenue year.
+- **Published revenue years are 2012 and 2015-2024.** The rule (`merge16.js`): a year
+  is published only when Eurostat has split it by tax and every community carries every
+  territorial part; the dropped years and their reasons are recorded in the bundle.
+  - *2025*: Eurostat has the headline (€724.6bn) but no per-tax split; CONPREL, the
+    foral memorias and the local layer have not reached it.
+  - *2013 and 2014*: CONPREL's table for Navarre's local entities is published but
+    zero on every line, and the Ministry's own *Haciendas Locales en cifras* annexes
+    for those years leave Navarre blank — the Ministry had no Navarrese municipal
+    data. Without it Navarre has no property-tax, local-tax or fee figure, so the
+    years are dropped rather than shown with one community's cells empty. Every other
+    source (AEAT, Eurostat, IGAE, OCTE, DGT) covers both years; the Gobierno de
+    Navarra's own local-entity accounts are the only route to restoring them.
+- **Other taxes on production run above the ESA bucket in 2015-2019** (up to 124% mapped
+  in 2017) because the municipal own taxes CONPREL publishes as one block (IAE, vehicles,
+  plusvalía, ICIO) are all placed in `otherProdTax`, while national accounts file the
+  household vehicle tax under D.59 and some of the rest under D.214. No published source
+  splits the block by ESA code, so it is carried as one and the over-attribution is
+  reported (`verify.js` section M warns, with the figure) rather than rescaled away.
+- **Cash against accrual.** The territorial layer (AEAT, the foral treasuries, CONPREL)
+  is cash; the national buckets are ESA accrual. In a year a rate changes mid-year
+  (VAT, September 2012) cash runs a few tenths of a percent ahead of accrual; the
+  harness treats a gap under 1% of the national figure as a basis difference, not a
+  double count.
+- **Ceuta and Melilla** have no regional government. Since M7 they are on the spending
+  map with their own budget (recorded under local government); under a function filter
+  they read as no data because the regional tier the filter draws does not exist there.
+- **The territorial spending figure is the regional government plus councils** — it
+  excludes what the State and Social Security spend there, because neither is published
+  by community. Pensions, notably, do not appear. The State coin holds them, opened up.

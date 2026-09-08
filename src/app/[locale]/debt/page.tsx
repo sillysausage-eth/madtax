@@ -10,9 +10,10 @@ export function generateStaticParams() {
 }
 
 /**
- * The debt console. Nothing on the screen is interactive — debt is a stock on one
- * reference date — so the whole console renders on the server and the route ships
- * no JavaScript of its own.
+ * The debt console. Debt is a stock on one reference date, so there is no year to
+ * scrub and no map to select on: the headline, the figures that qualify it and
+ * the stock over time all render on the server. The one interactive thing on the
+ * screen is the breakdown block, which is the only JavaScript the route ships.
  */
 export default async function DebtPage({
   params,

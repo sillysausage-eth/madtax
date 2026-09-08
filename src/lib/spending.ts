@@ -1,17 +1,21 @@
 import type { Dict, Locale } from "@/i18n";
 import type { Metric } from "@/lib/metric";
 import type {
+  LocalSpend,
   Millions,
   RegionSpending,
   SpendAggEntry,
+  SpendTerrEntry,
   YearKey,
 } from "@/lib/types";
 import {
   divEN,
   divES,
   divisions,
+  localAreas,
   spendAgg,
   spendNational,
+  spendTerr,
   spendNoteEN,
   spendNoteES,
   spendSub,
@@ -19,6 +23,7 @@ import {
   spendSubES,
   spendYears,
 } from "@/data/spending";
+import { pctGdp, perCapita } from "@/lib/macro";
 
 /**
  * The spending model, ported 1:1 from prototype/console.tpl.html (`MODE==='exp'`).
@@ -89,8 +94,8 @@ export function spendMetricVal(
   const v = spendVal(r, y, slice);
   if (v === null || v === undefined) return null;
   if (metric === "total") return v;
-  if (metric === "pc") return r && r.pop ? (v * 1e6) / r.pop : null;
-  return r && r.gdp ? (v / r.gdp) * 100 : null;
+  if (metric === "pc") return perCapita(v, r?.macro, y);
+  return pctGdp(v, r?.macro, y);
 }
 
 /** Spending uses the softer gamma for every metric — the prototype's `scale()`. */
@@ -148,7 +153,16 @@ export interface SpendRow {
 
 export interface SpendCompModel {
   total: Millions;
-  sub: string;
+  /**
+   * The line under the caption, or nothing.
+   *
+   * It is not a description of the perimeter — that is said once, in the
+   * footer, exactly as on the revenue side. It carries one fact and only
+   * appears when that fact holds. Nothing declares itself here today, so it is
+   * always absent; the field stays because the caption is where a gap of this
+   * kind would be said.
+   */
+  sub: string | null;
   /** The year actually read, which is not always the year asked for. */
   year: YearKey;
   rows: SpendRow[];
@@ -169,7 +183,7 @@ export function spendCompModel(
   const sp = spendNational[sy];
   return {
     total: sp[0],
-    sub: t.expSub,
+    sub: null,
     year: sy,
     rows: divisions
       .map((d, i) => ({
@@ -223,3 +237,64 @@ export const subFunctionNote = (locale: Locale, code: string): string | undefine
  * console moves on by itself when the next year lands.
  */
 export const OPENING_YEAR_EXP: YearKey = spendYears[spendYears.length - 1];
+
+/* ------------------------------------------------ the map of territories -- */
+
+/**
+ * The year's reconciliation for the whole of spending: the two tiers on the map,
+ * the one State coin, and what is inside the coin. Same year fallback as the
+ * other spending lookups.
+ */
+export const spendTerrOf = (y: YearKey): SpendTerrEntry => spendTerr[spendYear(y)];
+
+/** What the territory's local entities spent, or null where the table is absent. */
+export const localOf = (r: RegionSpending | undefined, y: YearKey): LocalSpend | null =>
+  (r && r.local && r.local[y]) || null;
+
+/**
+ * What is spent in the territory, whoever spends it: the regional government's
+ * figure plus the net local layer. A territory with neither figure is `null` —
+ * absent, not zero. One tier present and the other absent is a figure with a
+ * named gap (`spendTerrOf(y).partial`), and the dossier says so.
+ */
+export function terrVal(r: RegionSpending | undefined, y: YearKey): Millions | null {
+  const s = r && r.spend[y];
+  const l = localOf(r, y);
+  if (!s && !l) return null;
+  return (s ? s[0] : 0) + (l ? l.net : 0);
+}
+
+/** `terrVal` under the metric the map reads. */
+export function terrMetricVal(
+  r: RegionSpending | undefined,
+  y: YearKey,
+  metric: Metric,
+): number | null {
+  const v = terrVal(r, y);
+  if (v === null) return null;
+  if (metric === "total") return v;
+  if (metric === "pc") return perCapita(v, r?.macro, y);
+  return pctGdp(v, r?.macro, y);
+}
+
+/**
+ * The State coin's figure for the current reading. Unfiltered it is everything
+ * the territories do not carry — central government, Social Security, the part
+ * of the local tier the territorial layer does not reach, less the elimination.
+ * Filtered to a function it is that function's spending outside the regional
+ * tier, because councils' spending has no published functional split by
+ * territory and so cannot be placed on the map for one function.
+ */
+export function stateCoinValue(y: YearKey, focus: string | null): Millions | null {
+  const sy = spendYear(y);
+  if (!focus) return spendTerrOf(sy).state;
+  const a = spendAggOf(sy, aggCode(focus));
+  return a ? a.nat - a.mapped : null;
+}
+
+/** The programme area's name in the reader's language, from the bundle. */
+export const localAreaLabel = (locale: Locale, code: string): string =>
+  (locale === "es" ? localAreas.es : localAreas.en)[code] || code;
+
+/** The two autonomous cities: on the map with their own budget, no regional tier. */
+export const isCity = (id: string): boolean => id === "18" || id === "19";

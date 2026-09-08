@@ -6,8 +6,8 @@ import { natParts } from "@/data/revenue";
 import { who } from "@/data/who";
 import type {
   AeatYear,
-  CorpEntry,
-  CorpYear,
+  CorpBracket,
+  CorpBracketYear,
   DecileRow,
   DecileYear,
   PayerYear,
@@ -19,10 +19,12 @@ import {
   applySort,
   InfoNote,
   SortTh,
-  StaleTag,
   WBar,
+  WTabs,
+  type Tab,
   type WhoSort,
 } from "./WhoPaysTable";
+import { ProvTag } from "./Dossier";
 
 /**
  * Who generates each revenue component — ported from the prototype's `whoBlock`,
@@ -37,7 +39,8 @@ import {
  * shares and gaps the prototype itself computes.
  */
 
-export type Tab = "dec" | "qui" | "top";
+/* The tab key lives with the table primitives, beside the tab strip. */
+export type { Tab };
 
 /**
  * `tab` and `sort` are held by the caller, not here: in the prototype they are
@@ -75,17 +78,30 @@ export default function WhoBlock({
     W.kind === "brackets" ? W.deciles : (W.years as Record<string, unknown>);
   if (!S) return null;
 
+  /* No published breakdown for the year on screen: say so, in its place. The
+     block never shows another year's figures under this year's headline. */
   const yrs = Object.keys(S).sort();
-  const y = S[year] ? year : yrs[yrs.length - 1];
-  const stale = y !== year ? t.whoYear.replace("{Y}", y) : null;
+  if (!S[year]) {
+    return (
+      <WhoPending
+        t={t}
+        locale={locale}
+        year={year}
+        first={yrs[0]}
+        last={yrs[yrs.length - 1]}
+        due={W.nextRelease}
+      />
+    );
+  }
+  const y = year;
 
-  const shared = { locale, t, year, y, stale, sort, onSort };
+  const shared = { locale, t, year, sort, onSort };
 
   let body: React.ReactNode = null;
   if (W.kind === "brackets") {
     body = <WhoIrpf {...shared} dec={W.deciles[y]} tab={tab} onTab={onTab} />;
   } else if (W.kind === "company") {
-    body = <WhoCompany {...shared} c={(W.years as Record<string, CorpYear>)[y]} />;
+    body = <WhoCompany {...shared} c={W.years[y]} tab={tab} onTab={onTab} />;
   } else if (W.kind === "payer") {
     body = <WhoPayer {...shared} o={(W.years as Record<string, PayerYear>)[y]} />;
   } else if (W.kind === "product") {
@@ -101,11 +117,8 @@ export default function WhoBlock({
 interface Shared {
   locale: Locale;
   t: Dict;
-  /** The year on screen. */
+  /** The year on screen, which the series is known to carry. */
   year: YearKey;
-  /** The year this series actually has data for — the same, or the latest. */
-  y: YearKey;
-  stale: string | null;
   sort: WhoSort;
   onSort: (col: string) => void;
 }
@@ -116,6 +129,52 @@ const headlineIrpf = (year: YearKey): number | null => {
   const v = n ? n.irpf : undefined;
   return typeof v === "number" ? v : null;
 };
+
+/**
+ * What stands where a table would, for a year the source has not published.
+ * The message states the gap and, where the publisher has announced the next
+ * edition, when it is due — never a neighbouring year's figures.
+ */
+function WhoPending({
+  t,
+  locale,
+  year,
+  first,
+  last,
+  due,
+}: {
+  t: Dict;
+  locale: Locale;
+  year: YearKey;
+  first: YearKey;
+  last: YearKey;
+  due?: string;
+}) {
+  const before = year < first;
+  let text: string;
+  if (before) {
+    text = t.whoPendingBefore.replace("{F}", first).replace("{Y}", year);
+  } else {
+    /* `due` is "YYYY-MM"; written as the reader's month name and year. */
+    const when = due
+      ? new Intl.DateTimeFormat(locale === "es" ? "es-ES" : "en-GB", {
+          month: "long",
+          year: "numeric",
+        }).format(new Date(Number(due.slice(0, 4)), Number(due.slice(5, 7)) - 1, 1))
+      : null;
+    text = (when ? t.whoPendingDue : t.whoPendingNoDate)
+      .replace("{Y}", year)
+      .replace("{L}", last)
+      .replace("{D}", when ?? "");
+  }
+  return (
+    <div className="who who-pending" role="status">
+      <span className="who-pending-h">{before ? t.whoPendingBeforeH : t.whoPendingH}</span>
+      <p>{text}</p>
+    </div>
+  );
+}
+
 
 /* ------------------------------------------------------------------- IRPF -- */
 
@@ -132,22 +191,7 @@ function WhoIrpf({
   ];
   return (
     <>
-      <div className="wtabs">
-        {tabs.map(([k, l]) => (
-          <button
-            key={k}
-            className="wtb"
-            data-wt={k}
-            aria-pressed={tab === k}
-            onClick={(e) => {
-              e.stopPropagation();
-              onTab(k);
-            }}
-          >
-            {l}
-          </button>
-        ))}
-      </div>
+      <WTabs tabs={tabs} tab={tab} onTab={onTab} />
       {!dec ? null : tab === "top" ? (
         <TopView d={dec} {...s} />
       ) : (
@@ -210,7 +254,6 @@ function GroupView({ d, per, ...s }: Shared & { d: DecileYear; per: number }) {
           <tr>
             <th>
               {s.t.wBandRange}
-              <StaleTag text={s.stale} />
             </th>
             <th>{s.t.wPeople}</th>
             <th className="colopt">{s.t.wIncome}</th>
@@ -324,7 +367,6 @@ function TopView({ d, ...s }: Shared & { d: DecileYear }) {
           <tr>
             <th>
               {s.t.wBandRange}
-              <StaleTag text={s.stale} />
             </th>
             <th className="grp">{s.t.wGroupCol}</th>
             <th>{s.t.wPeople}</th>
@@ -378,45 +420,221 @@ function TopView({ d, ...s }: Shared & { d: DecileYear }) {
 
 /* ------------------------------------------------------------- corporation -- */
 
-function WhoCompany({ c, ...s }: Shared & { c?: CorpYear }) {
-  if (!c || !c.total) return null;
-  const row = (key: keyof CorpYear, lab: string) => {
-    const d: CorpEntry | undefined = c[key];
-    if (!d || d.profit == null) return null;
-    return (
-      <tr key={key}>
-        <td>{lab}</td>
-        <td className="colopt">{eur(s.locale, Math.round(d.profit))}</td>
-        <td>{eur(s.locale, Math.round(d.base))}</td>
-        <td>
-          <b>{eur(s.locale, Math.round(d.tax))}</b>
-        </td>
-        <td>{d.rateBase != null ? nf(s.locale, d.rateBase, 1) + "%" : "—"}</td>
-        <td className="colopt">{d.rateProfit != null ? nf(s.locale, d.rateProfit, 1) + "%" : "—"}</td>
-      </tr>
+/**
+ * AEAT's consolidated corporate tax statistic, by annual turnover bracket. A tax
+ * group filing a consolidated return counts once; a company outside a group
+ * counts once. AEAT publishes seventeen brackets and nothing finer by size — no
+ * deciles by profit, no names — so the two cuts here are those brackets merged
+ * into seven bands, and, for the largest filers, each top bracket opened up by
+ * the five sectors AEAT crosses it with. Every figure is published: the merges
+ * are exact sums of published rows and each effective rate is the published tax
+ * over the published profit.
+ */
+
+/** Turnover cuts (thousands of €) that merge the seventeen brackets into seven bands. */
+const BAND_CUTS = [50, 300, 1000, 10000, 100000, 1000000];
+/** Brackets from this turnover (thousands of €) up are opened up one by one. */
+const TOP_FROM = 100000;
+/** AEAT's five sector groupings, in the order it publishes them. */
+const SECTORS = ["ind", "con", "com", "fin", "srv"] as const;
+
+/** A line in the corporate table: a turnover band, or a sector inside one. */
+interface CoRow {
+  key: string;
+  label: string;
+  /** A sector inside the band above it. */
+  sub?: boolean;
+  n: number;
+  profit: number;
+  /** Absent where AEAT withholds the cell under statistical secrecy. */
+  tax: number | null;
+}
+
+const sumBy = (rows: CorpBracket[], f: "n" | "profit" | "tax") =>
+  rows.reduce((a, r) => a + r[f], 0);
+
+/**
+ * Merge brackets at the given cuts. A bracket straddling a cut cannot be split,
+ * so the merge is refused — the filer count would no longer add up — rather than
+ * apportioned.
+ */
+function mergeBrackets(
+  rows: CorpBracket[],
+  cuts: number[],
+): { lo: number; hi: number | null; part: CorpBracket[] }[] | null {
+  const edges: (number | null)[] = [0, ...cuts, null];
+  const out: { lo: number; hi: number | null; part: CorpBracket[] }[] = [];
+  for (let i = 0; i + 1 < edges.length; i++) {
+    const lo = edges[i] as number;
+    const hi = edges[i + 1];
+    const part = rows.filter(
+      (r) => r.lo >= lo && (hi === null ? true : r.hi !== null && r.hi <= hi),
     );
-  };
+    if (!part.length) return null;
+    out.push({ lo, hi, part });
+  }
+  if (out.reduce((a, g) => a + sumBy(g.part, "n"), 0) !== sumBy(rows, "n")) return null;
+  return out;
+}
+
+/** The headline this section sits under, for the coverage note. */
+const headlineCorp = (year: YearKey): number | null => {
+  const n = natParts[year];
+  const v = n ? n.corp : undefined;
+  return typeof v === "number" ? v : null;
+};
+
+function WhoCompany({
+  c,
+  tab,
+  onTab,
+  ...s
+}: Shared & { c?: CorpBracketYear; tab: Tab; onTab: (t: Tab) => void }) {
+  /* The tab state is shared with the income-tax block, which has a third cut. */
+  const mode: Tab = tab === "top" ? "top" : "dec";
+  const tabs: [Tab, string][] = [
+    ["dec", s.t.tabCoBr],
+    ["top", s.t.tabCoTop],
+  ];
   return (
-    <table className="wtab">
-      <thead>
-        <tr>
-          <th>
-            {s.t.wCoType}
-            <StaleTag text={s.stale} />
-          </th>
-          <th className="colopt">{s.t.wProfit}</th>
-          <th>{s.t.wBase}</th>
-          <th>{s.t.wTax}</th>
-          <th>{s.t.wRateBase}</th>
-          <th className="colopt">{s.t.wRateProfit}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {row("groups", s.t.wGroups)}
-        {row("standalone", s.t.wStandalone)}
-        {row("total", s.t.wAllCo)}
-      </tbody>
-    </table>
+    <>
+      <WTabs tabs={tabs} tab={mode} onTab={onTab} />
+      {c ? <CoView c={c} mode={mode} {...s} /> : null}
+    </>
+  );
+}
+
+function CoView({ c, mode, ...s }: Shared & { c: CorpBracketYear; mode: Tab }) {
+  const T = c.total;
+  /* Bounds are thousands of euros; eur() takes millions. */
+  const money = (k: number) => eur(s.locale, k / 1000);
+  const band = (lo: number, hi: number | null) =>
+    lo === 0
+      ? s.t.wUpToV.replace("{V}", money(hi as number))
+      : hi === null
+        ? s.t.wOverV.replace("{V}", money(lo))
+        : money(lo) + " – " + money(hi);
+
+  let rows: CoRow[] | null = null;
+  /* True where a sector cell in view is withheld, so the note can say so. */
+  let withheld = false;
+
+  if (mode === "top") {
+    const tops = c.rows.filter((r) => r.lo >= TOP_FROM);
+    const rest = c.rows.filter((r) => r.hi !== null && r.hi <= TOP_FROM);
+    if (tops.length && rest.length + tops.length === c.rows.length) {
+      rows = [];
+      for (const r of [...tops].reverse()) {
+        rows.push({
+          key: `b${r.lo}`,
+          label: band(r.lo, r.hi),
+          n: r.n,
+          profit: r.profit,
+          tax: r.tax,
+        });
+        const sec = SECTORS.map((k) => ({ k, v: r.sectors[k] })).filter((x) => x.v);
+        /* Largest contributor first; a withheld cell sorts to the bottom. */
+        sec.sort((a, b) => (b.v.tax ?? -1) - (a.v.tax ?? -1));
+        for (const { k, v } of sec) {
+          if (v.tax === null) withheld = true;
+          rows.push({
+            key: `b${r.lo}-${k}`,
+            label: s.t.wSec[k],
+            sub: true,
+            n: v.n,
+            profit: v.profit,
+            tax: v.tax,
+          });
+        }
+      }
+      rows.push({
+        key: "rest",
+        label: band(0, TOP_FROM),
+        n: sumBy(rest, "n"),
+        profit: sumBy(rest, "profit"),
+        tax: sumBy(rest, "tax"),
+      });
+    }
+  } else {
+    const bands = mergeBrackets(c.rows, BAND_CUTS);
+    rows =
+      bands?.map((g) => ({
+        key: `b${g.lo}`,
+        label: band(g.lo, g.hi),
+        n: sumBy(g.part, "n"),
+        profit: sumBy(g.part, "profit"),
+        tax: sumBy(g.part, "tax"),
+      })) ?? null;
+  }
+  if (!rows) return null;
+
+  const share = (tax: number | null) => (tax === null ? null : (tax / T.tax) * 100);
+  const rate = (tax: number | null, profit: number) =>
+    tax === null || profit <= 0 ? "—" : nf(s.locale, (tax / profit) * 100, 1) + "%";
+  const maxShare = Math.max(
+    ...rows.filter((r) => !r.sub).map((r) => share(r.tax) ?? 0),
+  );
+  const head = headlineCorp(s.year);
+
+  return (
+    <>
+      <table className="wtab">
+        <thead>
+          <tr>
+            <th>{s.t.wTurnover}</th>
+            <th>{s.t.wCompanies}</th>
+            <th className="colopt">{s.t.wProfit}</th>
+            <th>{s.t.wTax}</th>
+            <th>{s.t.wShare}</th>
+            <th>{s.t.wRateProfit}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => {
+            const sh = share(r.tax);
+            return (
+              <tr key={r.key} className={r.sub ? "sub" : undefined}>
+                <td>{r.label}</td>
+                <td>{nf0(s.locale, r.n)}</td>
+                <td className="colopt">{eur(s.locale, r.profit)}</td>
+                <td>{r.tax === null ? "—" : <b>{eur(s.locale, r.tax)}</b>}</td>
+                <td>
+                  {sh === null ? "—" : nf(s.locale, sh, 1) + "%"}
+                  {sh !== null && !r.sub ? <WBar width={(sh / maxShare) * 46} /> : null}
+                </td>
+                <td>{rate(r.tax, r.profit)}</td>
+              </tr>
+            );
+          })}
+          <tr className="tot">
+            <td>{s.t.wTotalRow}</td>
+            <td>{nf0(s.locale, T.n)}</td>
+            <td className="colopt">{eur(s.locale, T.profit)}</td>
+            <td>
+              <b>{eur(s.locale, T.tax)}</b>
+            </td>
+            <td>100%</td>
+            <td>{rate(T.tax, T.profit)}</td>
+          </tr>
+        </tbody>
+      </table>
+      {head != null ? (
+        <InfoNote
+          html={s.t.wGapCorp
+            .replace("{R}", eur(s.locale, Math.round(T.tax)))
+            .replace("{H}", eur(s.locale, head))
+            .replace("{G}", eur(s.locale, head - Math.round(T.tax)))}
+        />
+      ) : null}
+      <InfoNote html={s.t.wCorpTurn} />
+      {withheld ? <InfoNote html={s.t.wCorpSE} /> : null}
+      <InfoNote
+        html={(mode === "top" ? s.t.wCorpPubTop : s.t.wCorpPub).replace(
+          "{N}",
+          nf0(s.locale, c.rows[c.rows.length - 1].n),
+        )}
+      />
+    </>
   );
 }
 
@@ -439,7 +657,6 @@ function WhoPayer({ o, ...s }: Shared & { o?: PayerYear }) {
         <tr>
           <th>
             {s.t.wPayer}
-            <StaleTag text={s.stale} />
           </th>
           <th>{s.t.wAmount}</th>
           <th>{s.t.wShare}</th>
@@ -494,7 +711,6 @@ function AeatRows({
         <tr>
           <th>
             {colHead}
-            <StaleTag text={s.stale} />
           </th>
           <th>{s.t.wAmount}</th>
           <th>{s.t.wShare}</th>
@@ -516,12 +732,7 @@ function AeatRows({
         <tr className="tot">
           <td>
             {s.t.wAeatTot}
-            {o.prov ? (
-              <i style={{ fontStyle: "normal", color: "var(--am)" }}>
-                {" "}
-                · {s.t.wProv}
-              </i>
-            ) : null}
+            {o.prov ? <ProvTag badge={s.t.provB} text={s.t.provAeat} /> : null}
           </td>
           <td>
             <b>{eur(s.locale, o.total)}</b>
@@ -546,7 +757,7 @@ function WhoProduct({
   ...s
 }: Shared & { o?: AeatYear; W: Extract<WhoBlockData, { kind: "product" }>; k: string }) {
   if (!o || !o.rows) return null;
-  const esa = esaOf(s.y, k);
+  const esa = esaOf(s.year, k);
   const labels = s.locale === "es" ? W.labES : W.labEN;
   return (
     <>
@@ -573,22 +784,19 @@ function WhoRate({
   ...s
 }: Shared & { o?: VatYear; W: Extract<WhoBlockData, { kind: "rate" }>; k: string }) {
   if (!o || !o.rows) return null;
-  const esa = esaOf(s.y, k);
+  const esa = esaOf(s.year, k);
   const labels = s.locale === "es" ? W.labES : W.labEN;
   return (
     <>
       <AeatRows o={o} labels={labels} colHead={s.t.wVatRate} {...s} />
-      <p
-        className="who-note"
-        dangerouslySetInnerHTML={{
-          __html: s.t.wGapVat
-            .replace("{A}", eur(s.locale, o.total))
-            .replace("{SP}", eur(s.locale, o.special))
-            .replace("{F}", eur(s.locale, o.foral))
-            .replace("{O}", eur(s.locale, o.adjOther))
-            .replace("{T}", eur(s.locale, o.accrued))
-            .replace("{H}", esa ? eur(s.locale, esa) : "—"),
-        }}
+      <InfoNote
+        html={s.t.wGapVat
+          .replace("{A}", eur(s.locale, o.total))
+          .replace("{SP}", eur(s.locale, o.special))
+          .replace("{F}", eur(s.locale, o.foral))
+          .replace("{O}", eur(s.locale, o.adjOther))
+          .replace("{T}", eur(s.locale, o.accrued))
+          .replace("{H}", esa ? eur(s.locale, esa) : "—")}
       />
     </>
   );

@@ -8,7 +8,8 @@ import { eur, nf } from "@/lib/format";
  * the arc length. No chart library.
  *
  * Mode-agnostic — it takes rows, a total, a floor and a centre string, and knows
- * nothing about revenue. The debt donuts in M3 are the `card` variant.
+ * nothing about revenue. The `card` variant is the compact one, for a ring in a
+ * column too narrow to stand a legend beside it.
  */
 
 export interface DonutSlice {
@@ -27,6 +28,7 @@ export default function Donut({
   total,
   floor,
   centre,
+  centreSub,
   aria,
   locale,
   variant = "panel",
@@ -48,6 +50,12 @@ export default function Donut({
   floor: number;
   /** The figure in the middle, already formatted. */
   centre: string;
+  /**
+   * A caption under the centre figure, for the one ring whose total is not the
+   * screen's headline: the government tiers add to the gross stock, and saying
+   * so on the ring is what keeps the reader from reading it as a contradiction.
+   */
+  centreSub?: string;
   aria: string;
   locale: Locale;
   variant?: "panel" | "card";
@@ -113,6 +121,7 @@ export default function Donut({
         </svg>
         <div className="donut-c">
           <div className="donut-v">{centre}</div>
+          {centreSub ? <div className="donut-s">{centreSub}</div> : null}
         </div>
       </div>
 

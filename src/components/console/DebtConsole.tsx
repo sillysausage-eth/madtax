@@ -9,25 +9,33 @@ import {
   TREND,
   debtTrend,
   markLabelX,
+  matBuckets,
 } from "@/lib/debt";
 import { debt } from "@/data/debt";
 import type { Dict } from "@/i18n";
 import type { CodedRow } from "@/lib/types";
 import ConsoleFooter from "./ConsoleFooter";
-import Donut, { type DonutSlice } from "./Donut";
+import DebtBreakdown, { type DebtView } from "./DebtBreakdown";
+import type { DonutSlice } from "./Donut";
 
 /**
- * The debt console, ported from the prototype's `paintDebt()`.
+ * The debt console.
  *
  * A stock, not a flow. Everything on this screen describes what is owed on one
  * reference date, which is why it carries no fiscal year and the year picker is
- * absent rather than inert — and why the arrow keys do nothing here: there is no
- * year to step through and nothing to select. The four sources behind it are
- * published on different clocks, so every panel states its own date instead of
- * implying a shared one.
+ * absent rather than inert. The four sources behind it are published on
+ * different clocks, so every block states its own date instead of implying a
+ * shared one.
  *
- * Nothing on this screen is interactive, so it is a server component: the page
- * ships the figures as HTML and no JavaScript at all.
+ * The screen is the headline, the five figures that qualify it, the stock over
+ * time, and one block that answers four questions about the shape of it — one
+ * at a time, because the reader asks one at a time. M3 laid all four out at
+ * once and put two rings of the same four government tiers on the page; the
+ * tier split of the interest bill is gone with them, and the interest bill
+ * itself is where it belongs, in the headline figures.
+ *
+ * Everything above the block renders on the server. The block is the only
+ * interactive thing here, so it is the only JavaScript the route ships.
  */
 export default function DebtConsole({ locale }: { locale: Locale }) {
   const t = dict(locale);
@@ -77,45 +85,128 @@ export default function DebtConsole({ locale }: { locale: Locale }) {
       : { k: X.sCostNew, v: X.noPub, n: X.sCostNewN, none: true },
   ];
 
-  /* ---- who owes it: tiers, carried gross with the elimination named -------- */
+  const views: DebtView[] = [];
+
+  /* ---- who owes it -------------------------------------------------------- */
+  /* The four tiers add to the gross stock, which is €363bn more than the
+     headline. The ring says so in the middle rather than showing a figure that
+     silently contradicts the one at the top of the screen, and the note names
+     the difference. Neither number is rescaled to make them tie. */
   const T = B.tier[ref];
-  const tierRows: DonutSlice[] = T
-    ? TIERS.map((s) => ({ k: s, nm: tierL(s), v: T[s], c: DEBT_TIER_C[s] })).filter(
-        (r) => r.v != null,
-      )
-    : [];
+  if (T) {
+    const rows: DonutSlice[] = TIERS.map((s) => ({
+      k: s,
+      nm: tierL(s),
+      v: T[s],
+      c: DEBT_TIER_C[s],
+    })).filter((r) => r.v != null);
+    views.push({
+      k: "who",
+      tab: X.tWho,
+      sub: X.qWhoS,
+      scope: `${X.scopeGG} · ${ref}`,
+      ring: {
+        rows,
+        total: T.gross,
+        centre: eur(locale, T.gross),
+        centreSub: X.beforeCons,
+      },
+      noteTag: X.elimTag,
+      note: X.elimTxt
+        .replace("{G}", eur(locale, T.gross))
+        .replace("{C}", eur(locale, T.consolidated))
+        .replace("{E}", eur(locale, T.elim)),
+    });
+  }
 
-  /* ---- what form: the instrument split is an exact partition of the total -- */
+  /* ---- what form: an exact partition of the headline total ---------------- */
   const instr = B.instr[ref] || [];
-  const instrRows: DonutSlice[] = instr.map(([c, v]: CodedRow) => ({
-    k: c,
-    nm: instrL(c),
-    v,
-    c: DEBT_INSTR_C[c] || DEBT_INSTR_FALLBACK,
-  }));
+  views.push({
+    k: "form",
+    tab: X.tForm,
+    sub: X.qFormS,
+    scope: `${X.scopeGG} · ${ref}`,
+    ring: {
+      rows: instr.map(([c, v]: CodedRow) => ({
+        k: c,
+        nm: instrL(c),
+        v,
+        c: DEBT_INSTR_C[c] || DEBT_INSTR_FALLBACK,
+      })),
+      total,
+      centre: eur(locale, total),
+    },
+  });
 
-  /* ---- who holds it: only if a published holder split is in the bundle ----- */
+  /* ---- who holds it: only if a published holder split is in the bundle ---- */
   const holders = B.holders;
-  const holdRows: DonutSlice[] =
+  views.push(
     holders && holders.rows
-      ? holders.rows.map(([k, v]: CodedRow, i: number) => ({
-          k,
-          nm: (locale === "es" ? holders.labES : holders.labEN)[k] || k,
-          v,
-          c: DEBT_HOLD_C[i % DEBT_HOLD_C.length],
-        }))
-      : [];
+      ? {
+          k: "hold",
+          tab: X.tHold,
+          sub: X.qHoldS,
+          scope: `${X.scopeGG} · ${holders.asOf}`,
+          ring: {
+            rows: holders.rows.map(([k, v]: CodedRow, i: number) => ({
+              k,
+              nm: (locale === "es" ? holders.labES : holders.labEN)[k] || k,
+              v,
+              c: DEBT_HOLD_C[i % DEBT_HOLD_C.length],
+            })),
+            total: holders.total,
+            centre: eur(locale, holders.total),
+          },
+          note: holders.note
+            ? (locale === "es" ? holders.noteES : holders.noteEN) || undefined
+            : undefined,
+        }
+      : {
+          k: "hold",
+          tab: X.tHold,
+          sub: X.qHoldS,
+          scope: X.scopeGG,
+          gapTag: X.gapTag,
+          gap: X.gapHold,
+        },
+  );
 
-  /* ---- what it costs: the same tiers, before consolidating ---------------- */
-  const intRows: DonutSlice[] = iRec
-    ? TIERS.flatMap((s) => {
-        const v = iRec[s];
-        return v != null && v !== 0
-          ? [{ k: s as string, nm: tierL(s), v, c: DEBT_TIER_C[s] }]
-          : [];
-      })
-    : [];
-  const intGross = iRec ? (iRec.gross != null ? iRec.gross : iRec.total) : 0;
+  /* ---- when it falls due -------------------------------------------------- */
+  /* A narrower perimeter than every other view: State debt securities, not all
+     of government. The scope line carries its own total for that reason. */
+  if (mat && mat.rows && mat.rows.length) {
+    const laddered =
+      mat.totalLaddered != null
+        ? mat.totalLaddered
+        : mat.rows.reduce((a: number, r: CodedRow) => a + r[1], 0);
+    views.push({
+      k: "mat",
+      tab: X.tMat,
+      sub: X.qMat,
+      scope: `${eur(locale, laddered)} · ${X.scopeState} · ${mat.asOf || ""}`,
+      periods: matBuckets(mat.rows, mat.asOf).map((b) => ({
+        k: b.k,
+        label:
+          b.to == null
+            ? X.matLater.replace("{A}", b.from)
+            : b.to === b.from
+              ? X.matRest.replace("{A}", b.from)
+              : X.matRange.replace("{A}", b.from).replace("{B}", b.to),
+        v: b.v,
+        years: b.rows.map(([y, v]) => [y, v] as [string, number]),
+      })),
+      note: X.matNote,
+    });
+  } else {
+    views.push({
+      k: "mat",
+      tab: X.tMat,
+      sub: X.qMat,
+      scope: X.scopeState,
+      gapTag: X.gapTag,
+      gap: X.gapMat,
+    });
+  }
 
   const trend = debtTrend(B.years, B.pcGdp);
 
@@ -147,150 +238,7 @@ export default function DebtConsole({ locale }: { locale: Locale }) {
 
         {trend ? <DebtTrend model={trend} locale={locale} X={X} /> : null}
 
-        <div className="dsec">
-          <div className="dsec-h">
-            <span className="t">{X.secShape}</span>
-            <span className="x">
-              {X.scopeGG} · {ref}
-            </span>
-          </div>
-          <div className="dring">
-            {T ? (
-              <DebtCard head={X.qWho} sub={X.qWhoS}>
-                <Donut
-                  rows={tierRows}
-                  total={T.gross}
-                  floor={0.7}
-                  absShares
-                  variant="card"
-                  centre={eur(locale, T.gross)}
-                  aria={`${X.qWho} ${eur(locale, T.gross)}`}
-                  locale={locale}
-                />
-                {/* The four tiers add to more than the headline. The difference is
-                    one tier's debt held by another, and it is named rather than
-                    rescaled away. */}
-                <div className="dnote">
-                  <b>{X.elimTag}</b> —{" "}
-                  <Interpolated
-                    text={X.elimTxt}
-                    values={{
-                      G: eur(locale, T.gross),
-                      C: eur(locale, T.consolidated),
-                      E: eur(locale, T.elim),
-                    }}
-                  />
-                </div>
-              </DebtCard>
-            ) : null}
-
-            <DebtCard head={X.qForm} sub={X.qFormS}>
-              <Donut
-                rows={instrRows}
-                total={total}
-                floor={0.7}
-                absShares
-                variant="card"
-                centre={eur(locale, total)}
-                aria={`${X.qForm} ${eur(locale, total)}`}
-                locale={locale}
-              />
-            </DebtCard>
-
-            {holdRows.length && holders ? (
-              <DebtCard head={X.qHold} sub={X.qHoldS}>
-                <Donut
-                  rows={holdRows}
-                  total={holders.total}
-                  floor={0.7}
-                  absShares
-                  variant="card"
-                  centre={eur(locale, holders.total)}
-                  aria={`${X.qHold} ${eur(locale, holders.total)}`}
-                  locale={locale}
-                />
-                {holders.note ? (
-                  <div className="dnote">
-                    {(locale === "es" ? holders.noteES : holders.noteEN) || ""}
-                  </div>
-                ) : null}
-              </DebtCard>
-            ) : (
-              <GapCard head={X.qHold} sub={X.qHoldS} tag={X.gapTag} text={X.gapHold} />
-            )}
-          </div>
-        </div>
-
-        {mat && mat.rows && mat.rows.length ? (
-          <MaturityLadder rows={mat.rows} locale={locale} X={X} asOf={mat.asOf}
-            avgLife={mat.avgLife}
-            laddered={
-              mat.totalLaddered != null
-                ? mat.totalLaddered
-                : mat.rows.reduce((a: number, r: CodedRow) => a + r[1], 0)
-            }
-          />
-        ) : (
-          <div className="dsec">
-            <div className="dsec-h">
-              <span className="t">{X.secMat}</span>
-              <span className="q">{X.qMat}</span>
-            </div>
-            <div className="dgap">
-              <span className="tag">{X.gapTag}</span>
-              {X.gapMat}
-            </div>
-          </div>
-        )}
-
-        {iRec && iRec.total != null ? (
-          <div className="dsec">
-            <div className="dsec-h">
-              <span className="t">{X.secInt}</span>
-              <span className="q">{X.qInt.replace("{Y}", ref)}</span>
-              <span className="x">{X.scopeGG}</span>
-            </div>
-            <div className="dring">
-              {/* Eurostat can publish a consolidated interest total before the
-                  per-tier split lands. Rather than draw an empty ring, the card
-                  says the split is not out yet and the headline stands. */}
-              {intRows.length ? (
-                <DebtCard head={X.qIntWho} sub={X.qIntWhoS}>
-                  <Donut
-                    rows={intRows}
-                    total={intGross}
-                    floor={0.7}
-                    absShares
-                    variant="card"
-                    centre={eur(locale, intGross)}
-                    aria={`${X.qIntWho} ${eur(locale, intGross)}`}
-                    locale={locale}
-                  />
-                  {iRec.elim != null && iRec.elim !== 0 ? (
-                    <div className="dnote">
-                      <b>{X.elimIntTag}</b> —{" "}
-                      <Interpolated
-                        text={X.elimIntTxt}
-                        values={{
-                          G: eur(locale, intGross),
-                          C: eur(locale, iRec.total),
-                          E: eur(locale, iRec.elim),
-                        }}
-                      />
-                    </div>
-                  ) : null}
-                </DebtCard>
-              ) : (
-                <GapCard
-                  head={X.qIntWho}
-                  sub={X.qIntWhoS}
-                  tag={X.gapTag}
-                  text={X.gapIntSplit}
-                />
-              )}
-            </div>
-          </div>
-        ) : null}
+        <DebtBreakdown title={X.secShape} views={views} locale={locale} />
       </div>
 
       <ConsoleFooter source={X.foot1} perimeter={X.foot2} build={t.foot3} />
@@ -299,87 +247,6 @@ export default function DebtConsole({ locale }: { locale: Locale }) {
 }
 
 /* ------------------------------------------------------------------ parts -- */
-
-function DebtCard({
-  head,
-  sub,
-  children,
-}: {
-  head: string;
-  sub: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="dcard">
-      <div className="ch">{head}</div>
-      <div className="cq">{sub}</div>
-      {children}
-    </div>
-  );
-}
-
-/** A gap we cannot fill from a published source, stated in place, never left blank. */
-function GapCard({
-  head,
-  sub,
-  tag,
-  text,
-}: {
-  head: string;
-  sub: string;
-  tag: string;
-  text: string;
-}) {
-  return (
-    <div className="dcard">
-      <div className="ch">{head}</div>
-      <div className="cq">{sub}</div>
-      <div className="dgap">
-        <span className="tag">{tag}</span>
-        {text}
-      </div>
-    </div>
-  );
-}
-
-/**
- * The dictionary's `{G}` / `{C}` / `{E}` placeholders and its `<b>` emphasis,
- * rendered as elements rather than as markup: the strings are the prototype's,
- * but nothing here goes near `dangerouslySetInnerHTML`.
- */
-function Interpolated({
-  text,
-  values,
-}: {
-  text: string;
-  values: Record<string, string>;
-}) {
-  const parts = text.split(/(<b>|<\/b>|\{[GCE]\})/g);
-  const out: React.ReactNode[] = [];
-  let bold = false;
-  let buffer: string[] = [];
-  const flush = (key: string) => {
-    if (!buffer.length) return;
-    const s = buffer.join("");
-    buffer = [];
-    out.push(bold ? <b key={key}>{s}</b> : <span key={key}>{s}</span>);
-  };
-  parts.forEach((p, i) => {
-    if (p === "<b>") {
-      flush(`f${i}`);
-      bold = true;
-    } else if (p === "</b>") {
-      flush(`f${i}`);
-      bold = false;
-    } else if (/^\{[GCE]\}$/.test(p)) {
-      buffer.push(values[p.slice(1, 2)] ?? p);
-    } else if (p) {
-      buffer.push(p);
-    }
-  });
-  flush("fend");
-  return <>{out}</>;
-}
 
 /**
  * Debt as a share of GDP, every year Eurostat publishes it. A debt screen with no
@@ -442,56 +309,6 @@ function DebtTrend({
           </span>
         ))}
       </div>
-    </div>
-  );
-}
-
-/**
- * What falls due each year, at face value. A stock falling due over time is a
- * timeline, so it stays bars — one per year the calendar has, out past 2070.
- * The years beyond the first decade take the dimmer fill: they are the same fact
- * at a different distance, not a lesser one.
- */
-function MaturityLadder({
-  rows,
-  locale,
-  X,
-  asOf,
-  avgLife,
-  laddered,
-}: {
-  rows: CodedRow[];
-  locale: Locale;
-  X: Dict["dbt"];
-  asOf: string;
-  avgLife: number | null;
-  laddered: number;
-}) {
-  const peak = Math.max(...rows.map((r) => r[1]));
-  return (
-    <div className="dsec">
-      <div className="dsec-h">
-        <span className="t">{X.secMat}</span>
-        <span className="q">
-          {X.qMat}
-          {avgLife != null ? " · " + X.matAvg.replace("{V}", nf(locale, avgLife, 2)) : ""}
-        </span>
-        <span className="x">
-          {eur(locale, laddered)} · {X.scopeState} · {asOf || ""}
-        </span>
-      </div>
-      <div className="mat">
-        {rows.map(([yr, v], i) => (
-          <div className={i >= 10 ? "matr far" : "matr"} key={yr}>
-            <span className="my">{yr}</span>
-            <span className="mt">
-              <span className="mf" style={{ width: `${Math.max(0.6, (v / peak) * 100)}%` }} />
-            </span>
-            <span className="mv">{eur(locale, v)}</span>
-          </div>
-        ))}
-      </div>
-      <div className="dnote">{X.matNote}</div>
     </div>
   );
 }

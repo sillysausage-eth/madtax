@@ -1,4 +1,4 @@
-import type { YearKey } from "@/lib/types";
+import type { CodedRow, YearKey } from "@/lib/types";
 
 /**
  * The debt screen's palettes and its one piece of chart geometry, ported from
@@ -137,3 +137,57 @@ export function debtTrend(
 /** The label's x, nudged off the point the way the prototype nudges it. */
 export const markLabelX = (m: TrendMark): number =>
   m.anchor === "end" ? m.x - 1.6 : m.anchor === "start" ? m.x + 1.6 : m.x;
+
+/* --------------------------------------------------------------- maturity -- */
+
+/**
+ * The redemption calendar, folded into five periods.
+ *
+ * The calendar itself runs to twenty-eight year rows out past 2071, which reads
+ * as a table rather than as a shape: the reader scrolls a screen of bars to
+ * learn that most of the stock falls due inside a decade. Folded, the shape is
+ * one glance, and pressing a period opens the years inside it — the same
+ * published figures, nothing aggregated away.
+ *
+ * The edges are years from the calendar's own reference date, not fixed dates,
+ * so the periods stay meaningful when the source is refreshed.
+ */
+export interface MatBucket {
+  k: string;
+  /** First and last calendar year in the period; `to` is null on the open end. */
+  from: YearKey;
+  to: YearKey | null;
+  v: number;
+  /** The published year rows this period is made of, in calendar order. */
+  rows: CodedRow[];
+}
+
+const BUCKET_EDGES: readonly (readonly [string, number, number | null])[] = [
+  ["now", 0, 0],
+  ["y1", 1, 4],
+  ["y5", 5, 9],
+  ["y10", 10, 19],
+  ["y20", 20, null],
+];
+
+/** Empty periods are dropped rather than drawn as a zero bar. */
+export function matBuckets(rows: CodedRow[], asOf: string): MatBucket[] {
+  const base = Number(asOf.slice(0, 4));
+  return BUCKET_EDGES.flatMap(([k, lo, hi]) => {
+    const inside = rows.filter(([y]) => {
+      const d = Number(y) - base;
+      return d >= lo && (hi == null || d <= hi);
+    });
+    return inside.length
+      ? [
+          {
+            k,
+            from: String(base + lo),
+            to: hi == null ? null : String(base + hi),
+            v: inside.reduce((a, r) => a + r[1], 0),
+            rows: inside,
+          },
+        ]
+      : [];
+  });
+}

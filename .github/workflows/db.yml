@@ -26,7 +26,7 @@ jobs:
 
       # The bundle is the source of truth end to end: a bundle that fails its
       # own tie-outs must not be pushed into the mirror either.
-      - name: Verify the bundle (121 tie-outs)
+      - name: Verify the bundle (156 tie-outs)
         run: npm run data:verify
 
       # supabase/migrations/*.sql -> the live project. No `supabase link`, no

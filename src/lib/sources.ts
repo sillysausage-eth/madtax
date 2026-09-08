@@ -13,6 +13,12 @@
 export const SOURCE_LINKS: Record<string, string> = {
   AEAT: "https://sede.agenciatributaria.gob.es/Sede/datosabiertos/catalogo/hacienda/Informes_anuales_de_Recaudacion_Tributaria.shtml",
   ISTAC: "https://www.gobiernodecanarias.org/istac/estadisticas/",
+  /* The two treasuries that collect in the foral territories. AEAT's series
+     carries only the residual it still collects there, so these are the sources
+     the Basque and Navarrese figures on the map actually come from. */
+  OCTE: "https://www.euskadi.eus/recaudacion/web01-s2oga/es/",
+  "Hacienda Foral de Navarra":
+    "https://www.navarra.es/es/web/memoria-2024/2.4-recaudacion-liquida",
   IGAE: "https://www.igae.pap.hacienda.gob.es/sitios/igae/es-ES/Contabilidad/ContabilidadPublica/CPE/EjecucionPresupuestaria/",
   INE: "https://www.ine.es/",
   Eurostat:

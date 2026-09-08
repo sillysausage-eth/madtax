@@ -8,12 +8,14 @@ import { RAMP_EXP, makeIntensity, makeRamp, makeScale, rampTop } from "@/lib/ram
 import {
   SPEND_GAMMA,
   aggCode,
-  spendAggOf,
   spendCompModel,
   spendMetricVal,
   spendNoSplit,
   spendSlice,
+  spendTerrOf,
   spendYear,
+  stateCoinValue,
+  terrMetricVal,
 } from "@/lib/spending";
 import { divisions, regionSpending, spendYears } from "@/data/spending";
 import { CANVAS_W, CB, H, labelNudge, regionAbbr, regions } from "@/data/map";
@@ -25,27 +27,27 @@ import Donut from "./Donut";
 import MapCoins, { COIN_RAIL_WIDTH, type MapCoin } from "./MapCoins";
 import PartCoins, { type PartCoin } from "./PartCoins";
 import SpainMap, { RampLegend, type MapFlag } from "./SpainMap";
-import { spendingDossierCode } from "./SpendingDossier";
+import { STATE_ID_EXP, spendingDossierCode } from "./SpendingDossier";
 import SpendingPanel from "./SpendingPanel";
 import YearScrubber from "./YearScrubber";
 
 /**
  * The spending console.
  *
- * M6 brings this screen onto the interaction the revenue console has used since
- * M5, so the two work identically: the text legend beside the ring is a grid of
- * pressable coins, one per COFOG division, and pressing one is the console's
- * filter control — the map re-cuts to that function, the four coins beside Spain
- * re-cut with it, and the right-hand panel fills with that function's whole
- * breakdown. The explainer that used to sit under the counter is gone; its
- * content is in the panel.
+ * It works exactly as the revenue console does, and since M7 it draws the same
+ * kind of map. The map is a map of territories: each community carries what is
+ * spent in it by the two tiers of government that have a territory — its
+ * regional government (IGAE COFOG) and its local entities (CONPREL, net of the
+ * transfers that would count twice) — and the one coin beside Spain is the
+ * State: what no published source places in any community. Regions plus coin
+ * are the consolidated national figure, always, and the coin is opened up in
+ * the panel rather than left as a residual.
  *
- * What is deliberately *not* symmetric with revenue: revenue has one off-map
- * coin because its unattributed remainder does not decompose. Spending's does —
- * into central government, councils, social security and the transfers between
- * them — so the four rail coins stay. The interaction is unified; the taxonomy
- * is not, because the taxonomies are genuinely different and flattening one to
- * match the other would throw away published detail.
+ * The legend beside the ring is a grid of pressable coins, one per COFOG
+ * division, and pressing one is the console's filter control. Filtered, the map
+ * can draw only the regional tier's part of that function: councils' spending
+ * has no published functional split by territory, so for one function it moves
+ * into the coin and the panel says so. The identity holds in both states.
  *
  * Presentation only — every piece of state arrives as a prop, so the same tree
  * renders the static shell (with the console's opening state) and the live,
@@ -57,7 +59,7 @@ const noop = () => {};
 
 export interface SpendingConsoleState {
   year: YearKey;
-  /** A region id, or a rail coin id, or nothing selected. */
+  /** A region id, or the State coin, or nothing selected. */
   sel: string | null;
   /** The COFOG division the console is filtered to. */
   focus: string | null;
@@ -89,9 +91,6 @@ export default function SpendingConsole({
   /* ---- composition -------------------------------------------------------- */
   const M = spendCompModel(locale, t, sy);
 
-  /* One coin per COFOG division, largest first — the order the ring is drawn
-     in, so the grid and the arcs agree. The title carries the full name for the
-     widths where the label has to wrap. */
   const coinItems: PartCoin[] = M.rows.map((r) => ({
     k: r.k,
     nm: r.nm,
@@ -102,30 +101,26 @@ export default function SpendingConsole({
   }));
 
   /* ---- map ---------------------------------------------------------------- */
-  /* The filter drives the slice the region arrays are already laid out by, so
-     the map, the rail coins and the panel all read one number set. Slice 0 is
-     the whole of regional spending. */
   const slice = spendSlice(focus);
-  const code = aggCode(focus);
 
-  /* Defence is spent entirely outside the tier the map draws. The region arrays
-     carry a literal zero there, but that zero is the absence of the function
-     from this tier rather than a measurement of any community, so the map is
-     given nothing to draw and the panel says so in place.
-
-     Derived inside the memo from the two pieces of state it actually depends on,
-     rather than from the locals above: those locals also feed the rail coins,
-     whose aggregate is a bundle object the compiler cannot prove is never
-     mutated, and a dependency it cannot vouch for is a memo it will not keep. */
+  /* Unfiltered, a territory reads what is spent in it by its regional government
+     and its councils together. Filtered, it reads the regional tier's part of
+     the function, and a function that tier does not spend on at all (defence)
+     leaves the map with nothing to draw rather than nineteen measured-looking
+     zeroes. Derived inside the memo from the two pieces of state it depends on. */
   const values = useMemo(() => {
     const m = new Map<string, number | null>();
     const y = spendYear(year);
     const i = spendSlice(focus);
-    const blank = spendNoSplit(y, aggCode(focus));
+    const blank = focus ? spendNoSplit(y, aggCode(focus)) : false;
     for (const g of regions)
       m.set(
         g.id,
-        blank ? null : spendMetricVal(regionSpending[g.id], y, i, METRIC),
+        blank
+          ? null
+          : focus
+            ? spendMetricVal(regionSpending[g.id], y, i, METRIC)
+            : terrMetricVal(regionSpending[g.id], y, METRIC),
       );
     return m;
   }, [year, focus]);
@@ -135,93 +130,76 @@ export default function SpendingConsole({
   const colour = useMemo(() => makeScale(list, ramp, SPEND_GAMMA), [list, ramp]);
   const intensity = useMemo(() => makeIntensity(list), [list]);
 
-  /* A region whose spending is not published for this year is flagged, not left
-     to read as an empty outline. Ceuta and Melilla have no regional government at
-     all, so they carry it every year; the dossier says why. The flag tracks the
-     region's own publication, not the filter: where a whole function is absent
-     from this tier the panel states it once rather than pinning nineteen
-     markers to a blank country. */
-  const flags: MapFlag[] = regions
-    .filter((g) => !regionSpending[g.id]?.spend[sy])
-    .map((g) => ({
-      id: g.id,
-      /* The flag sits opposite the label: Melilla's name is nudged to the right
-         of its dot, so its marker goes left rather than under the label. */
-      dx: labelNudge(g).dx > 0 ? -13 : 13,
-      dy: -9,
-      r: 5,
-      ty: 2.2,
-      text: "?",
-      fill: "#3E525E",
-      textFill: "#0B1218",
-    }));
+  /* A territory with no figure in the current reading is flagged, not left to
+     read as an empty outline. Unfiltered that is only a year whose CONPREL table
+     is blank for a city (Melilla 2022); filtered it is Ceuta and Melilla, which
+     have no regional government and so nothing in the tier a function filter
+     draws. Where a whole function is absent from that tier the panel states it
+     once rather than pinning nineteen markers to a blank country. */
+  const blankAll = focus ? spendNoSplit(sy, aggCode(focus)) : false;
+  const flags: MapFlag[] = blankAll
+    ? []
+    : regions
+        .filter((g) => values.get(g.id) == null)
+        .map((g) => ({
+          id: g.id,
+          /* The flag sits opposite the label: Melilla's name is nudged to the
+             right of its dot, so its marker goes left rather than under it. */
+          dx: labelNudge(g).dx > 0 ? -13 : 13,
+          dy: -9,
+          r: 5,
+          ty: 2.2,
+          text: "?",
+          fill: "#3E525E",
+          textFill: "#0B1218",
+        }));
 
   /* The HUD states where the picture comes from, which year it is on and which
-     COFOG cut is drawn. Since the coins filter the map, the cut follows the
-     filter — anything else would misdescribe what is on screen. The national and
-     on-map totals the prototype also carried are said in full in the composition
-     panel and on the coins. */
+     COFOG cut is drawn. `(P)` marks a year in which a territory carries one tier
+     but not the other — Navarre's councils in 2013 and 2014 — and is stated in
+     full in that territory's dossier. */
+  const T = spendTerrOf(sy);
+  const partial = !focus && T.partial.length + T.missing.length > 0;
   const hudRows: [string, string][] = [
     ["PROJ", "MERCATOR / ETRS89"],
-    ["SRC", "IGAE COFOG · EUROSTAT"],
+    ["SRC", "IGAE COFOG · CONPREL · EUROSTAT"],
     [
       t.fYear.toUpperCase(),
-      `${sy} · COFOG ${slice ? divisions[slice - 1] : "ALL"}`,
+      `${sy}${partial ? " (P)" : ""} · COFOG ${slice ? divisions[slice - 1] : "ALL"}`,
     ],
   ];
 
-  /* ---- coins: the spending with no territorial split ---------------------- */
-  const agg = spendAggOf(sy, code);
-  const coins: MapCoin[] = [];
-  if (agg) {
-    if (agg.socsec > 50)
-      coins.push({
-        id: "ss",
-        glyph: "social",
-        title: t.coinOsSoc,
-        value: eur(locale, agg.socsec),
-        aria: `${t.osSoc}: ${eur(locale, agg.socsec)}`,
-      });
-    if (agg.central > 50)
-      coins.push({
-        id: "central",
-        glyph: "central",
-        title: t.coinOsCentral,
-        value: eur(locale, agg.central),
-        aria: `${t.osCentral}: ${eur(locale, agg.central)}`,
-      });
-    if (agg.local > 50)
-      coins.push({
-        id: "local",
-        glyph: "local",
-        title: t.coinOsLocal,
-        value: eur(locale, agg.local),
-        aria: `${t.osLocal}: ${eur(locale, agg.local)}`,
-      });
-    if (Math.abs(agg.adj) > 500)
-      coins.push({
-        id: "adj",
-        glyph: "adjust",
-        title: t.coinOsAdj,
-        value: eur(locale, agg.adj),
-        aria: `${t.osAdj}: ${eur(locale, agg.adj)}`,
-      });
-  }
-
+  /* ---- the one off-map coin ---------------------------------------------- */
+  /* Whatever the reading is, the territories on the map plus this coin are the
+     figure. Unfiltered it is everything spent by the State and Social Security
+     plus the part of the local tier the territorial layer does not reach, less
+     the inter-tier elimination; filtered, it is the function's spending outside
+     the regional tier. */
   const fnName = slice ? M.rows.find((r) => r.k === focus)?.nm : null;
+  const coinV = stateCoinValue(sy, focus);
+  const coins: MapCoin[] = [
+    {
+      id: STATE_ID_EXP,
+      glyph: "gov",
+      title: t.shieldTitle,
+      value: eur(locale, coinV),
+      aria: `${t.shieldName} · ${fnName ?? t.fnAll}: ${eur(locale, coinV)}`,
+    },
+  ];
 
   return (
     <>
       <section className="comp" id="comp" role="tabpanel">
-        {/* The year picker sits in this header, beside the figures it governs.
-            The caption keeps its own year because it is the year the COFOG split
-            is published for, which is not always the year asked for. */}
+        {/* The year picker sits in this header because the year is what the
+            figures under it are for. The caption no longer repeats it, and the
+            perimeter line it used to carry is the footer's sentence said twice:
+            the control states the year, once, and the scope is stated once,
+            below. The revenue header reads the same way. */}
         <div className="comp-h">
           <div className="comp-hk">
-            <div className="head-k">
-              {t.sExp.tot} · {fy(locale, sy)}
-            </div>
-            <div className="head-s">{M.sub}</div>
+            <div className="head-k">{t.sExp.tot}</div>
+            {/* Only when there is a gap to declare: see `SpendCompModel.sub`. */}
+            {M.sub ? <div className="head-s">{M.sub}</div> : null}
           </div>
           <YearScrubber
             years={spendYears}

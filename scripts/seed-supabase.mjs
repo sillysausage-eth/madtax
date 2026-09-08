@@ -387,8 +387,6 @@ export function build(B, registry) {
       name_en: r.en,
       foral: r.foral,
       inset: r.inset,
-      gdp_mn: r.gdp,
-      pop: r.pop,
       centroid_x: r.cx,
       centroid_y: r.cy,
       bbox_x0: r.bbox[0],
@@ -396,6 +394,23 @@ export function build(B, registry) {
       bbox_x1: r.bbox[2],
       bbox_y1: r.bbox[3],
     }))
+  );
+
+  // One row per region and year the bundle carries a denominator for. Null where a
+  // series has not reached the year; never the previous year's value.
+  add(
+    'region_macro',
+    'region_id',
+    B.regions.flatMap((r) => {
+      const years = [...new Set([...Object.keys(r.macro.gdp), ...Object.keys(r.macro.pop)])].sort();
+      return years.map((y) => ({
+        region_id: r.id,
+        year: Number(y),
+        gdp_mn: r.macro.gdp[y] ?? null,
+        gdp_provisional: r.macro.gdpProvisional.includes(y),
+        pop: r.macro.pop[y] ?? null,
+      }));
+    })
   );
 
   const subCodes = new Set([...Object.keys(B.subSrc), ...Object.keys(B.subLab.es), ...Object.keys(B.subLab.en)]);
@@ -697,10 +712,14 @@ export function build(B, registry) {
   add('who_irpf_bracket', 'year', bracketRows);
   add('who_irpf_bracket_total', 'year', bracketTotals);
 
+  /* who.corp.years is the turnover-bracket series since merge_corp_brackets.js; the table 8.5
+     series this table mirrors lives in who.corp.types. The brackets are not seeded
+     yet — the console reads them from the bundle. */
   const corpRows = [];
-  for (const y of Object.keys(B.who.corp.years)) {
+  const corpTypes = B.who.corp.types ?? fail('who.corp.types missing — run pipeline/spain/merge_corp_brackets.js');
+  for (const y of Object.keys(corpTypes)) {
     for (const segment of ['total', 'groups', 'standalone']) {
-      const o = B.who.corp.years[y][segment] ?? fail(`corp ${y}.${segment} missing`);
+      const o = corpTypes[y][segment] ?? fail(`corp ${y}.${segment} missing`);
       corpRows.push({
         year: yearNum(y),
         segment,

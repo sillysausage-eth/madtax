@@ -2,11 +2,11 @@
 
 import { useCallback } from "react";
 import type { Locale } from "@/i18n";
-import { OPENING_YEAR_EXP } from "@/lib/spending";
+import { OPENING_YEAR_EXP, aggCode, spendNoSplit } from "@/lib/spending";
 import { divisions, spendYears } from "@/data/spending";
 import { regions } from "@/data/map";
 import SpendingConsole from "./SpendingConsole";
-import { OFF_MAP_IDS_EXP } from "./SpendingDossier";
+import { OFF_MAP_IDS_EXP, STATE_ID_EXP } from "./SpendingDossier";
 import { useUrlState } from "./useUrlState";
 import { useKeyboardNav } from "./useKeyboardNav";
 
@@ -47,9 +47,17 @@ export default function SpendingExplorer({ locale }: { locale: Locale }) {
     (id: string) => setUrl({ r: sel === id ? null : id }),
     [setUrl, sel],
   );
+  /* A function the regional tier does not spend on at all — defence, every
+     year — has nothing to colour, so filtering to it also selects the State
+     coin: the panel then says at once that the whole figure is spent centrally,
+     instead of leaving a blank country to be read as missing data. The revenue
+     console's rule for a component with no territorial split, unchanged. */
   const onFocus = useCallback(
-    (k: string) => setUrl({ f: focus === k ? null : k }),
-    [setUrl, focus],
+    (k: string) => {
+      if (focus === k) return setUrl({ f: null });
+      setUrl(spendNoSplit(year, aggCode(k)) ? { f: k, r: STATE_ID_EXP } : { f: k });
+    },
+    [setUrl, focus, year],
   );
   /* The total is a state to ask for, not the absence of one: pressing it lifts
      the filter whatever was pressed before. */

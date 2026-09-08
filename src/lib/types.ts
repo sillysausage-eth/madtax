@@ -7,7 +7,7 @@
  * worse than an honest `unknown` — it invites the compiler to bless a shape the
  * bundle never had.
  *
- * `verify.js` (121 checks) is the contract these types describe.
+ * `verify.js` (156 checks) is the contract these types describe.
  */
 
 /** A four-digit year used as an object key throughout the bundle. */
@@ -60,7 +60,11 @@ export interface RegionGeometry {
   bbox: [number, number, number, number];
   /** True for the Canaries, drawn in the inset box `CB`. */
   inset: boolean;
-  /** True for Navarre and the Basque Country — foral regimes, state figures residual. */
+  /**
+   * True for Navarre and the Basque Country. They collect their own taxes under
+   * the Concierto and the Convenio Económico, so their figures come from their
+   * own treasuries rather than from AEAT — see `foralCoverage` for the years.
+   */
   foral: boolean;
 }
 
@@ -70,6 +74,26 @@ export interface MapSection {
   /** Canaries inset box. */
   CB: { x: number; y: number; w: number; h: number };
   regions: RegionGeometry[];
+}
+
+/**
+ * The denominators behind per-capita and %GDP, by year, from Eurostat's regional
+ * series (`pipeline/spain/merge14.js`).
+ *
+ * A ratio of two measurements is that ratio only when both are of the same
+ * year, so both are series: population is the headcount on 1 January of the
+ * year, GDP is at current market prices in € million, provisional where
+ * Eurostat flags it. A year outside either series has no reading — the console
+ * shows `—`, never the nearest year's figure.
+ */
+export interface RegionMacro {
+  gdp: Record<YearKey, Millions>;
+  pop: Record<YearKey, number>;
+  /** Years Eurostat still flags provisional. */
+  gdpProvisional: YearKey[];
+  src: { gdp: string; pop: string };
+  /** Eurostat's `updated` stamp on each dataset at extraction. */
+  updated: { gdp: string; pop: string };
 }
 
 /* ----------------------------------------------------------------- revenue -- */
@@ -99,8 +123,7 @@ export type NatParts = Record<YearKey, NatPartsYear>;
  * zero. The console renders `—`, never a filled-in number.
  */
 export interface RegionRevenue {
-  gdp: number;
-  pop: number;
+  macro: RegionMacro;
   /** AEAT tax heads by year, ordered as `revTaxes`. Unused by the console. */
   rev: Record<YearKey, number[]>;
   rev2: unknown;
@@ -143,6 +166,8 @@ export interface Coverage {
   nationalTaxDetail: string;
   euByRegion: string;
   social: string | null;
+  foralBasque?: string;
+  foralNavarre?: string;
 }
 
 export interface RevenueSection {
@@ -161,7 +186,87 @@ export interface RevenueSection {
   coverage: Coverage;
   euNote: string;
   national2: Record<YearKey, National2Year>;
+  /**
+   * Which years the foral treasuries' own figures cover, and who published them.
+   *
+   * The Basque and Navarrese figures on the map come from the Diputaciones
+   * Forales and the Hacienda Foral de Navarra, not from AEAT, which collects
+   * only a residual in those territories. Their series start in different years,
+   * so the console has to know which of the two statements to make about a
+   * region: this is its own treasury's figure, or its treasury has not published
+   * this year and the cell is empty.
+   */
+  foralCoverage: ForalCoverage;
+  salesDetail: SalesDetail;
   regions: Record<string, RegionRevenue>;
+}
+
+export interface ForalCoverage {
+  /** Region ids under a foral regime — Navarre and the Basque Country. */
+  ids: string[];
+  /** Region id -> the years its own treasury's figures are published for. */
+  covered: Record<string, YearKey[]>;
+  src: Record<string, string>;
+  /**
+   * Region id -> year -> the publication the figure was read from: the Basque
+   * OCTE table, Navarre's memoria, or — for Navarre before its memorias begin —
+   * the Ministry of Finance's compiled series (`dgt`), admitted by the pipeline
+   * only because it reproduces the memoria in every year both cover. The
+   * dossier says which.
+   */
+  srcYear: Record<string, Record<YearKey, ForalSource>>;
+}
+
+export type ForalSource = "octe" | "memoria" | "dgt";
+
+/* ------------------------------------------------ fees, prices and sales -- */
+
+/**
+ * The `sales` bucket's two ESA items: market sales plus output kept for own use
+ * (`P11_P12`), and part-payments for public services (`P131`).
+ */
+export interface SalesEsa {
+  P11_P12: Millions;
+  P131: Millions;
+}
+
+/** A community government's own charges, from the IGAE per-community accounts. */
+export interface SalesRegionRow {
+  /** Market sales of goods and services. */
+  P11: Millions;
+  /** Output produced for the government's own use — an accounting entry, not cash. */
+  P12: Millions;
+  /** Part-payments for public services: tuition, co-payments, administrative fees. */
+  P131: Millions;
+}
+
+/** A community's councils' chapter 3, by budget article, cash basis (CONPREL). */
+export interface SalesLocalRow {
+  /** The chapter total — the figure inside the community's map `sales` part. */
+  total: Millions;
+  /** Article code ("30".."39") -> amount. Rounded one by one; see `artTol`. */
+  art: Record<string, Millions>;
+}
+
+/**
+ * Three published cuts of the fees, prices and sales bucket, built by
+ * `pipeline/spain/merge17.js`. Each reconciles to a figure already in the bundle:
+ * the tiers to `natParts.sales`, the communities to the S1312 tier, the articles to
+ * the chapter total. Nothing here is folded into the map — `region` in particular
+ * is the community's published figure shown beside the map's, not added to it.
+ */
+export interface SalesDetail {
+  years: YearKey[];
+  tier: Record<YearKey, Record<"S1311" | "S1312" | "S1313" | "S1314", SalesEsa>>;
+  region: Record<YearKey, Record<string, SalesRegionRow>>;
+  local: Record<YearKey, Record<string, SalesLocalRow>>;
+  /** Article codes in source order. */
+  artCodes: string[];
+  /** The publisher's own Spanish label for each article. */
+  artSrc: Record<string, string>;
+  /** Max € millions the rounded articles may drift from the rounded total. */
+  artTol: number;
+  src: { tier: string; region: string; local: string };
 }
 
 /* ---------------------------------------------------------------- spending -- */
@@ -178,8 +283,69 @@ export interface RegionSpending {
   spend: Record<YearKey, number[] | null>;
   /** Economic-transaction split by year, ordered as `econKeys`. */
   econ: Record<YearKey, number[] | null>;
-  gdp: number;
-  pop: number;
+  /**
+   * What the territory's local entities spent, by year — CONPREL definitive
+   * liquidations. `null` where the published table is zero on every line
+   * (Navarre 2013-2014, Melilla 2022): absent, not zero.
+   */
+  local: Record<YearKey, LocalSpend | null>;
+  macro: RegionMacro;
+}
+
+/**
+ * The local tier of one territory for one year, in € million, budget basis
+ * (obligations recognised). Consolidated across the territory's councils,
+ * provincial and island councils, comarcas and metropolitan areas.
+ */
+export interface LocalSpend {
+  /** Every chapter, financial ones included. */
+  total: Millions;
+  /** Chapters 1-7: what national accounts count as expenditure. */
+  nonfin: Millions;
+  /** Chapters 8-9: financial assets and debt repayment. Not spending. */
+  fin: Millions;
+  /** Transfers to another tier of government (State, Social Security, the community government, other local entities). */
+  toGov: Millions;
+  /** Transfers received from the community government, which its own figure already carries as spending. */
+  fromCA: Millions;
+  /** `nonfin − toGov − fromCA`: what goes on the map. */
+  net: Millions;
+  /** `nonfin` by programme area of Orden EHA/3565/2008, keyed by `localAreas.codes`. */
+  areas: Record<string, Millions>;
+}
+
+/**
+ * The whole map's reconciliation for one year, all of spending. The territories
+ * on the map (`regional + localNet = mapped`) plus the one State coin (`state`)
+ * are the consolidated national figure; the coin decomposes exactly into
+ * `central + socsec + adj + localRest`, every term a published figure or the
+ * difference of two. Nothing is rescaled.
+ */
+export interface SpendTerrEntry {
+  nat: Millions;
+  mapped: Millions;
+  regional: Millions;
+  localNet: Millions;
+  state: Millions;
+  central: Millions;
+  socsec: Millions;
+  /** The inter-tier elimination, negative. */
+  adj: Millions;
+  /** The national-accounts local tier (S.1313). */
+  localTier: Millions;
+  /** `localTier − localNet`: the part of the local tier the territorial layer does not reach. */
+  localRest: Millions;
+  /** Territories with a regional figure but no local one this year. */
+  partial: string[];
+  /** Territories with neither. */
+  missing: string[];
+}
+
+/** The six programme areas councils classify their spending by, labelled from the source. */
+export interface LocalAreas {
+  codes: string[];
+  es: Record<string, string>;
+  en: Record<string, string>;
 }
 
 /**
@@ -217,6 +383,9 @@ export interface SpendingSection {
   econKeys: string[];
   econES: Record<string, string>;
   econEN: Record<string, string>;
+  /** Keyed by year: the map-of-territories reconciliation. */
+  spendTerr: Record<YearKey, SpendTerrEntry>;
+  localAreas: LocalAreas;
   regions: Record<string, RegionSpending>;
 }
 
@@ -355,6 +524,48 @@ export interface CorpYear {
   total?: CorpEntry;
   groups?: CorpEntry;
   standalone?: CorpEntry;
+  /** AEAT marks the latest edition's newest column "(p)"; carried, and shown. */
+  prov?: boolean;
+}
+
+/**
+ * One turnover bracket of AEAT's consolidated corporate tax statistic. A tax
+ * group counts once; a company outside a group counts once. Money in € millions.
+ */
+export interface CorpBracket {
+  /** Bracket bounds, thousands of € of annual turnover; `hi` null on the top row. */
+  lo: number;
+  hi: number | null;
+  /** Companies and groups filing. */
+  n: number;
+  /** Of which with a positive net tax liability; not published before 2019. */
+  nPos: number | null;
+  turnover: Millions;
+  /** Sum of positive accounting results ("Beneficio"). */
+  profit: Millions;
+  /** Net accounting result. */
+  rc: Millions;
+  base: Millions;
+  /** Cuota íntegra. */
+  gross: Millions;
+  /** Cuota líquida positiva — the tax settled. */
+  tax: Millions;
+  rateBase: number | null;
+  rateProfit: number | null;
+  /**
+   * The same bracket crossed with AEAT's five sector groupings, which partition
+   * the census. `tax` is null where AEAT withholds the cell under statistical
+   * secrecy — too few filers in that sector and bracket to publish without
+   * identifying them.
+   */
+  sectors: Record<string, { n: number; profit: Millions; tax: Millions | null }>;
+  /** True where any sector cell in this bracket is withheld. */
+  secSE: boolean;
+}
+export interface CorpBracketYear {
+  total: Omit<CorpBracket, "lo" | "hi">;
+  rows: CorpBracket[];
+  src: string;
 }
 
 /** Social contributions by payer, ESA D61 codes. `D61` is the published total. */
@@ -375,9 +586,21 @@ export interface VatYear extends AeatYear {
   adjOther: Millions;
 }
 
-export type WhoBlock =
+export type WhoBlock = {
+  /**
+   * "YYYY-MM" the publisher has announced for the next edition, where it has.
+   * Shown in place of the table for a year the series does not yet carry.
+   */
+  nextRelease?: string;
+} & (
   | { kind: "brackets"; deciles: Record<YearKey, DecileYear>; brackets: unknown }
-  | { kind: "company"; years: Record<YearKey, CorpYear> }
+  | {
+      kind: "company";
+      /** By turnover bracket, 2016 onwards — what the console renders. */
+      years: Record<YearKey, CorpBracketYear>;
+      /** Table 8.5 by company type, 2008 onwards — kept for tie-outs, not rendered. */
+      types: Record<YearKey, CorpYear>;
+    }
   | { kind: "payer"; years: Record<YearKey, PayerYear> }
   | {
       kind: "product";
@@ -390,7 +613,8 @@ export type WhoBlock =
       years: Record<YearKey, VatYear>;
       labES: Record<string, string>;
       labEN: Record<string, string>;
-    };
+    }
+);
 
 export interface WhoSection {
   /** Keyed by the `PARTS` component the block explains: irpf, corp, social… */

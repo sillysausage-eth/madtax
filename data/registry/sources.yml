@@ -11,7 +11,7 @@
 
 version: 1
 country: ES
-updated: 2026-08-29
+updated: 2026-09-08
 
 sources:
 
@@ -20,23 +20,28 @@ sources:
     name: Eurostat — government revenue & expenditure (SEC 2010)
     publisher: Eurostat
     grade: A
-    verified: 2026-08-29
+    verified: 2026-09-08
     phase: 1
     perspective: gg_sec2010
     basis: accrual
     cadence: annual
-    coverage: {from: 1995, to: 2024}
+    coverage: {from: 1995, to: 2025}
     licence: Eurostat open data
     endpoint: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10a_main
     params: {format: JSON, geo: ES, unit: MIO_EUR, lang: EN}
     sectors: [S13, S1311, S1312, S1313, S1314]   # total, central, regional, local, social security
-    notes: Top-of-tree totals and the independent cross-check for every other source.
+    notes: >
+      Top-of-tree totals and the independent cross-check for every other source.
+      Re-read 2026-09-08 (dataset stamp 2026-07-21): TR/TE 2022-2025 identical to the
+      bundle to the million. 2025 has the headline only — gov_10a_taxag has not split
+      it by tax — so 2025 is NOT a published revenue year (see merge16.js).
 
   - id: eurostat_gov_taxag
     name: Eurostat — revenue by tax and social contribution type
     publisher: Eurostat
     grade: A
-    verified: 2026-08-29
+    verified: 2026-09-08
+    coverage: {from: 1995, to: 2024}
     phase: 1
     perspective: gg_sec2010
     endpoint: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10a_taxag
@@ -44,23 +49,132 @@ sources:
     notes: >
       Full tax decomposition — D2/D5/D61/D91 and every child code. Confirmed returning
       Spain 2024: total tax receipts 381.3bn, social contributions 210.3bn, VAT 102.5bn.
+      Re-read 2026-09-08: D51A_C1/D211/D61 2022-2024 identical to the bundle; 2025 not
+      yet published (expected with the October 2026 notification).
 
   - id: eurostat_gov_cofog
     name: Eurostat — expenditure by function (COFOG)
     publisher: Eurostat
     grade: A
-    verified: 2026-08-29
+    verified: 2026-09-08
+    coverage: {from: 1995, to: 2024}
     phase: 4
     endpoint: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10a_exp
     params: {format: JSON, geo: ES, unit: MIO_EUR, sector: S13, lang: EN}
     notes: Functional spine — health, defence, education, social protection, cross-classified by transaction.
+
+  - id: eurostat_regional_gdp
+    name: Eurostat — regional GDP at current market prices (NUTS 2)
+    publisher: Eurostat
+    grade: A
+    verified: 2026-09-08
+    phase: 1
+    cadence: annual
+    coverage: {from: 2007, to: 2024}
+    endpoint: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10r_2gdp
+    params: {format: JSON, unit: MIO_EUR, lang: EN}
+    notes: >
+      The denominator behind every %GDP reading, BY YEAR. Until merge14.js the bundle
+      carried one GDP per region (2023) and divided every year's figure by it. The two
+      latest years are flagged provisional (status p) and carried as such. Ingested by
+      pipeline/spain/merge14.js.
+
+  - id: eurostat_regional_pop
+    name: Eurostat — population on 1 January by NUTS 2 region
+    publisher: Eurostat
+    grade: A
+    verified: 2026-09-08
+    phase: 1
+    cadence: annual
+    coverage: {from: 2007, to: 2025}
+    endpoint: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/demo_r_pjanaggr3
+    params: {format: JSON, sex: T, age: TOTAL, lang: EN}
+    notes: >
+      The denominator behind every per-resident reading, BY YEAR (headcount on 1 January
+      of the year, the only date the regional series publishes). Until merge14.js the
+      bundle carried one population per region (1 Jan 2024) for every year. Ingested by
+      pipeline/spain/merge14.js.
+
+  - id: octe_foral_basque
+    name: OCTE — Recaudación de las Diputaciones Forales por tributos concertados
+    publisher: Órgano de Coordinación Tributaria de Euskadi
+    grade: C
+    verified: 2026-09-08
+    phase: 1
+    perspective: territorial
+    basis: recaudación líquida (cash), as collected by the three Diputaciones
+    cadence: annual (monthly in-year)
+    coverage: {from: 2012, to: 2025}
+    endpoint: https://www.euskadi.eus/recaudacion/web01-s2oga/es/
+    notes: >
+      The Basque Country's actual tax take. AEAT's territorial series carries only
+      the residual the State still collects there — 1,463 M€ of IRPF in 2023
+      against the 7,086 M€ the Diputaciones collected, and NEGATIVE VAT once the
+      Concierto adjustment is booked — so this supersedes it rather than adding to
+      it. One PDF per year, bilingual Basque/Spanish, thousands of euros, columns
+      ARABA | BIZKAIA | GIPUZKOA | CAPV | CAPV-1 | %. AES-encrypted: pypdf needs
+      the cryptography package. Filenames are irregular and NOT derivable from the
+      year (2012.pdf, 12_web_2022.pdf, 12_2023.pdf, 12-web-2025.pdf) and the
+      listing page builds its links in JavaScript, so a new year has to be read
+      off that page by hand into OCTE_FILES in extract_foral.py. The line labels
+      move between years — the excise block alone is "Total II.EE.Fabricación"
+      through 2022 and "Total II.EE. sujetos a ajustes con el Estado" after — so
+      the extractor closes each family against that year's own published subtotal
+      instead of matching every label.
+
+  - id: hfn_foral_navarre
+    name: Hacienda Foral de Navarra — Memoria anual, Cuadro nº 15
+    publisher: Gobierno de Navarra, Hacienda Foral
+    grade: B
+    verified: 2026-09-08
+    phase: 1
+    perspective: territorial
+    basis: recaudación líquida (cash)
+    cadence: annual
+    coverage: {from: 2015, to: 2024}
+    endpoint: https://www.navarra.es/es/web/memoria-{YEAR}/2.4-recaudacion-liquida
+    notes: >
+      Navarre's actual tax take, at a finer breakdown than the Basque table. A
+      clean eight-cell HTML table carrying the memoria's year and the one before
+      it, in thousands of euros with a comma decimal. The cuadro's slug changes
+      between years, so discover it from the §2.4 page by link text. Memorias
+      2016-2024 publish it (memoria-2015 and earlier return 404), so this route
+      reaches 2015 and no further; 2012-2014 come from dgt_foral_series below.
+      Memoria 2025 was not yet published on 2026-09-08.
+      The prior-year column is NOT always restated: memoria 2021 leaves 2019/2020
+      figures standing on its two TOTAL rows while every other row has moved on,
+      so take a year from its own memoria and fall back to the neighbour only when
+      the year fails its tie-out.
+
+  - id: dgt_foral_series
+    name: Ministerio de Hacienda (DGT) — Recaudación y Estadísticas del Sistema Tributario Español, series Parte I
+    publisher: Dirección General de Tributos
+    grade: B
+    verified: 2026-09-08
+    phase: 1
+    perspective: territorial
+    basis: recaudación líquida (cash), € millions
+    cadence: annual (edition 2012-2022, series 1986-2023)
+    coverage: {from: 1986, to: 2023}
+    index: https://www.hacienda.gob.es/es-ES/Areas%20Tematicas/Impuestos/Direccion%20General%20de%20Tributos/Paginas/Estadisticas_Recaudacion.aspx
+    endpoint: https://www.hacienda.gob.es/sgt/tributos/estadisticas/recaudacion/2022/series.zip
+    notes: >
+      The Ministry's compilation of the two foral treasuries' collection, tax by tax
+      (Administración "HF", Territorio Navarra / País Vasco), in one .xlsm of annual
+      series. Used ONLY for Navarre 2012-2014, the years its memorias do not reach, and
+      only because extract_foral.py first proves it reproduces the memoria bucket by
+      bucket (within 2 M€) in every year both cover (2015-2023) — the run fails otherwise.
+      Traps: the IIEE "Total" row for Navarre EXCLUDES the "Ajustes con el Estado" row
+      beneath it, which the memoria's excise figure includes; the 2021 Basque total
+      differs from OCTE by 239 M€ (OCTE kept, series not used for the Basque Country).
+      The host's TLS chain is not in Python's trust store: fetched with curl, verified.
 
   # ------------------------------------------------------------------- debt --
   - id: eurostat_gov_edp_debt
     name: Eurostat — government debt under the Excessive Deficit Procedure
     publisher: Eurostat
     grade: A
-    verified: 2026-08-31
+    verified: 2026-09-08
     phase: 1
     perspective: gg_sec2010
     basis: consolidated gross debt at face value
@@ -83,7 +197,7 @@ sources:
     name: Banco de España — EDP debt by counterpart sector (Boletín Estadístico 11.13)
     publisher: Banco de España
     grade: B
-    verified: 2026-08-31
+    verified: 2026-09-08
     phase: 1
     perspective: gg_sec2010
     basis: EDP face value, consolidated — identical perimeter to eurostat_gov_edp_debt
@@ -104,7 +218,7 @@ sources:
     name: Tesoro Público — Boletín de Estadísticas de la Deuda del Estado
     publisher: Secretaría General del Tesoro y Financiación Internacional
     grade: B
-    verified: 2026-08-31
+    verified: 2026-09-08
     phase: 1
     perspective: state_only
     basis: nominal outstanding, State debt only — NOT general government
@@ -129,7 +243,7 @@ sources:
     name: AEAT — Annual Tax Collection Report
     publisher: Agencia Estatal de Administración Tributaria
     grade: B
-    verified: 2026-08-29
+    verified: 2026-09-08
     phase: 2
     perspective: aeat_cash
     basis: cash
@@ -138,7 +252,17 @@ sources:
     index: https://sede.agenciatributaria.gob.es/Sede/datosabiertos/catalogo/hacienda/Informes_anuales_de_Recaudacion_Tributaria.shtml
     pdf_pattern: https://sede.agenciatributaria.gob.es/static_files/AEAT/Estudios/Estadisticas/Informes_Estadisticos/Informes_Anuales_de_Recaudacion_Tributaria/Ejercicio_{year}/IART{yy}_es_es.pdf
     annexes: [cuadros, delegaciones, derechos_reconocidos, distribucion_salarial, distribucion_salarial_ccaa, distribucion_irpf]
-    next_release: 2027-04-22
+    next_release: 2027-07
+    notes: >
+      The Ejercicio 2025 edition was published between 2026-08-31 and 2026-09-08. The
+      tables annex is Cuadros_IART25_es_es.xlsx — the 2024 edition was Cuadros_IART24.xlsx,
+      so the name is not derivable from the year. Row positions moved between editions
+      (5.1 gained the e-cigarette liquid line; 8.7 re-ordered its adjustments block), so
+      extract_aeat_detail.py reads rows by label. The 2024 edition labelled the 2%
+      temporary VAT rate "Tipo 2,5"; the 2025 edition corrected it. DistribucionesIRPF.xlsx
+      (deciles) was refreshed 2026-09-03 and now carries ejercicio 2024. Table 8.5
+      (corporate, by company type) carries 2024 as a provisional "(p)" column — a
+      header the extractor used to drop, leaving the 2023 table under the 2024 year.
     caveats:
       - Excludes the foral territories (Basque Country, Navarre) for most taxes.
       - Excludes social contributions entirely — these are collected by Social Security.
@@ -165,6 +289,30 @@ sources:
     cadence: monthly
     index: https://www.igae.pap.hacienda.gob.es/sitios/igae/es-ES/Contabilidad/ContabilidadPublica/CPE/EjecucionPresupuestaria/
     lag_months: 2
+
+  - id: igae_ccaa_accounts
+    name: IGAE — Administración Regional (S.1312), non-financial operations by community
+    publisher: Intervención General de la Administración del Estado
+    grade: A
+    verified: 2026-09-08
+    phase: 1
+    perspective: gg_sec2010
+    basis: ESA 2010 accrual, S.1312 by autonomous community
+    cadence: annual
+    coverage: {from: 2012, to: 2024}
+    url_pattern: https://www.igae.pap.hacienda.gob.es/sitios/igae/es-ES/Contabilidad/ContabilidadNacional/Publicaciones/Documents/CCAA-A/A_CCAA_Det_{year}.xlsx
+    sheet: Tabla1a
+    notes: >
+      One column per community plus a total. Two uses. (1) The regional tax layer of the
+      revenue map — D.211/D.212/D.214/D.29/D.59/D.91, never D.51, which is the ceded share
+      of income tax already inside AEAT's territorial figure (extract_owntax.py). (2) Since
+      merge17.js, the rows P.11 (market sales), P.12 (output for own use — imputed, not
+      cash) and P.131 (part-payments for public services) per community: the regional
+      government's own fees, prices and sales. The 17 communities reproduce the Eurostat
+      gov_10a_main S1312 row for P11_P12 and P131 to the million in every year 2012-2024.
+      Shown beside the map figure, NOT folded into the `sales` part: that part is cash
+      (AEAT fee line + CONPREL chapter 3 + the foral fee block) and P.131 overlaps the
+      foral block. 2024 is marked (P) in the file; it still ties to Eurostat exactly.
 
   - id: pge_budget
     name: Presupuestos Generales del Estado (approved budget)
@@ -224,17 +372,35 @@ sources:
     name: AEAT — annual accounts statistics, corporate income tax
     publisher: AEAT
     grade: B
-    verified: 2026-08-29
-    phase: 3
-    dimensions: [turnover_bracket, cnae_sector, ccaa, company_class]
-    turnover_brackets: 14
+    verified: 2026-09-08
+    phase: 2
+    in_bundle: who.corp.years (consolidated edition, turnover brackets)
+    coverage: {from: 2016, to: 2023}
+    next_release: 2026-10
+    index_consolidated: https://sede.agenciatributaria.gob.es/Sede/datosabiertos/catalogo/hacienda/Cuentas_Anuales_Consolidadas_del_Impuesto_sobre_Sociedades.shtml
+    index_nonconsolidated: https://sede.agenciatributaria.gob.es/Sede/datosabiertos/catalogo/hacienda/Cuentas_Anuales_No_Consolidadas_del_Impuesto_sobre_Sociedades.shtml
+    site_pattern: https://sede.agenciatributaria.gob.es/AEAT/Contenidos_Comunes/La_Agencia_Tributaria/Estadisticas/Publicaciones/sites/sociedadesdc/{year}/home.html
+    dimensions: [turnover_bracket, cnae_sector, ccaa, company_class, group_vs_standalone, sign_of_result]
+    turnover_brackets: 17
     large_company_threshold_eur: 6010121.04
-    source_forms: [modelo_200]
+    source_forms: [modelo_200, modelo_220]
+    extractor: pipeline/spain/extract_corp_brackets.py
     notes: >
-      Census-level, from every corporate tax return. Carries accounting result,
-      adjustments, tax base and final liability — so effective tax rate by company size
-      is computable from official figures with no modelling. This is the answer to
-      "which companies contribute most" for non-listed companies.
+      Two editions. The NON-consolidated one (sociedadest2, 2002-) counts every modelo 200
+      return, 14 turnover brackets. The CONSOLIDATED one (sociedadesdc, 2016-) counts a tax
+      group (modelo 220) once and a standalone company once, 17 brackets from "0 - 50" to
+      "> 1.000.000" thousand euros, and is what the Informe Anual's table 8.5 summarises —
+      the bundle uses it so brackets and 8.5 tie out (tax and base agree to the rounding
+      in every year; "Beneficio" differs from 8.5's revised 2016 and 2018 by 0.87% / 0.01%).
+      The same table is published once per sector (5 CNAE groupings that partition the
+      census) and once per group/standalone split; the bundle carries the sector cross,
+      which is the finest published detail inside a turnover bracket. Cells marked "SE"
+      are withheld under statistical secrecy (too few filers to publish without
+      identifying them): two exist, both tax in 2020, carried as null.
+      HTML tables only, no CSV/XLSX; page names are per-year hashes, so the extractor walks
+      the menu by label. Columns changed in 2019 ("Empresas con Cuota Líquida Positiva"
+      added; "Base imponible" renamed "Base imponible positiva"). Publishes NO ranking
+      by profit (deciles are not derivable) and NO company names.
 
   - id: cnmv_xbrl
     name: CNMV — listed issuer financial statements (XBRL)
@@ -306,15 +472,28 @@ sources:
     name: CONPREL — local entity budgets and liquidations
     publisher: Secretaría General de Financiación Autonómica y Local
     grade: B
-    verified: 2026-08-29
-    phase: 6
-    coverage: {from: 2002, to: 2026}
+    verified: 2026-09-08
+    phase: 1
+    coverage: {from: 2002, to: 2024}
     endpoint: https://serviciostelematicosext.hacienda.gob.es/SGFAL/CONPREL
     formats: {aggregates: xlsx, per_entity: access_mdb_zipped}
     entity_types: [ayuntamiento, diputacion, cabildo, consejo_insular, area_metropolitana]
     lag_months: 12-24
     tooling: mdbtools
-    notes: Only route to ~8,100 municipalities. Access format is awkward but tractable.
+    notes: >
+      Only route to ~8,100 municipalities. Access format is awkward but tractable. The
+      per-community aggregate (DescargaFichero?CCAA=nn&TipoDato=Liquidaciones&
+      Ejercicio=yyyy&TipoPublicacion=Definitiva, Tabla 2) feeds the municipal layer of
+      the revenue map — IBI, other local own taxes, fees — for 2012-2024 since merge13.js
+      (2019-2023 in the first build). Since merge17.js the same table's chapter 3 by
+      article (30-36, 38, 39; 37 unused) is published per community as "what councils
+      charge, by kind"; the articles reproduce the chapter total exactly in thousands.
+      2025 definitive: not yet published (HTTP 500).
+      CCAA codes 18/19 are Ceuta and Melilla and are skipped by name, not by code.
+      TRAP: the Navarre files for 2013 and 2014 exist, resolve, and are zero on every
+      line including the chapter totals; the Ministry's "Haciendas Locales en cifras"
+      annexes leave Navarre blank for the same years. An all-zero table is absent, not
+      zero — extract_local.py drops it and those two revenue years are not published.
 
   - id: cimcanet_ccaa
     name: CIMCANET — monthly budget execution, autonomous communities
@@ -349,7 +528,7 @@ gaps:
   - id: haciendas_forales
     what: Basque Country and Navarre collect their own taxes under the Concierto/Convenio
     why_it_matters: Excluded from most AEAT series; national totals are incomplete without them
-    status: no unified API — separate regional portals, manual connectors needed
+    status: CLOSED 2026-09 — octe_foral_basque (2012-2025), hfn_foral_navarre (2015-2024) and dgt_foral_series (Navarre 2012-2014) on the map for every published year
     blocks_phase: 2
   - id: social_security_detail
     what: Social contributions (~€210bn) and their spending

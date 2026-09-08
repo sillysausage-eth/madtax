@@ -8,8 +8,11 @@ Pilot country: **Spain**. The architecture is country-agnostic; the content is n
 
 ## Status
 
-Planning complete. Migration to Next.js under way — see [Web app](#web-app). All three
-consoles — revenue, spending and debt — are ported and verified against the prototype.
+Migration to Next.js complete — see [Web app](#web-app). All three consoles — revenue,
+spending and debt — are live. Revenue is published for 2012 and 2015-2024, spending for
+2012-2024, debt for 1995-2025; every published year is complete for every community, and
+the years that are not (2013-2014, 2025) are dropped with their reasons recorded in the
+bundle rather than shown with holes.
 
 | Document | What it covers |
 |---|---|
@@ -60,7 +63,7 @@ node pipeline/spain/verify.js
 ```
 Tie-out checks over the published bundle — accounting identities, no-double-counting
 assertions, COFOG and regional sums, bridge arithmetic, debt perimeters and stamps. Exits
-non-zero on failure. Currently **121 pass / 0 fail**.
+non-zero on failure. Currently **156 pass / 1 warn / 0 fail**.
 
 It is also the build gate: `npm run build` runs it first (`prebuild`), so a bundle that
 fails a tie-out cannot produce a site — locally or in CI.
@@ -87,10 +90,11 @@ the source has several traps).
 
 ## Web app
 
-The production site is a Next.js 16 app at the repo root (`src/`). It is being ported from
-the prototype milestone by milestone; **`prototype/console.html` remains the reference
-implementation** and the thing every port is diffed against. Nothing in `prototype/`,
-`pipeline/` or `data/` is edited to make the app easier to write.
+The production site is a Next.js 16 app at the repo root (`src/`). It was ported from the
+prototype milestone by milestone and has since moved past it: `prototype/console.html`
+is **frozen at the pre-foral bundle** and is no longer the reference — the app's own
+tie-outs (`pipeline/spain/verify.js`) are. Nothing in `pipeline/` or `data/` is edited to
+make the app easier to write.
 
 All three consoles are ported: **revenue** (map, off-map coins, dossier, composition ring
 with the ESA drill and the who-pays tables), **spending** (COFOG composition and its 69
@@ -106,7 +110,7 @@ npm run dev            # http://localhost:3000 → /es/revenue
 ```
 
 `predev` splits the bundle if `src/data/generated/` is missing; it does not re-run the
-121 tie-outs on every restart. `npm run build` does, through `prebuild`.
+156 tie-outs on every restart. `npm run build` does, through `prebuild`.
 
 | Script | What it does |
 |---|---|
@@ -114,7 +118,7 @@ npm run dev            # http://localhost:3000 → /es/revenue
 | `npm run build` | `data:verify` → `data:split` → `next build` |
 | `npm run lint` | ESLint (app only; `pipeline/`, `prototype/`, `data/` are ignored) |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run data:verify` | `node pipeline/spain/verify.js` — the 121-check gate |
+| `npm run data:verify` | `node pipeline/spain/verify.js` — the 156-check gate |
 | `npm run data:split` | Bundle → `src/data/generated/*.json` |
 
 ### How data reaches the screen
@@ -122,7 +126,7 @@ npm run dev            # http://localhost:3000 → /es/revenue
 ```
 pipeline/spain/*            extractors and merges (read-only here)
   └─ data/derived/es-fiscal-bundle.json      the single source of truth, committed
-       └─ pipeline/spain/verify.js           121 tie-outs — the gate
+       └─ pipeline/spain/verify.js           156 tie-outs — the gate
             └─ scripts/split-bundle.mjs      partition, no arithmetic
                  └─ src/data/generated/{map,revenue,spending,debt,who,meta}.json
                       └─ src/app/[locale]/{revenue,spending,debt}   static pages

@@ -50,3 +50,12 @@ src/data/generated/
 
 # supabase CLI scratch
 supabase/.temp/
+pipeline/*/dgt_series.zip
+pipeline/*/local/
+pipeline/*/local_owntax.json
+pipeline/*/local_fees_art.json
+pipeline/*/ccaa_owntax.json
+pipeline/*/sales_tier.json
+pipeline/*/irpf_deciles.json
+pipeline/*/corp_types.json
+pipeline/*/irpf_brackets.json

@@ -14,7 +14,7 @@ import type { Ramp } from "@/lib/ramp";
  * accent, the advisory flags and the HUD rows. Spending mode passes its own set.
  */
 
-/** An advisory marker pinned to a region: Madrid's `!`, a foral `F`, a missing `?`. */
+/** An advisory marker pinned to an autonomous region: today only spending mode's `?` for a year with nothing published. */
 export interface MapFlag {
   id: string;
   /** Circle centre, relative to the region centroid. */
@@ -26,6 +26,8 @@ export interface MapFlag {
   text: string;
   fill?: string;
   textFill?: string;
+  /** Hover text. A one-glyph badge means nothing until it says what it marks. */
+  title?: string;
 }
 
 
@@ -218,6 +220,7 @@ export default function SpainMap({
             if (!r) return null;
             return (
               <g className="flag" key={`${f.id}-${f.text}`}>
+                {f.title ? <title>{f.title}</title> : null}
                 <circle
                   cx={r.cx + f.dx}
                   cy={r.cy + f.dy}

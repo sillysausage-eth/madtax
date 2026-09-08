@@ -28,9 +28,78 @@ curl -sL -o who/Cuadros_IART24.xlsx \
 python3 extract_aeat_detail.py   # -> aeat_detail.json  excise by product, VAT by rate
 node merge9.js             # -> folds both into the derived bundle
 node merge10.js            # -> renames who.irpf.years to .brackets (idempotent, see below)
-node verify.js             # 97 tie-outs, must be 0 fail
-node build_console.js      # -> prototype/console.html
+python3 extract_corp.py    # -> corp_types.json   table 8.5, incl. the provisional "(p)" column
+node merge15.js            # -> who.corp.types refreshed; final years must reproduce the shipped figures
+python3 extract_corp_brackets.py  # -> corp_brackets.json  AEAT consolidated statistic, 17 turnover brackets, 2016-
+node merge_corp_brackets.js            # -> who.corp.years = brackets (rendered), .types = table 8.5 (tie-out only)
+
+# 5. the municipal layer under every year (CONPREL definitive liquidations, 2012-2024)
+#    19 files per year: CCAA=01..19 (18/19 are Ceuta and Melilla, skipped by title).
+U=https://serviciostelematicosext.hacienda.gob.es/SGFAL/CONPREL/Consulta/DescargaFichero
+for y in $(seq 2012 2024); do for c in $(seq -w 1 19); do
+  (cd local/ccaa && curl -sk -L -A "Mozilla/5.0" -J -O "$U?CCAA=$c&TipoDato=Liquidaciones&Ejercicio=$y&TipoPublicacion=Definitiva")
+done; done
+python3 extract_local.py   # -> local_owntax.json   (xlrd 1.2 for .xls, openpyxl for 2024's .xlsx)
+node merge13.js            # -> IBI, local own taxes and fees under 2012-2018; 2019-2024 re-checked
+
+# 6. the two territories AEAT does not collect in
+#    Their own treasuries publish the real figures; AEAT's series carries only the
+#    residual the State still collects there. See the header of extract_foral.py.
+python3 -m venv ../../.venv && ../../.venv/bin/pip install pypdf cryptography openpyxl xlrd==1.2.0
+../../.venv/bin/python extract_foral.py   # -> foral.json  OCTE (PDF) + HFN memorias (HTML) + DGT series (xlsm)
+node merge12.js            # -> swaps the residual for the foral figure (idempotent)
+
+# 7. denominators by year, and the headline from the bundle's own national accounts
+node merge14.js            # -> regions[].macro (Eurostat regional GDP + population), gg
+
+# 8. publish only the complete years — drops 2025 (headline only) and 2013-2014
+#    (CONPREL's Navarre tables are all-zero, i.e. absent; see docs/05)
+node merge16.js            # -> revYears, national2.complete, coverage, dropped
+
+# 9. the fees, public prices and sales bucket in the three cuts its sources publish
+#    (who charges it; each community government's own charges; council charges by kind)
+node extract_sales_tier.js   # -> sales_tier.json   Eurostat gov_10a_main P11_P12 + P131 by subsector
+#    extract_owntax.py (step 1) now also reads P.11/P.12/P.131 per community from the same IGAE files;
+#    extract_local.py (step 5) now also emits chapter 3 by article and the files' own article labels.
+node merge17.js            # -> salesDetail; tiers = bucket, 17 communities = S1312, articles = chapter
+
+# 8. the spending map becomes a map of territories: councils join the regional tier
+python3 extract_local_spend.py   # -> local_spend.json, local_spend_areas.json (CONPREL Tablas 2, 3, 4; step 5's files)
+node merge18.js                  # -> regions[].local, spendTerr; regions + State coin = S13, every year
+
+node verify.js             # tie-outs, must be 0 fail
 ```
+
+`prototype/console.html` is no longer rebuilt: the prototype is frozen at the pre-foral
+bundle and its `gdp`/`pop` scalars, and the Next.js app is the console. `build_console.js`
+stays for the record.
+
+### `merge_corp_brackets.js` — corporate tax by turnover bracket
+
+`who.corp.years` is AEAT's *Cuentas anuales consolidadas del Impuesto sobre Sociedades*,
+table "Principales variables por Cifra de Negocio y por signo del resultado contable" with
+every filter at Total: seventeen turnover brackets from "0 - 50" to "> 1.000.000" thousand
+euros, a tax group counted once and a company outside a group counted once. It exists
+from 2016. Table 8.5 of the Informe Anual (`extract_corp.py`, now `who.corp.types`) is
+the same statistic summarised by company type, so `merge_corp_brackets.js` refuses to write unless
+the bracket Total reproduces 8.5's tax and taxable base to the rounding of both sources
+in every shared year. "Beneficio" is allowed to differ from 8.5's "Resultado contable
+positivo" by up to 1%: the 2025 Informe revised 2016 (0.87%) and 2018 (0.01%) and the
+statistic did not. The difference is written to `who.corp.profitDiff`, not smoothed.
+
+The site is HTML only and every page name is a hash that changes by year, so
+`extract_corp_brackets.py` walks the menu by label and stops on any missing entry.
+Columns are read by header: 2016-2018 lack "Empresas con Cuota Líquida Positiva" (`nPos`
+is null there) and head the base column "Base imponible" instead of "Base imponible
+positiva". The same table is published once per sector behind the page's "Sector" filter,
+and those five CNAE groupings partition the census, so the extractor reads them too and
+stores filers, profit and tax per bracket under `sectors`. AEAT withholds a cell marked
+"SE" (secreto estadístico) where a sector-and-bracket cell has too few filers to publish:
+two such cells exist, both `tax` in 2020, and they are carried as null and flagged with
+`secSE` rather than zeroed — the sum check is skipped for those brackets and verify.js
+counts them. AEAT publishes no ranking by profit and no company names; the console merges
+the seventeen brackets into seven bands (cuts at 50k, 300k, 1M, 10M, 100M, 1bn) and opens
+each bracket above €100M by sector — exact sums of published rows, nothing interpolated.
 
 ### `merge10.js` — why `who.irpf` has two named datasets
 
@@ -101,6 +170,28 @@ same D61 children, so including both would print the same six numbers twice.
 `propTax` (IBI) has no breakdown anywhere — `D29A` is atomic in ESA and the tax is
 municipal, so AEAT does not publish it either.
 
+### `salesDetail` — the fees bucket, three ways
+
+"Tasas, precios públicos y ventas" is the bucket whose name says least about what is in
+it, and its ESA partition is only two rows. `merge17.js` adds three published cuts, each
+tied to a figure already in the bundle and asserted in `verify.js` §R:
+
+| Cut | Source | Reconciles to |
+|---|---|---|
+| `tier` — who charges it | Eurostat `gov_10a_main`, sectors S1311–S1314, items `P11_P12` and `P131` | `natParts.sales`, **exactly**, every year; per item, the `natSub` rows |
+| `region` — what each community's government charges | IGAE `A_CCAA_Det_{y}.xlsx` Tabla1a, rows P.11 / P.12 / P.131 (the same files as the regional tax layer) | the Eurostat S1312 row, **exactly**, 2012–2024 |
+| `local` — what its councils charge, by kind | CONPREL Tabla 2, chapter 3 articles 30–39, recaudación líquida | the chapter total inside the community's map figure, within 5 M€ of per-article rounding |
+
+**`region` is not folded into the map.** The map's `sales` part is cash — AEAT's
+territorial fee line plus CONPREL chapter 3 plus the foral fee block — and the IGAE figure
+is accrual national accounts whose P.131 overlaps the foral block. Adding it without
+settling that overlap would be a plug, so the console shows it beside the map figure and
+says which is which. Folding it in is a deliberate future step, not an oversight.
+
+**P.12 is not cash.** It is the imputed value of what a government produced for its own
+use (own-account software, construction, R&D). It sits inside the national headline because
+Eurostat's `P11_P12` does; the console's label says so.
+
 ## Things learned the hard way
 
 - **Units.** `OBS_VALUE` is in **thousands of euros**, not euros and not millions.
@@ -117,9 +208,10 @@ municipal, so AEAT does not publish it either.
 - **Two figures need a permanent health warning**, and the UI enforces both:
   - *Madrid* is 44% of national collection because large companies file at their
     registered office. It measures where tax is declared, not where value was created.
-  - *Navarre and the Basque Country* run foral regimes. State figures there are residual
-    and Navarre is **negative** (refunds exceed state collection). Their real data lives
-    with their own tax authorities and is not yet integrated.
+  - *Navarre and the Basque Country* run foral regimes. AEAT's figures there are a
+    residual — Navarre's VAT is **negative** (refunds exceed state collection). The
+    bundle carries their own treasuries' figures instead (`extract_foral.py`,
+    `merge12.js`); the residual is superseded, never summed.
 
 ## Spending layer
 
@@ -146,6 +238,32 @@ node merge.js               # -> bundle2.json  (revenue + spending + geometry)
   Both currently pass.
 - **Never sum the four government tiers.** They double-count ~€250bn of transfers between
   levels. Use the consolidated S13 figure.
+
+### The local tier on the spending map — `extract_local_spend.py`, `merge18.js`
+
+The map shows what is spent *in* a territory, whoever spends it. The regional tier is the
+IGAE file above; the local tier is CONPREL's per-community consolidated liquidation, the
+same download as the revenue layer (step 5): Tabla 3 obligations by chapter and article,
+Tabla 2 income articles 45/75, Tabla 4 obligations by programme area. Columns are found by
+header text ("Obligaciones Reconocidas Netas", "Derechos Reconocidos Netos") because the
+.xls and .xlsx formats are one column apart; the region comes from the title, never from
+the `C##` in the file name.
+
+What goes on the map per territory is `nonfin − toGov − fromCA`:
+
+| | Why |
+|---|---|
+| chapters 1–7 only | 8–9 (financial assets, debt repayment) are not expenditure in national accounts |
+| − transfers to other tiers (arts 42/72, 43/73, 45/75, 46/76) | spent by the recipient, already on the map or in the coin; the Basque Diputaciones' ~€13bn to the Basque Government above all |
+| − transfers received from the community government (income arts 45/75) | the community already books them as its spending in the IGAE figure |
+
+`merge18.js` writes `regions[].local[y]` and `spendTerr[y]` and refuses to write unless
+Σ regional = `spendAgg.mapped`, the coin decomposes exactly into central + Social Security +
+elimination + councils' remainder, every net figure is positive and the areas partition
+the non-financial total. `verify.js` §U repeats the identity for every year and asserts the
+net local layer never exceeds the national-accounts local tier (it runs 66–75%). All-zero
+tables — Navarre 2013-2014, Melilla 2022 — are absent, named in `spendTerr[y].partial`, and
+must be exactly those three: a new one is news, not a default.
 
 ## Verification
 
@@ -215,6 +333,17 @@ Naively adding chapter totals would have overstated revenue by roughly €50bn.
   the 17 is missing. Three separate silent drops happened before this existed.
 - **EU funds are inbound transfers, not tax raised here.** Kept as a separate layer and
   asserted to be outside the raised total.
+
+### The municipal layer runs 2012-2024 (`merge13.js`)
+CONPREL publishes definitive liquidations back to 2002 in the same account structure, so
+the 2019-2023 window of the first build was a fetch limit, not a source limit. `merge13.js`
+fills 2012-2018 from the same extractor and, for the years that already had the layer,
+re-extracts and requires IBI and fees to reproduce the shipped figures to the million —
+a definitive liquidation that moves is a changed layout, not a revision. An all-zero
+table (Navarre 2013, 2014) is returned as absent by `extract_local.py`, never as €0.
+Two things it makes visible rather than hides: `otherProdTax` runs above the ESA bucket in 2015-2019
+(the CONPREL own-tax block mixes ESA codes; see docs/05), and the AEAT-side tally
+(`national2`) is recomputed so `complete` is true for every published year.
 
 ### Known gap: social contributions
 ~€210bn a year — the single largest source of public revenue — is **not published by
@@ -346,27 +475,35 @@ quotes, so the donut and the hero figure can never be a year apart.
 
 Sources publish on different clocks. As of August 2026:
 
-| Source | Latest |
-|---|---|
-| Eurostat `gov_10a_main` (headline) | 2025 |
-| Eurostat `gov_10a_taxag` (per-tax split) | 2024 |
-| Eurostat `gov_10a_exp` (COFOG) | 2024 |
-| AEAT territorial collection | 2025 |
-| IGAE `A_CCAA_Det_YYYY.xlsx` (regional accounts) | 2025 |
-| IGAE `COFOG_A_Detalle_CCAA_YYYY.xlsx` (regional spending) | 2024 |
-| CONPREL local liquidations (definitive) | 2024 |
-| AEAT `DistribucionesIRPF.xlsx` (IRPF by decile/percentile) | **2023** — re-checked 2026-08-31 |
-| AEAT IRPF *tramos de rendimiento* (`who.irpf.brackets`) | 2023 |
-| Eurostat `gov_10dd_edpt1` (EDP debt stock, by instrument and tier) | 2025 |
-| Eurostat `gov_10a_main` D41PAY (interest) | 2025 |
+| Source | Latest | Re-checked |
+|---|---|---|
+| Eurostat `gov_10a_main` (headline) | 2025 | 2026-09-08 — 2022-2025 identical to the bundle |
+| Eurostat `gov_10a_taxag` (per-tax split) | 2024 | 2026-09-08 — 2025 not yet published |
+| Eurostat `gov_10a_exp` (COFOG) | 2024 | 2026-09-08 |
+| Eurostat `nama_10r_2gdp` (regional GDP) | 2024 (p) | 2026-09-08 — now by year |
+| Eurostat `demo_r_pjanaggr3` (regional population, 1 Jan) | 2025 | 2026-09-08 — now by year |
+| AEAT territorial collection (via ISTAC 1.42, lastUpdate 2026-08-06) | 2025 | 2026-09-08 |
+| IGAE `A_CCAA_Det_YYYY.xlsx` (regional accounts) | 2025 | 2026-09-08 |
+| IGAE `COFOG_A_Detalle_CCAA_YYYY.xlsx` (regional spending) | 2024 | 2026-09-08 — 2025 404 |
+| CONPREL local liquidations (definitive) | 2024 | 2026-09-08 — 2025 HTTP 500; **2012-2018 backfilled** |
+| OCTE (Basque tributos concertados) | 2025 | 2026-09-08 |
+| Hacienda Foral de Navarra, Cuadro 15 | 2024 (memoria 2025 not out) | 2026-09-08 — **2015 added** (memoria 2016) |
+| DGT series (Navarre 2012-2014) | 2023 | 2026-09-08 — new |
+| AEAT `Cuadros_IART25_es_es.xlsx` (excise by product, VAT by rate, corp) | excise 2025 · VAT 2024 · corp 2024 (p) | 2026-09-08 — **new edition** |
+| AEAT `DistribucionesIRPF.xlsx` (IRPF by decile/percentile) | **2024** | 2026-09-08 — refreshed upstream 2026-09-03 |
+| AEAT IRPF *tramos de rendimiento* (`who.irpf.brackets`) | 2023 | — |
+| AEAT *Cuentas anuales consolidadas del IS*, by turnover bracket (`who.corp.years`) | 2023 (2024 due 2026-10) | 2026-09-08 — new |
+| Eurostat `gov_10dd_edpt1` (EDP debt stock, by instrument and tier) | 2025 | 2026-09-08 |
+| Eurostat `gov_10a_main` D41PAY (interest) | 2025 | 2026-09-08 |
+| Tesoro bulletin (average life, cost, ladder) | 2026-08 | 2026-09-08 — refreshed |
+| Banco de España 11.13 (holders) | 2025-12 | 2026-09-08 |
 
-**The IRPF decile series is genuinely stuck at 2023, not missed.** Re-downloaded and
-re-extracted on 2026-08-31: the current upstream file (`last-modified 2025-07-01`) still
-contains exactly ejercicios 2003–2023, and `merge10.js --deciles=` confirmed every
-overlapping value matches the shipped bundle. Sibling files in the same AEAT directory
-have been refreshed since, so the folder is live and this one file simply has not moved.
-Tax year 2024 is therefore **absent, not zero**: the console clamps to 2023 and shows its
-amber stale-year tag for 2024/2025. Nothing is interpolated to cover the gap.
+**Published revenue years are 2012 and 2015-2024.** 2025 has a headline but no per-tax
+split, no CONPREL, no foral memoria; 2013-2014 have no Navarrese municipal layer anywhere
+the Ministry publishes (CONPREL's table is all zeros; *Haciendas Locales en cifras* leaves
+Navarre blank). `merge16.js` drops them and records why in `bundle.dropped`.
+The IRPF decile series reached 2024 with AEAT's 2026-09-03 refresh; every overlapping
+value of 2003-2023 matched the shipped bundle exactly before the new year was admitted.
 
 Two consequences the pipeline handles explicitly:
 - Years with headline but no detailed split route the aggregate into `taxProdPending` /

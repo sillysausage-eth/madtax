@@ -5,6 +5,11 @@ from regions import resolve, assert_complete
 # D.51 is DELIBERATELY EXCLUDED — it is the region's ceded share of national income tax,
 # already counted inside AEAT territorial collection. Including it would double count.
 OWN = ['D.211','D.212','D.214','D.29','D.59','D.91']
+# What the regional government itself charges for goods and services — market sales
+# (P.11), output kept for its own use (P.12, an accounting entry, not cash received)
+# and part-payments for public services such as tuition and co-payments (P.131).
+# Read for merge17.js; NOT part of OWN, which is the tax figure that goes on the map.
+FEES = ['P.11','P.12','P.131']
 out = {}
 for f in sorted(glob.glob('ccaa_rev/r_*.xlsx')):
     year = re.search(r'r_(\d{4})', f).group(1)
@@ -23,7 +28,7 @@ for f in sorted(glob.glob('ccaa_rev/r_*.xlsx')):
     for r in range(hdr+1, hdr+40):
         code = str(ws.cell(r,1).value or '').strip()
         lab  = str(ws.cell(r,2).value or '').strip()
-        if code in OWN or code == 'D.51': rows.setdefault(code, r)
+        if code in OWN or code in FEES or code == 'D.51': rows.setdefault(code, r)
         if lab == 'RECURSOS NO FINANCIEROS': rows['TOTREC'] = r
     out[year] = {}
     for c, rid in cols.items():

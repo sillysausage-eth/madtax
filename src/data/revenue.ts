@@ -20,6 +20,8 @@ export const {
   subLab,
   mapAgg,
   national2,
+  foralCoverage,
+  salesDetail,
 } = revenue;
 
 /** Per-region revenue, keyed by the same region id the geometry carries. */

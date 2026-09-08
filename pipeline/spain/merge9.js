@@ -44,8 +44,9 @@ const ES={
   D59F:'Otros impuestos corrientes',
   D2121:'Aranceles aduaneros',
   D2122C:'Impuestos especiales sobre importaciones',
-  P11_P12:'Producción de mercado y para uso propio',
-  P131:'Pagos por producción no de mercado',
+  /* Plain words, not the ESA phrase: merge17.js sets the same two strings. */
+  P11_P12:'Ventas de bienes y servicios (y lo producido para uso propio)',
+  P131:'Pagos parciales por servicios públicos: matrículas, copagos, tasas',
   D41REC:'Intereses',
   D42_TO_D45REC:'Dividendos, rentas de la tierra y otras rentas',
   D7REC_S212:'Transferencias corrientes de la UE',
@@ -80,8 +81,8 @@ const EN={
   D59F:'Other current taxes',
   D2121:'Customs import duties',
   D2122C:'Excise duties on imports',
-  P11_P12:'Market output and output for own final use',
-  P131:'Payments for non-market output',
+  P11_P12:'Sales of goods and services (and output kept for own use)',
+  P131:'Part-payments for public services: tuition, co-payments, fees',
   D41REC:'Interest received',
   D42_TO_D45REC:'Dividends, rent and other property income',
   D7REC_S212:'Current transfers from the EU',
@@ -97,15 +98,21 @@ const EN={
 };
 const EXC_ES={fuel:'Hidrocarburos',tobacco:'Labores del tabaco',electricity:'Electricidad',
   alcohol:'Alcohol y bebidas derivadas',plastic:'Envases de plástico no reutilizables',
-  beer:'Cerveza',intermediate:'Productos intermedios',coal:'Carbón'};
+  beer:'Cerveza',intermediate:'Productos intermedios',coal:'Carbón',
+  ecig:'Líquidos para cigarrillos electrónicos'};
 const EXC_EN={fuel:'Fuel and hydrocarbons',tobacco:'Tobacco',electricity:'Electricity',
   alcohol:'Spirits and derived drinks',plastic:'Non-reusable plastic packaging',
-  beer:'Beer',intermediate:'Intermediate products',coal:'Coal'};
+  beer:'Beer',intermediate:'Intermediate products',coal:'Coal',
+  ecig:'E-cigarette liquids'};
+/* The temporary rates are the anti-inflation cuts of 2022-2024: 5% and 0% on basic
+   foods and energy, then 7.5% and 2% as they were phased back (Oct-Dec 2024). The
+   2% line was labelled "Tipo 2,5" in the 2024 edition of the AEAT tables and
+   corrected to "Tipo 2" in the 2025 edition; there was never a 2.5% VAT rate. */
 const VAT_ES={rgeneral:'Tipo general · 21%',rreduced:'Tipo reducido · 10%',
-  rsuper:'Tipo superreducido · 4%',r5:'Tipo temporal 5%',r25:'Tipo temporal 2,5%',
+  rsuper:'Tipo superreducido · 4%',r5:'Tipo temporal 5%',r2:'Tipo temporal 2%',
   r75:'Tipo temporal 7,5%',r0:'Tipo 0%'};
 const VAT_EN={rgeneral:'Standard rate · 21%',rreduced:'Reduced rate · 10%',
-  rsuper:'Super-reduced rate · 4%',r5:'Temporary 5% rate',r25:'Temporary 2.5% rate',
+  rsuper:'Super-reduced rate · 4%',r5:'Temporary 5% rate',r2:'Temporary 2% rate',
   r75:'Temporary 7.5% rate',r0:'Zero rate'};
 
 /* every code that actually appears must have a label — fail loudly, not silently */
@@ -131,7 +138,7 @@ fs.writeFileSync(BUNDLE,JSON.stringify(out));
 const yrs=Object.keys(natSub).sort();
 console.log(`natSub ${yrs[0]}-${yrs[yrs.length-1]} · ${used.size} ESA codes labelled`);
 console.log('who:',Object.entries(out.who).map(([k,v])=>`${k}(${v.kind})`).join(' '));
-const last='2023';
+const last=Object.keys(natSub).filter(y=>natSub[y].otherProd).sort().pop();
 console.log(`\nbuckets with detail in ${last}:`);
 for(const p of b.PARTS){
   const esa=(natSub[last]||{})[p], who=out.who[p];

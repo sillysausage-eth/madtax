@@ -1,14 +1,17 @@
-"""Who generates corporate tax: AEAT breakdown by company type (table 8.5)."""
-import openpyxl, json
-wb=openpyxl.load_workbook('who/Cuadros_IART25.xlsx',data_only=True)
+"""Who generates corporate tax: AEAT breakdown by company type (table 8.5).
+
+The latest one or two columns are headed "2024 (p)" / "2025(p)" — provisional.
+They are read like any other year and the flag is carried, because a header that
+is not a bare integer was being dropped silently and the console then showed the
+previous year's table under the new year's heading."""
+import openpyxl, json, re
+wb=openpyxl.load_workbook('who/Cuadros_IART25_es_es.xlsx',data_only=True)
 ws=wb['8.5']
-years={}
+years={}   # year -> (column, provisional)
 for c in range(3,70):
-    v=ws.cell(6,c).value
-    try:
-        iv=int(str(v).strip())
-        if 1990<iv<2030: years[str(iv)]=c
-    except: pass
+    v=str(ws.cell(6,c).value or '').strip()
+    m=re.match(r'^((?:19|20)\d\d)\s*(\(p\))?$', v)
+    if m and int(m.group(1))>1990: years[m.group(1)]=(c, bool(m.group(2)))
 BLOCKS={'total':9,'groups':36,'standalone':63}
 FIELDS={'profit':'Resultado contable positivo','base':'Base imponible positiva',
         'tax':'Cuota líquida positiva','rateBase':'Tipo efectivo sobre BI (%)',
@@ -20,8 +23,8 @@ def findrow(start, label, span=30):
         if b and str(b).strip().startswith(label[:34]): return r
     return None
 out={}
-for y,col in years.items():
-    rec={}
+for y,(col,prov) in years.items():
+    rec={'prov':prov}
     for bk,start in BLOCKS.items():
         d={}
         for f,lab in FIELDS.items():
@@ -29,9 +32,11 @@ for y,col in years.items():
             v=ws.cell(r,col).value if r else None
             d[f]= (round(float(v),2) if isinstance(v,(int,float)) else None)
         rec[bk]=d
+    # a column with no figures (2025 today) is not a year
+    if rec['total']['profit'] is None: continue
     out[y]=rec
 json.dump(out,open('corp_types.json','w'))
-y='2023'; r=out[y]
+y=sorted(k for k,v in out.items() if v['total']['profit'] is not None)[-1]; r=out[y]
 print(f"SPAIN {y} — corporate tax by company type (€bn, AEAT table 8.5)\n")
 print("  type          profit    tax base      tax   eff.on base  eff.on profit")
 for k,lab in [('total','ALL companies'),('groups','Consolidated groups'),('standalone','Standalone cos')]:

@@ -1,11 +1,13 @@
 "use client";
 
 import type { Dict, Locale } from "@/i18n";
-import { eur, fy, nf, nf0 } from "@/lib/format";
+import { fy, nf } from "@/lib/format";
+import { gdpRow, popRow } from "@/lib/macro";
 import {
   PART_COLOR,
   REV_SLICES,
   fmtMetric,
+  foralAdvisory,
   metricVal,
   natVal,
   revVal,
@@ -31,6 +33,35 @@ import { Advisory, BarBlock, DossierBlank, KvGrid, PartBars, type BarRow } from 
 /** The single off-map selection: the Spanish state coin beside the map. */
 export const SHIELD_ID = "gov";
 export const OFF_MAP_IDS = [SHIELD_ID];
+
+/**
+ * What has to be said about a region's figure before it is read.
+ *
+ * Two autonomous regions need it. The Basque Country and Navarre collect their
+ * own taxes, so their figure comes from their own treasury — or,
+ * in a year that treasury has not published, from nowhere at all, and the cell
+ * is empty rather than filled with the sliver AEAT still collects.
+ *
+ * Shared by the region dossier and the component panel so a reader meets the
+ * same caveat wherever the number is.
+ */
+export function RegionAdvisories({
+  geo,
+  t,
+  year,
+}: {
+  geo: RegionGeometry;
+  t: Dict;
+  year: YearKey;
+}) {
+  return (
+    <>
+      {geo.foral ? (
+        <Advisory tag={t.advF} text={foralAdvisory(t, geo.id, year)} mag />
+      ) : null}
+    </>
+  );
+}
 
 export default function RevenueDossier({
   selected,
@@ -97,16 +128,17 @@ export default function RevenueDossier({
       </div>
       <div className="bigsub">{t.m[metric].toUpperCase()}</div>
       <KvGrid
+        provBadge={t.provB}
         rows={[
           [t.rank, `${rank || "—"} / ${ranked.length}`],
-          [t.pop, r.pop ? nf0(locale, r.pop) : "—"],
-          [t.gdpL, r.gdp ? eur(locale, r.gdp) : "—"],
+          popRow(t, locale, r.macro, year),
+          gdpRow(t, locale, r.macro, year),
         ]}
       />
       <BarBlock caption={`${t.regWhat} ${fy(locale, year)}`}>
         <PartBars rows={rows} total={collected} locale={locale} />
       </BarBlock>
-      {geo.foral ? <Advisory tag={t.advF} text={t.advFt} mag /> : null}
+      <RegionAdvisories geo={geo} t={t} year={year} />
     </>
   );
 }

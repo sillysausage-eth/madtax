@@ -192,7 +192,7 @@ Total rows read simply **Total**.
 
 | | |
 |---|---|
-| **Spending by tier on the map** | Overlay central + Social Security spending per territory so the map shows all public money spent in a place, not just the regional share. |
+| **Spending by tier on the map** | Done for the two tiers that have a territory (regional + local, M7). Central and Social Security spending per territory would need a published territorial source (pensions by community, regionalised State investment); until then they stay in the State coin, opened up. |
 | **Restore filtering, deliberately** | If slicing the map by tax type comes back it needs its own explicit control — never a side effect of clicking the legend. |
 | **Drill to province** | Provincial geometry and data are already fetched — `ES301` etc. are in the same feed. Click a region to zoom, same interaction model one level down. |
 | **Sankey overlay** | The €673.7bn → government → €725.0bn flow as a full-screen mode. |

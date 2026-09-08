@@ -7,7 +7,9 @@ import type {
   RegionRevenue,
   YearKey,
 } from "@/lib/types";
-import { PARTS, mapAgg, natParts, national2, revYears } from "@/data/revenue";
+import { PARTS, foralCoverage, mapAgg, natParts, national2, revYears } from "@/data/revenue";
+import { pctGdp, perCapita } from "@/lib/macro";
+import type { ForalSource } from "@/lib/types";
 
 /**
  * The revenue model, ported 1:1 from prototype/console.tpl.html.
@@ -139,6 +141,30 @@ export function compModel(t: Dict, year: YearKey): CompModel {
   };
 }
 
+/* ---------------------------------------------------- what a figure measures -- */
+
+/**
+ * Whether a region's figures for a year are its own treasury's.
+ *
+ * True only for the Basque Country and Navarre, and only for the years their
+ * treasuries publish. Everywhere else it is false because the question does not
+ * arise — those regions have no foral regime and AEAT's figure is the figure.
+ */
+export const foralPublished = (id: string, year: YearKey): boolean =>
+  (foralCoverage.covered[id] ?? []).includes(year);
+
+/** Which publication a foral year's figure was read from, or null if uncovered. */
+export const foralSource = (id: string, year: YearKey): ForalSource | null =>
+  foralCoverage.srcYear?.[id]?.[year] ?? null;
+
+/**
+ * The one sentence a reader must meet next to a foral figure: whose figure it
+ * is (the treasury's own table; or the Ministry's compilation of it, for the
+ * Navarrese years before the memorias begin), or that there is none.
+ */
+export const foralAdvisory = (t: Dict, id: string, year: YearKey): string =>
+  !foralPublished(id, year) ? t.advFn : foralSource(id, year) === "dgt" ? t.advFd : t.advFt;
+
 /** The component label used by the dossier sub-line — the prototype's `sliceLabel`. */
 export function sliceLabel(t: Dict, i: number): string {
   return i === 0
@@ -160,8 +186,8 @@ export function metricVal(
   const v = revVal(r, y, REV_SLICES[slice].k);
   if (v === null || v === undefined) return null;
   if (metric === "total") return v;
-  if (metric === "pc") return r.pop ? (v * 1e6) / r.pop : null;
-  return r.gdp ? (v / r.gdp) * 100 : null;
+  if (metric === "pc") return perCapita(v, r.macro, y);
+  return pctGdp(v, r.macro, y);
 }
 
 /** Revenue absolute totals get the harder gamma; the other two metrics do not. */
