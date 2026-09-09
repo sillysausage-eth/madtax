@@ -5,23 +5,36 @@
  * have to be absolute, so one origin has to be settled before any of them can be
  * written. It is resolved once, here, in order of how much we can trust it:
  *
- *   1. `NEXT_PUBLIC_SITE_URL` — the real domain, set deliberately. Always wins.
- *   2. `VERCEL_PROJECT_PRODUCTION_URL` — the project's stable production host,
- *      the same on every deployment, so a preview build still emits canonicals
- *      that point at production rather than at itself.
- *   3. `VERCEL_URL` — this one deployment's host. Right for a preview, wrong for
- *      anything a crawler should keep.
- *   4. localhost — development.
+ *   1. `NEXT_PUBLIC_SITE_URL` — an override, for a build that has to answer on
+ *      some other host. Always wins.
+ *   2. `CANONICAL_ORIGIN` — the domain the site is actually served and shared
+ *      from, written down rather than inferred. Used by every deployed build,
+ *      preview included, so a preview still emits canonicals and card images
+ *      that point at production.
+ *   3. localhost — development, where nothing is crawled and the cards are read
+ *      off the same origin the page is served from.
  *
- * Set (1) in Vercel the moment the domain is known and none of the rest matters.
+ * The Vercel-supplied hosts are deliberately not in that list any more. The
+ * project's production host is `www.madtax.co`, the repository's old name, and it
+ * is not the domain the site is shared under — pointing `og:image` at it made
+ * every card an image on a foreign domain, which is a fetch a link unfurler is
+ * entitled to refuse, and did.
  */
+
+/**
+ * The one host the site answers on. The apex redirects here (308), so `www` is
+ * the form to publish; anything else is a duplicate as far as a crawler is
+ * concerned.
+ */
+const CANONICAL_ORIGIN = "https://www.taxtruth.co";
+
 const ORIGIN: string = (() => {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (explicit) return explicit.replace(/\/+$/, "");
 
-  const vercel =
-    process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
-  if (vercel) return `https://${vercel.replace(/\/+$/, "")}`;
+  /* `VERCEL` is set on every build and every runtime there, and nowhere else:
+     it is the one honest test for "this is deployed, not a laptop". */
+  if (process.env.VERCEL) return CANONICAL_ORIGIN;
 
   return `http://localhost:${process.env.PORT ?? 3000}`;
 })();
