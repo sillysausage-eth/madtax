@@ -14,6 +14,7 @@ import {
   divisions,
   localAreas,
   spendAgg,
+  spendInt,
   spendNational,
   spendTerr,
   spendNoteEN,
@@ -58,6 +59,104 @@ export const COFOG_COLOR: string[] = [
   "#82CB4D", // 09 education — yellow-green
   "#6C8DEF", // 10 social protection — blue
 ];
+
+/* ------------------------------------------------------ debt interest -------
+ *
+ * `GF0107 Intereses de la deuda pública` is a published child of division 01 and,
+ * at €39.6bn in 2024, 43% of it — in that year the fourth largest single sub-function
+ * in the accounts, behind old-age pensions, sickness and disability, and hospital
+ * services. Left inside the division it had no name of its own on the screen, filed
+ * under a heading that reads like administration. It is lifted out and drawn as a
+ * part of the composition in its own right: the ring's eleventh coin.
+ *
+ * Both halves are published figures. The bundle carries the division and the
+ * sub-function from the same Eurostat table, and `merge20.js` refuses to write
+ * unless the division's other seven sub-functions sum to the remainder exactly.
+ * Nothing here divides one figure into two.
+ */
+
+/** The filter key the interest coin, the ring and the URL use. */
+export const INT_KEY = "gfint";
+/** The COFOG code behind that key, and the division it comes out of. */
+export const INT_CODE = spendInt.code;
+export const INT_PARENT = spendInt.parent;
+/** True when the reader is filtered to interest. */
+export const isInt = (focus: string | null): boolean => focus === INT_KEY;
+
+/**
+ * The interest coin's colour: the debt mode's violet, not a new entry in the COFOG
+ * palette. A reader who has seen the debt screen meets the same colour here, which
+ * is the point of the part — this slice of spending *is* the debt.
+ */
+export const INT_COLOR = "#B47BE8";
+
+/**
+ * The part's name. Eurostat's own English label for `GF0107` is "public debt
+ * transactions", which does not say interest, and its Spanish one is a literal
+ * translation of it; the bundle's sub-table already calls the line by its plain
+ * name in Spanish. A coin in the ring has to say what it is at a glance, so both
+ * locales name it the same way here and the panel's first sentence gives the code
+ * and what the code covers.
+ */
+export const intLabel = (t: Dict): string => t.expIntName;
+
+/** What the year's interest is, and who paid it. Every figure is Eurostat's. */
+export interface IntModel {
+  nat: Millions;
+  central: Millions;
+  regional: Millions;
+  local: Millions;
+  socsec: Millions;
+  /** Tiers less the consolidated total: interest one tier pays another. */
+  elim: Millions;
+}
+
+export function intOf(y: YearKey): IntModel {
+  const sy = spendInt.nat[y] ? y : spendYears[spendYears.length - 1];
+  const t = spendInt.tiers[sy];
+  const nat = spendInt.nat[sy];
+  const tiers = {
+    central: t.central.int,
+    regional: t.regional.int,
+    local: t.local.int,
+    socsec: t.socsec.int,
+  };
+  return {
+    nat,
+    ...tiers,
+    elim: tiers.central + tiers.regional + tiers.local + tiers.socsec - nat,
+  };
+}
+
+/**
+ * Division 01 with the interest taken out — every figure published, none derived
+ * from another. `nat` is the division less the sub-function; each tier's share is
+ * that tier's division less that tier's interest.
+ *
+ * `mapped` is the regional subsector's own services figure, which is **not** what
+ * the map shades: no source splits a COFOG sub-function by Autonomous Region, so
+ * each community's figure there is still the whole division, interest and all. The
+ * panel says that in place rather than letting the difference pass as a residual.
+ */
+export function servicesAgg(y: YearKey): SpendAggEntry | undefined {
+  const a = spendAggOf(y, INT_PARENT);
+  if (!a) return undefined;
+  const sy = spendInt.nat[y] ? y : spendYears[spendYears.length - 1];
+  const t = spendInt.tiers[sy];
+  const nat = a.nat - spendInt.nat[sy];
+  const mapped = t.regional.parent - t.regional.int;
+  const central = a.central - t.central.int;
+  const local = a.local - t.local.int;
+  const socsec = a.socsec - t.socsec.int;
+  return {
+    nat,
+    mapped,
+    central,
+    local,
+    socsec,
+    adj: nat - mapped - central - local - socsec,
+  };
+}
 
 /** The prototype's `divisions` lookup: the division's name in the reader's language. */
 export const divLabel = (locale: Locale, code: string): string =>
@@ -107,7 +206,11 @@ export const SPEND_GAMMA = 0.8;
  * `'GF'+focus.slice(2)` / `'TOTAL'`.
  */
 export const aggCode = (focus: string | null): string =>
-  focus && focus.startsWith("gf") ? "GF" + focus.slice(2) : "TOTAL";
+  isInt(focus)
+    ? INT_CODE
+    : focus && focus.startsWith("gf")
+      ? "GF" + focus.slice(2)
+      : "TOTAL";
 
 /** The prototype's `D.spendAgg[year]?year:spendYears[last]` fallback, then the lookup. */
 export function spendAggOf(y: YearKey, code: string): SpendAggEntry | undefined {
@@ -126,7 +229,22 @@ export const spendSubYear = (y: YearKey): YearKey =>
  * and the panel all read one number set.
  */
 export const spendSlice = (focus: string | null): number =>
-  focus && focus.startsWith("gf") ? divisions.indexOf(focus.slice(2)) + 1 : 0;
+  focus && !isInt(focus) && focus.startsWith("gf")
+    ? divisions.indexOf(focus.slice(2)) + 1
+    : 0;
+
+/**
+ * Whether the part the console is filtered to has no territorial figure at all.
+ *
+ * Interest is the case, and it is a different fact from `spendNoSplit`: the
+ * Autonomous Regions do pay interest — €6.8bn of it in 2024, published — but no
+ * source places a COFOG sub-function in a community. Eurostat publishes the split
+ * by tier and stops; IGAE's per-community file is by division and stops. So the
+ * figure exists, the map just cannot carry it, and the panel says exactly that
+ * rather than borrowing defence's sentence, which claims the tier spends nothing.
+ */
+export const spendNoTerritory = (focus: string | null): boolean =>
+  isInt(focus) && spendInt.noTerritorial;
 
 /**
  * Whether nothing at all of this function is spent through the tier the map
@@ -140,7 +258,19 @@ export const spendSlice = (focus: string | null): number =>
  * panel says why, in place.
  */
 export const spendNoSplit = (y: YearKey, code: string): boolean =>
-  (spendAggOf(y, code)?.mapped ?? 0) === 0;
+  /* Interest has no `spendAgg` row of its own and must not fall through to this
+     sentence: it is absent from the map for a different reason, which
+     `spendNoTerritory` carries. */
+  code !== INT_CODE && (spendAggOf(y, code)?.mapped ?? 0) === 0;
+
+/**
+ * The reconciliation the panel should read for a filter: division 01 without its
+ * interest where that is what is being shown, and the bundle's own row otherwise.
+ */
+export const spendAggFor = (y: YearKey, focus: string | null): SpendAggEntry | undefined =>
+  focus === "gf" + INT_PARENT.slice(2)
+    ? servicesAgg(y)
+    : spendAggOf(y, aggCode(focus));
 
 /** One COFOG division of the national headline, ready to draw. */
 export interface SpendRow {
@@ -181,6 +311,7 @@ export function spendCompModel(
 ): SpendCompModel {
   const sy = spendYear(year);
   const sp = spendNational[sy];
+  const int = intOf(sy).nat;
   return {
     total: sp[0],
     sub: null,
@@ -188,11 +319,15 @@ export function spendCompModel(
     rows: divisions
       .map((d, i) => ({
         k: "gf" + d,
-        v: sp[i + 1],
+        /* Division 01 is drawn without the interest, which is the part below. Both
+           figures are published; the eleven parts still sum to the total, because
+           what one loses the other carries. */
+        v: d === INT_PARENT.slice(2) ? sp[i + 1] - int : sp[i + 1],
         nm: divLabel(locale, d),
         desc: "",
         c: COFOG_COLOR[i],
       }))
+      .concat({ k: INT_KEY, v: int, nm: intLabel(t), desc: "", c: INT_COLOR })
       .filter((r) => Math.abs(r.v) > 0)
       .sort((a, b) => b.v - a.v),
   };
@@ -214,7 +349,14 @@ export function subFunctions(
   const sb = spendSub[spendSubYear(y)] || {};
   return (Object.entries(sb) as [string, number][])
     .filter(
-      ([k, v]) => k.startsWith(division) && k.length === 6 && Math.abs(v) > 0,
+      ([k, v]) =>
+        k.startsWith(division) &&
+        k.length === 6 &&
+        Math.abs(v) > 0 &&
+        /* Interest has left this table: it is a part of the composition in its own
+           right, so listing it here too would show it twice and make the rows sum
+           to more than the figure above them. */
+        k !== INT_CODE,
     )
     .sort((a, b) => b[1] - a[1]);
 }
@@ -288,7 +430,9 @@ export function terrMetricVal(
 export function stateCoinValue(y: YearKey, focus: string | null): Millions | null {
   const sy = spendYear(y);
   if (!focus) return spendTerrOf(sy).state;
-  const a = spendAggOf(sy, aggCode(focus));
+  /* Interest is not on the map at all, so the coin beside it is the whole of it. */
+  if (isInt(focus)) return intOf(sy).nat;
+  const a = focus === "gf" + INT_PARENT.slice(2) ? servicesAgg(sy) : spendAggOf(sy, aggCode(focus));
   return a ? a.nat - a.mapped : null;
 }
 

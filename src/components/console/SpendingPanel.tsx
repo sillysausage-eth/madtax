@@ -5,11 +5,17 @@ import { eur } from "@/lib/format";
 import { popRow } from "@/lib/macro";
 import {
   COFOG_COLOR,
+  INT_COLOR,
+  INT_PARENT,
   aggCode,
   divLabel,
+  intLabel,
+  intOf,
   isCity,
-  spendAggOf,
+  isInt,
+  spendAggFor,
   spendNoSplit,
+  spendNoTerritory,
   spendSlice,
   spendVal,
   spendYear,
@@ -114,23 +120,33 @@ function FunctionCard({
   const sy = spendYear(year);
   const slice = spendSlice(focus);
   const code = aggCode(focus);
-  const nm = divLabel(locale, divisions[slice - 1]);
-  const colour = COFOG_COLOR[slice - 1];
+  const int = isInt(focus);
+  const nm = int ? intLabel(t) : divLabel(locale, divisions[slice - 1]);
+  const colour = int ? INT_COLOR : COFOG_COLOR[slice - 1];
 
-  const agg = spendAggOf(sy, code);
-  if (!agg) return null;
-  const nat = agg.nat;
+  /* Interest keeps no `spendAgg` row: it is not a division, and the four tiers it
+     is published for are read straight off the bundle in `IntTiers` below. Every
+     other part reads the reconciliation, division 01 in its services-only form. */
+  const agg = int ? null : spendAggFor(sy, focus);
+  const nat = int ? intOf(sy).nat : agg?.nat;
+  if (nat == null) return null;
 
   /* The one case the map cannot draw at all. Not a gap in the port: the
      regional tier spends nothing on this function, so there is no territorial
      figure to colour and no region reads as zero. */
   const noSplit = spendNoSplit(sy, code);
 
+  /* The other case, and a different fact: the Autonomous Regions do spend on this
+     part — €6.8bn of interest in 2024 — but no source places a COFOG sub-function
+     in a community, so there is nothing to colour the map with. */
+  const noTerr = spendNoTerritory(focus);
+  const offMap = noSplit || noTerr;
+
   /* A region's own figure for this function — absent where the function is not
      spent through this tier at all, and for the two cities, which have no
      regional government. */
-  const rv = geo && !noSplit ? spendVal(regionSpending[geo.id], sy, slice) : null;
-  const ranked = noSplit
+  const rv = geo && !offMap ? spendVal(regionSpending[geo.id], sy, slice) : null;
+  const ranked = offMap
     ? []
     : regions
         .map((g) => ({ g, v: spendVal(regionSpending[g.id], sy, slice) }))
@@ -141,12 +157,20 @@ function FunctionCard({
   /* Headline: the region if one is selected, else the coin if it is, else the
      function's own national figure. The coin is the function outside the
      regional tier. */
-  const head = geo ? { v: rv } : coin ? { v: nat - agg.mapped } : { v: nat };
+  const head = geo
+    ? { v: rv }
+    : coin
+      ? { v: agg ? nat - agg.mapped : nat }
+      : { v: nat };
+  /* Interest is the one part the coin holds all of, and the coin is named for
+     central government. It is not: the Autonomous Regions, councils and Social
+     Security pay a seventh of it between them. So the card stays on the national
+     figure and lets the tier sentence do the attributing. */
   const where = geo
     ? locale === "es"
       ? geo.es
       : geo.en
-    : coin
+    : coin && !int
       ? t.shieldName
       : t.omNat;
 
@@ -154,18 +178,36 @@ function FunctionCard({
 
   /* Why the country draws less than the function, with the figures: what the
      regional governments spend of it (the map), and what the coin holds, tier
-     by tier, less the elimination. Every figure is the bundle's. For defence the
-     regional tier has nothing at all, and the stronger sentence says so. */
-  const why = noSplit
-    ? t.expNoSplit
-    : t.expFnTiers
-        .replace("{N}", eur(locale, nat))
-        .replace("{A}", eur(locale, agg.mapped))
-        .replace("{S}", eur(locale, nat - agg.mapped))
-        .replace("{C}", eur(locale, agg.central))
-        .replace("{L}", eur(locale, agg.local))
-        .replace("{SS}", eur(locale, agg.socsec))
-        .replace("{E}", eur(locale, -agg.adj));
+     by tier, less the elimination. Every figure is the bundle's.
+
+     Three cases and three sentences. Defence has nothing in the regional tier at
+     all. Interest has a figure in every tier but none in any community, so the
+     tiers are named and the map's silence is explained rather than papered over.
+     General public services is the division interest was lifted out of: its own
+     figures here are the division less the interest, but the map still shades the
+     whole division, because a community's COFOG figure stops at the division —
+     said in full so the reader is not left to infer it from a difference. */
+  const I = intOf(sy);
+  const why = noTerr
+    ? t.expIntTiers
+        .replace("{N}", eur(locale, I.nat))
+        .replace("{C}", eur(locale, I.central))
+        .replace("{A}", eur(locale, I.regional))
+        .replace("{L}", eur(locale, I.local))
+        .replace("{SS}", eur(locale, I.socsec))
+        .replace("{E}", eur(locale, I.elim))
+    : noSplit || !agg
+      ? t.expNoSplit
+      : (code === INT_PARENT ? t.expSvcTiers : t.expFnTiers)
+          .replace("{N}", eur(locale, nat))
+          .replace("{A}", eur(locale, agg.mapped))
+          .replace("{S}", eur(locale, nat - agg.mapped))
+          .replace("{C}", eur(locale, agg.central))
+          .replace("{L}", eur(locale, agg.local))
+          .replace("{SS}", eur(locale, agg.socsec))
+          .replace("{E}", eur(locale, -agg.adj))
+          .replace("{I}", eur(locale, I.nat))
+          .replace("{IR}", eur(locale, I.regional));
 
   return (
     <>
@@ -182,7 +224,14 @@ function FunctionCard({
           <div className="sub where">{where}</div>
         </div>
       </div>
-      {geo && rv == null && !noSplit ? (
+      {/* The card is named for the division without its interest, and that is what
+          the national figure is. A community's figure is not: its COFOG is published
+          by division and nothing finer, so what it carries here is the whole
+          division. Said at the figure it applies to, not only in the closing tip. */}
+      {geo && rv != null && code === INT_PARENT ? (
+        <FootTip tag={t.expDivWhy} text={t.expDivWhole} inline />
+      ) : null}
+      {geo && rv == null && !offMap ? (
         <FootTip
           tag={t.noFigWhy}
           text={isCity(geo.id) ? t.advNoRegt : t.expRegNoFig}

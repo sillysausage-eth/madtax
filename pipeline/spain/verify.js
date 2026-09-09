@@ -213,6 +213,63 @@ console.log('\n=== J. SPENDING DETAIL AND OFF-MAP COMPOSITION ===');
     Object.keys(D.spendSubEN).filter(k=>k.length===6).every(k=>!!D.spendSubES[k]), '');
 }
 
+console.log('\n=== J2. DEBT INTEREST AS A PART OF ITS OWN ===');
+{
+  const S=D.spendInt;
+  const yrs=S.years;
+  check('the part covers exactly the years the composition runs over',
+    yrs.length===Object.keys(D.spendNational).length &&
+    yrs.every(y=>D.spendNational[y]), `${yrs[0]}-${yrs[yrs.length-1]}, ${yrs.length} years`);
+  check('the interest lifted out is the sub-function the bundle already carries',
+    yrs.every(y=>Math.abs(D.spendSub[y][S.code]-S.nat[y])<=0.5), S.code);
+  check('the division it comes out of is the one the composition draws',
+    yrs.every(y=>Math.abs(D.spendNational[y][1]-S.parentNat[y])<=0.5), S.parent);
+  /* The point of the split: what is left is a published quantity in its own right,
+     not a subtraction. The division's other seven sub-functions must sum to it. */
+  const restBad=yrs.filter(y=>{
+    const rest=Object.entries(D.spendSub[y])
+      .filter(([k])=>k.startsWith(S.parent)&&k.length===6&&k!==S.code)
+      .reduce((a,[,v])=>a+v,0);
+    return Math.abs(rest-(S.parentNat[y]-S.nat[y]))>1;
+  });
+  check('the seven remaining sub-functions sum to the shortened division, every year',
+    restBad.length===0, `${yrs.length} years, ${restBad.length} failures`);
+  /* Eleven parts still partition the total: nothing was created or lost by moving
+     one line out of one of them. */
+  const partBad=yrs.filter(y=>{
+    const sp=D.spendNational[y];
+    const parts=sp.slice(1).reduce((a,v)=>a+v,0);
+    return Math.abs(parts-sp[0])>1;
+  });
+  check('the parts still sum to total spending, every year',
+    partBad.length===0, `${yrs.length} years, ${partBad.length} failures`);
+  const TIERS=['central','regional','local','socsec'];
+  check('every tier is published for every year, interest and division alike',
+    yrs.every(y=>TIERS.every(k=>Number.isFinite(S.tiers[y][k].int)&&Number.isFinite(S.tiers[y][k].parent))), '');
+  check('no tier pays more interest than it spends on the whole division',
+    yrs.every(y=>TIERS.every(k=>S.tiers[y][k].int<=S.tiers[y][k].parent)), '');
+  /* The tiers sum to more than the consolidated figure because one tier pays
+     another — the FLA above all. That difference is the elimination, and it must
+     be positive: an interest payment cannot be eliminated twice. */
+  const y='2024', T=D.spendInt.tiers[y];
+  const elim=TIERS.reduce((a,k)=>a+T[k].int,0)-S.nat[y];
+  check('interest between tiers is eliminated, never added',
+    yrs.every(yy=>TIERS.reduce((a,k)=>a+D.spendInt.tiers[yy][k].int,0)>=D.spendInt.nat[yy]),
+    `${bn(elim)} eliminated in ${y}`);
+  check('interest is mostly central government',
+    T.central.int/S.nat[y]>0.7, (T.central.int/S.nat[y]*100).toFixed(0)+'% in '+y);
+  check('interest is a large enough share of the division to be worth its own part',
+    S.nat[y]/S.parentNat[y]>0.3, (S.nat[y]/S.parentNat[y]*100).toFixed(0)+'% of '+S.parent+' in '+y);
+  check('the part names the dataset it was read from',
+    typeof S.src==='string'&&S.src.includes('gov_10a_exp'), `${S.src} (updated ${S.updated})`);
+  /* The reason the map cannot draw it. Carried as a flag rather than hardcoded in
+     the console, so the day a territorial source appears the console follows it. */
+  check('the part is flagged as having no territorial split', S.noTerritorial===true, '');
+  check('and no region carries a slice for it either',
+    D.regions.every(r=>Object.values(r.spend).every(a=>!a||a.length===11)),
+    'region rows are still the total and ten divisions');
+}
+
 console.log('\n=== K. WHO GENERATES THE REVENUE ===');
 {
   /* Two AEAT datasets, deliberately kept apart and never merged:

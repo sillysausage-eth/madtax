@@ -32,6 +32,7 @@ python3 extract_corp.py    # -> corp_types.json   table 8.5, incl. the provision
 node merge15.js            # -> who.corp.types refreshed; final years must reproduce the shipped figures
 python3 extract_corp_brackets.py  # -> corp_brackets.json  AEAT consolidated statistic, 17 turnover brackets, 2016-
 node merge_corp_brackets.js            # -> who.corp.years = brackets (rendered), .types = table 8.5 (tie-out only)
+node merge20.js            # -> spendInt: debt interest lifted out of COFOG 01 (see below)
 
 # 5. the municipal layer under every year (CONPREL definitive liquidations, 2012-2024)
 #    19 files per year: CCAA=01..19 (18/19 are Ceuta and Melilla, skipped by title).
@@ -270,6 +271,42 @@ the non-financial total. `verify.js` §U repeats the identity for every year and
 net local layer never exceeds the national-accounts local tier (it runs 66–75%). All-zero
 tables — Navarre 2013-2014, Melilla 2022 — are absent, named in `spendTerr[y].partial`, and
 must be exactly those three: a new one is news, not a default.
+
+### Debt interest as a part of its own — `merge20.js`
+
+COFOG division 01 is €92.6bn in 2024 and €39.6bn of it, 43%, is one line: `GF0107` —
+in that year the fourth largest single sub-function in the accounts, behind old-age
+pensions, sickness and disability, and hospital services. Left inside the division it
+had no name on the screen and sat under a heading that reads like administration. `merge20.js` lifts it out and writes `spendInt`, so the composition
+draws eleven parts instead of ten.
+
+```bash
+node merge20.js               # -> bundle.spendInt   (--offline reuses the cached JSON-stat)
+```
+
+Both halves are published. `gov_10a_exp` carries `GF01` and `GF0107` in the same table,
+same sector, same basis, for S13 and for each of the four tiers, so the shortened
+division and the new part are figures, not a division of one. The step refuses to write
+unless the sub-function matches the `spendSub` figure already in the bundle, the division
+matches `spendNational[y][1]`, the division's **other seven sub-functions sum to the
+remainder exactly**, and no tier's interest exceeds its own division. `verify.js` §J2
+repeats all of it and adds that the eleven parts still sum to total spending.
+
+- **Nothing about the map changes, and that is deliberate.** No source splits a COFOG
+  sub-function by territory: Eurostat stops at the tier, and IGAE's per-community file is
+  titled *Gasto por divisiones COFOG* and stops at the division. So the part carries
+  `noTerritorial: true`, the console draws no country for it, and each community's
+  division 01 figure is still the whole division — interest included. The panel states
+  that in words rather than letting it pass as a residual.
+- **`D.41` is not `GF0107`.** IGAE's per-community table does carry a `D.41 Intereses`
+  row, and it falls entirely in division 01, which makes it look like the territorial
+  split this needs. It is not: for the regional subsector in 2024 `D.41` is 7,469 against
+  `GF0107`'s 6,758 (COFOG 01.7 is public debt *transactions*, not interest alone — the
+  same 851 gap shows up between `D41PAY` and `GF0107` for S13). Substituting one for the
+  other would manufacture a map out of two different measures.
+- **The tiers do not sum to the total** — €2.9bn of 2024 interest is one tier paying
+  another, the FLA above all, and consolidation eliminates it. The panel says so with
+  the figure.
 
 ## Verification
 

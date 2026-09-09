@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import type { Locale } from "@/i18n";
-import { OPENING_YEAR_EXP, aggCode, spendNoSplit } from "@/lib/spending";
+import { INT_KEY, OPENING_YEAR_EXP, aggCode, spendNoSplit } from "@/lib/spending";
 import { divisions, spendYears } from "@/data/spending";
 import { regions } from "@/data/map";
 import SpendingConsole from "./SpendingConsole";
@@ -23,8 +23,8 @@ import { useKeyboardNav } from "./useKeyboardNav";
  * map filter, because the control that writes it is the same control.
  */
 
-/** `gf01`…`gf10` — the filter values the coin grid and the ring write. */
-const FOCUS_KEYS = divisions.map((d) => "gf" + d);
+/** `gf01`…`gf10` and `gfint` — the filter values the coin grid and the ring write. */
+const FOCUS_KEYS = [...divisions.map((d) => "gf" + d), INT_KEY];
 
 export default function SpendingExplorer({ locale }: { locale: Locale }) {
   const [url, setUrl] = useUrlState<{
@@ -55,6 +55,11 @@ export default function SpendingExplorer({ locale }: { locale: Locale }) {
   const onFocus = useCallback(
     (k: string) => {
       if (focus === k) return setUrl({ f: null });
+      /* Defence opens with the State coin already selected, because the coin *is*
+         where defence is spent — the regional tier has none of it. Interest is not
+         that case: it is off the map, but three quarters of a tenth of it is paid
+         by governments the coin is not named for, so it opens on the national
+         figure and the panel names the tiers underneath. */
       setUrl(spendNoSplit(year, aggCode(k)) ? { f: k, r: STATE_ID_EXP } : { f: k });
     },
     [setUrl, focus, year],

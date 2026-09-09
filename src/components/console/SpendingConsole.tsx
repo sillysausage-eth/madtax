@@ -6,11 +6,14 @@ import { eur, nf } from "@/lib/format";
 import { fmtMetric, type Metric } from "@/lib/metric";
 import { RAMP_EXP, makeIntensity, makeRamp, makeScale, rampTop } from "@/lib/ramp";
 import {
+  INT_CODE,
   SPEND_GAMMA,
   aggCode,
+  isInt,
   spendCompModel,
   spendMetricVal,
   spendNoSplit,
+  spendNoTerritory,
   spendSlice,
   spendTerrOf,
   spendYear,
@@ -21,7 +24,6 @@ import { divisions, regionSpending, spendYears } from "@/data/spending";
 import { CANVAS_W, CB, H, labelNudge, regionAbbr, regions } from "@/data/map";
 import type { YearKey } from "@/lib/types";
 import ConsoleFooter from "./ConsoleFooter";
-import { SOURCE_LINKS } from "@/lib/sources";
 import { COFOG_GLYPH } from "./coinGlyphs";
 import Donut from "./Donut";
 import MapCoins, { COIN_RAIL_WIDTH, type MapCoin } from "./MapCoins";
@@ -43,8 +45,10 @@ import YearScrubber from "./YearScrubber";
  * are the consolidated national figure, always, and the coin is opened up in
  * the panel rather than left as a residual.
  *
- * The legend beside the ring is a grid of pressable coins, one per COFOG
- * division, and pressing one is the console's filter control. Filtered, the map
+ * The legend beside the ring is a grid of pressable coins — one per COFOG
+ * division, plus debt interest, which is a published sub-function of division 01
+ * lifted out and given a coin of its own — and pressing one is the console's
+ * filter control. Filtered, the map
  * can draw only the regional tier's part of that function: councils' spending
  * has no published functional split by territory, so for one function it moves
  * into the coin and the panel says so. The identity holds in both states.
@@ -112,7 +116,9 @@ export default function SpendingConsole({
     const m = new Map<string, number | null>();
     const y = spendYear(year);
     const i = spendSlice(focus);
-    const blank = focus ? spendNoSplit(y, aggCode(focus)) : false;
+    const blank = focus
+      ? spendNoTerritory(focus) || spendNoSplit(y, aggCode(focus))
+      : false;
     for (const g of regions)
       m.set(
         g.id,
@@ -136,7 +142,9 @@ export default function SpendingConsole({
      have no regional government and so nothing in the tier a function filter
      draws. Where a whole function is absent from that tier the panel states it
      once rather than pinning nineteen markers to a blank country. */
-  const blankAll = focus ? spendNoSplit(sy, aggCode(focus)) : false;
+  const blankAll = focus
+    ? spendNoTerritory(focus) || spendNoSplit(sy, aggCode(focus))
+    : false;
   const flags: MapFlag[] = blankAll
     ? []
     : regions
@@ -165,7 +173,9 @@ export default function SpendingConsole({
     ["SRC", "IGAE COFOG · CONPREL · EUROSTAT"],
     [
       t.fYear.toUpperCase(),
-      `${sy}${partial ? " (P)" : ""} · COFOG ${slice ? divisions[slice - 1] : "ALL"}`,
+      `${sy}${partial ? " (P)" : ""} · COFOG ${
+        isInt(focus) ? INT_CODE.slice(2) : slice ? divisions[slice - 1] : "ALL"
+      }`,
     ],
   ];
 
@@ -175,7 +185,9 @@ export default function SpendingConsole({
      plus the part of the local tier the territorial layer does not reach, less
      the inter-tier elimination; filtered, it is the function's spending outside
      the regional tier. */
-  const fnName = slice ? M.rows.find((r) => r.k === focus)?.nm : null;
+  /* Read off the focus, not the map slice: interest is a part of the composition
+     with no slice of its own, and the pane header still has to name it. */
+  const fnName = focus ? (M.rows.find((r) => r.k === focus)?.nm ?? null) : null;
   const coinV = stateCoinValue(sy, focus);
   const coins: MapCoin[] = [
     {
@@ -191,10 +203,9 @@ export default function SpendingConsole({
     <>
       <section className="comp" id="comp" role="tabpanel">
         {/* The year picker sits in this header because the year is what the
-            figures under it are for. The caption no longer repeats it, and the
-            perimeter line it used to carry is the footer's sentence said twice:
-            the control states the year, once, and the scope is stated once,
-            below. The revenue header reads the same way. */}
+            figures under it are for. The caption no longer repeats it: the
+            control states the year, once. The revenue header reads the same
+            way. */}
         <div className="comp-h">
           <div className="comp-hk">
             <div className="head-k">{t.sExp.tot}</div>
@@ -282,13 +293,7 @@ export default function SpendingConsole({
         </aside>
       </div>
 
-      <ConsoleFooter
-        source={t.footExp1}
-        sourceLinks={{ Eurostat: SOURCE_LINKS.gov_10a_exp }}
-        perimeter={t.footExp2}
-        build={t.foot3}
-        repo={t.repo}
-      />
+      <ConsoleFooter mode="spending" locale={locale} />
     </>
   );
 }

@@ -55,7 +55,7 @@ const SECTION_KEYS = {
   spending: [
     "spendYears", "spendNational", "spendBySector", "divisions", "divES", "divEN",
     "spendSub", "spendSubES", "spendSubEN", "spendNoteES", "spendNoteEN", "spendAgg",
-    "econKeys", "econES", "econEN", "spendTerr", "localAreas",
+    "econKeys", "econES", "econEN", "spendTerr", "localAreas", "spendInt",
   ],
   who: ["who", "irpfScale", "madridScale"],
   debt: ["debt"],

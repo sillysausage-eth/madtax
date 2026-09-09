@@ -9,8 +9,6 @@ export const en = {
   ctrl:'CONTROL',metric:'METRIC',lo:'LOW',hi:'HIGH',dos:'DOSSIER',
   modeAll:'Home',modeRev:'Revenue',modeExp:'Spending',modeDebt:'Debt',
   ov:{
-    foot1:'Source: Eurostat — annual government finance accounts (gov_10a_main)',
-    foot2:'General government · ESA 2010 · the balance is the published B.9: negative is a deficit',
     head:'Making public finances transparent',
     lead:'What government earns, spends, and borrows.',
     k:'The public accounts over time',
@@ -30,20 +28,36 @@ export const en = {
     },
     doorGo:'Open'
   },
-  footRev1:'Source: AEAT via ISTAC · IGAE · CONPREL · OCTE · Hacienda Foral de Navarra · Ministerio de Hacienda (DGT) · Eurostat',
-  footExp1:'Source: IGAE · Eurostat · INE',
-  footExp2:'Consolidated general government expenditure (ESA 2010)',
   foot3:'Tax Truth',
-  repo:'Code and data',
+  repo:'Code and data on GitHub',
+  srcK:'Sources',
+  srcLab:{
+    euMain:'Annual government finance accounts',
+    euTaxag:'Revenue by tax and social contribution',
+    euExp:'Expenditure by function (COFOG)',
+    euEdp:'Debt under the Excessive Deficit Procedure',
+    euGdp:'GDP by Autonomous Region',
+    euPop:'Population by Autonomous Region',
+    aeatTerr:'State tax collection by Autonomous Region (via ISTAC)',
+    aeatIart:'Annual tax collection report',
+    aeatIs:'Consolidated annual accounts, corporate income tax',
+    igaeReg:'Regional government, detail by Autonomous Region',
+    igaeCofog:'Expenditure by function, detail by Autonomous Region',
+    conprel:'Definitive liquidations of local entities',
+    octe:'Collection by the Diputaciones Forales under the Concierto',
+    hfn:'Annual report, table 15 — cash collection',
+    dgt:'Collection and statistics of the Spanish tax system',
+    bde:'Statistical bulletin 11.13 — EDP debt by holder',
+    tesoro:'Monthly State debt statistics',
+    tesoroCirc:'Treasury securities outstanding'
+  },
   dbt:{
-    foot1:'Source: Eurostat — Excessive Deficit Procedure (gov_10dd_edpt1, gov_10a_main)',
-    foot2:'Consolidated gross debt at face value · a stock outstanding, not an annual flow',
     heroK:'Total public debt',
     ofGdp:'of GDP',
     asOf:'All government · end of {Y}',
     // The three series the chart draws, named in its legend. Each switch is
     // labelled with the series it shows, not with the axis it is read off.
-    sLv:'Debt outstanding',          sInt:'Interest paid',
+    sLv:'Debt',                      sInt:'Interest paid',
     sPc:'Debt / GDP',
     trendPick:'Series on the chart',
     sLife:'Average life',            sLifeN:'State debt',
@@ -209,6 +223,23 @@ export const en = {
     'would not measure that Autonomous Region\'s spending — it is the absence of the function from its tier of government.',
   expRegNoFig:'No figure is published for this Autonomous Region for this function.',
   expSubsSrc:'Official COFOG code breakdown · Eurostat (gov_10a_exp). The parts sum exactly to the figure above.',
+  // ---- debt interest as a part of its own ---------------------------------
+  // `GF0107` is 43% of COFOG division 01, and inside it the largest line in the
+  // accounts after pensions and health had no name on the screen. It is drawn as
+  // the eleventh coin; these two strings are what the panel says about the split.
+  expIntName:'Debt interest',
+  expDivWhy:'WHY IS THIS THE WHOLE DIVISION?',
+  expDivWhole:'This figure is the Autonomous Region\'s whole COFOG 01 division, the interest it pays included. A community publishes its spending '+
+    'by division and no finer, so the interest cannot be taken out of it the way it is taken out of the national figure above.',
+  expIntTiers:'Eurostat\'s COFOG 01.7, public debt transactions: the interest on government debt and what it costs to service it. '+
+    'Of the {N} paid, central government pays {C}, the Autonomous Regions {A}, councils {L} and Social Security {SS}, '+
+    'less {E} that one tier pays another and national accounts eliminate. The map cannot draw it: Eurostat publishes a COFOG sub-function by '+
+    'government tier, and the Autonomous Regions are published by division only, so no source places this line in a community. Each Autonomous '+
+    'Region is shown as no data rather than as zero, and the whole figure sits in the State coin.',
+  expSvcTiers:'Of the {N} spent on general public services once debt interest is taken out, {A} is spent by the regional governments. The remaining '+
+    '{S} is in the State coin: central government {C}, councils {L} and Social Security {SS}, less {E} of transfers between tiers that national '+
+    'accounts eliminate. The map is the exception: a community publishes COFOG by division only, so what it shades is each Autonomous Region\'s '+
+    'whole division 01 — the {IR} of interest they pay included. That interest is the {I} drawn as its own part of the ring.',
   // ---- M7: the map of territories -----------------------------------------
   // The map carries what is spent in each Autonomous Region by the two tiers
   // that have a territory; one State coin holds the rest. New strings, both

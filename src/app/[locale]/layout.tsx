@@ -6,9 +6,11 @@ import { LOCALES, DEFAULT_LOCALE, dict, isLocale, type Locale } from "@/i18n";
 import ModeFrame from "@/components/console/ModeFrame";
 import ModeTabs from "@/components/console/ModeTabs";
 import LangSwitch from "@/components/console/LangSwitch";
+import GithubMark from "@/components/GithubMark";
 import { MODES, modeLabel, type Mode } from "@/lib/modes";
 import { siteMetadata } from "@/lib/meta";
 import { siteJsonLd } from "@/lib/jsonld";
+import { REPO_URL } from "@/lib/site";
 import JsonLd from "@/components/JsonLd";
 import "../globals.css";
 
@@ -97,8 +99,22 @@ export default async function LocaleLayout({
                   screen, rather than in a strip fused to one console. */}
               <ModeTabs locale={locale} labels={modeLabels} />
 
+              {/* The language switch and the repository, in that order: the
+                  first changes the page, the second leaves it. The mark is the
+                  whole of the link, so the anchor carries the name — the same
+                  one the footer's copy of it uses. */}
               <div className="mast-right">
                 <LangSwitch locale={locale} />
+                <a
+                  className="mast-repo"
+                  href={REPO_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={t.repo}
+                  title={t.repo}
+                >
+                  <GithubMark />
+                </a>
               </div>
             </header>
 

@@ -112,19 +112,17 @@ export default function DebtConsole({ locale }: { locale: Locale }) {
 
   /* ---- when it falls due -------------------------------------------------- */
   /* A narrower perimeter than the other two views: State debt securities, not
-     all of government. The scope line carries its own total for that reason. */
+     all of government. The scope line names that perimeter and its date but
+     carries no total: a second euro figure of this size next to the headline
+     reads as a rival measure of the same stock rather than a part of it, and
+     `matNote` already states what the ladder leaves out. */
   views.push(
     mat && mat.rows && mat.rows.length
       ? {
           k: "mat",
           tab: X.tMat,
           sub: X.qMat,
-          scope: `${eur(
-            locale,
-            mat.totalLaddered != null
-              ? mat.totalLaddered
-              : mat.rows.reduce((a: number, r: CodedRow) => a + r[1], 0),
-          )} · ${X.scopeState} · ${mat.asOf || ""}`,
+          scope: `${X.scopeState} · ${mat.asOf || ""}`,
           calendar: mat.rows.map(([y, v]) => [y, v] as [string, number]),
           note: X.matNote,
         }
@@ -146,12 +144,7 @@ export default function DebtConsole({ locale }: { locale: Locale }) {
         <DebtBreakdown title={X.secShape} views={views} locale={locale} />
       </div>
 
-      <ConsoleFooter
-        source={X.foot1}
-        perimeter={X.foot2}
-        build={t.foot3}
-        repo={t.repo}
-      />
+      <ConsoleFooter mode="debt" locale={locale} />
     </>
   );
 }

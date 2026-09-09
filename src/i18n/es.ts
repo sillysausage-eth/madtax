@@ -7,10 +7,8 @@ export const es = {
   ctrl:'CONTROL',metric:'MÉTRICA',lo:'BAJO',hi:'ALTO',dos:'EXPEDIENTE',
   modeAll:'Inicio',modeRev:'Ingresos',modeExp:'Gasto',modeDebt:'Deuda',
   // The overview — the screen a reader lands on. Three published series and
-  // nothing else, so the copy here is a caption, a key and a source line.
+  // nothing else, so the copy here is a caption and a key.
   ov:{
-    foot1:'Fuente: Eurostat — cuentas anuales de las administraciones públicas (gov_10a_main)',
-    foot2:'Conjunto de las administraciones públicas · SEC 2010 · el saldo es el B.9 publicado: negativo es déficit',
     // The hero: the mission, one plain line saying what is on the screen, and the three
     // figures the rest of the site decomposes — which move with the chart below.
     //
@@ -49,22 +47,43 @@ export const es = {
     },
     doorGo:'Abrir'
   },
-  footRev1:'Fuente: AEAT vía ISTAC · IGAE · CONPREL · OCTE · Hacienda Foral de Navarra · Ministerio de Hacienda (DGT) · Eurostat',
-  footExp1:'Fuente: IGAE · Eurostat · INE',
-  footExp2:'Gasto consolidado del conjunto de las administraciones (SEC 2010)',
   foot3:'Tax Truth',
-  // The footer's repository link. The mark beside it says GitHub, so the label
-  // says what is there instead of repeating the name of the host.
-  repo:'Código y datos',
+  // The repository link is the mark alone, so this is what a screen reader and a
+  // hover tooltip say for it — nothing on the page repeats it.
+  repo:'Código y datos en GitHub',
+  // The footer's source list: what the screen's figures are read from, under one
+  // heading on every screen. Publisher names and dataset codes are not here — they
+  // are institutions and identifiers, the same words in both locales, and live in
+  // `@/lib/sources`. These labels say what each dataset IS, which is the part the
+  // old prose caption never said.
+  srcK:'Fuentes',
+  srcLab:{
+    euMain:'Cuentas anuales de las administraciones públicas',
+    euTaxag:'Ingresos por figura tributaria y cotización social',
+    euExp:'Gasto por función (COFOG)',
+    euEdp:'Deuda según el Procedimiento de Déficit Excesivo',
+    euGdp:'PIB por comunidad autónoma',
+    euPop:'Población por comunidad autónoma',
+    aeatTerr:'Recaudación territorial del Estado, por comunidad autónoma (vía ISTAC)',
+    aeatIart:'Informe anual de recaudación tributaria',
+    aeatIs:'Cuentas anuales consolidadas del Impuesto sobre Sociedades',
+    igaeReg:'Administración regional, detalle por comunidad autónoma',
+    igaeCofog:'Clasificación funcional del gasto, detalle por comunidad autónoma',
+    conprel:'Liquidaciones definitivas de las entidades locales',
+    octe:'Recaudación de las diputaciones forales por tributos concertados',
+    hfn:'Memoria anual, cuadro nº 15 — recaudación líquida',
+    dgt:'Recaudación y estadísticas del sistema tributario español',
+    bde:'Boletín estadístico 11.13 — deuda PDE por tenedor',
+    tesoro:'Estadísticas mensuales de la deuda del Estado',
+    tesoroCirc:'Valores del Tesoro en circulación'
+  },
   dbt:{
-    foot1:'Fuente: Eurostat — Procedimiento de Déficit Excesivo (gov_10dd_edpt1, gov_10a_main)',
-    foot2:'Deuda bruta consolidada a valor nominal · saldo vivo, no un flujo anual',
     heroK:'Deuda pública total',
     ofGdp:'del PIB',
     asOf:'Todas las AAPP · cierre de {Y}',
     // The three series the chart draws, named in its legend. Each switch is
     // labelled with the series it shows, not with the axis it is read off.
-    sLv:'Deuda viva',                sInt:'Intereses pagados',
+    sLv:'Deuda',                     sInt:'Intereses pagados',
     sPc:'Deuda sobre PIB',
     trendPick:'Series del gráfico',
     sLife:'Vida media',              sLifeN:'deuda del Estado',
@@ -233,6 +252,21 @@ export const es = {
     'aquí no mediría el gasto de esa comunidad autónoma — es la ausencia de la función en su nivel de gobierno.',
   expRegNoFig:'No hay cifra publicada para esta comunidad autónoma en esta función.',
   expSubsSrc:'Desglose oficial por códigos COFOG · Eurostat (gov_10a_exp). Las partes suman exactamente la cifra de arriba.',
+  // ---- los intereses como parte propia ------------------------------------
+  expIntName:'Intereses de la deuda pública',
+  expDivWhy:'¿POR QUÉ ES LA DIVISIÓN COMPLETA?',
+  expDivWhole:'Esta cifra es la división COFOG 01 completa de la comunidad autónoma, incluidos los intereses que paga. Una comunidad publica su gasto '+
+    'por divisiones y nada más fino, así que los intereses no pueden descontarse de ella como se descuentan de la cifra nacional de arriba.',
+  expIntTiers:'Es la subfunción COFOG 01.7 de Eurostat, operaciones de la deuda pública: los intereses de la deuda y lo que cuesta atenderla. '+
+    'De los {N} pagados, el gobierno central paga {C}, las comunidades autónomas {A}, las entidades locales {L} y la Seguridad '+
+    'Social {SS}, menos {E} que un nivel paga a otro y que la contabilidad nacional elimina. El mapa no puede dibujarlo: Eurostat publica las '+
+    'subfunciones COFOG por nivel de gobierno, y las comunidades autónomas sólo por división, así que ninguna fuente sitúa esta línea en una '+
+    'comunidad. Cada comunidad autónoma se muestra como sin dato y no como cero, y la cifra entera queda en la moneda del Estado.',
+  expSvcTiers:'De los {N} gastados en servicios públicos generales una vez descontados los intereses de la deuda, {A} los gastan los gobiernos '+
+    'autonómicos. Los {S} restantes están en la moneda del Estado: gobierno central {C}, entidades locales {L} y Seguridad Social {SS}, menos {E} de '+
+    'transferencias entre niveles que la contabilidad nacional elimina. El mapa es la excepción: una comunidad publica el COFOG sólo por división, '+
+    'así que lo que colorea es la división 01 completa de cada comunidad autónoma — incluidos los {IR} de intereses que pagan. Esos intereses son '+
+    'los {I} dibujados como parte propia del anillo.',
   // ---- M7: the map of territories -----------------------------------------
   tierReg:'Gobierno autonómico',
   locNetNote:'Ayuntamientos, diputaciones, cabildos y consejos gastaron aquí {N} (criterio presupuestario, obligaciones reconocidas, CONPREL). '+

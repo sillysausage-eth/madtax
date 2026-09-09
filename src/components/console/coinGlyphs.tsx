@@ -371,5 +371,16 @@ export const COFOG_GLYPH: Record<string, React.ReactNode> = {
       <path d="M4 12.4v1.2c0 4 3.6 7 8 7s8-3 8-7v-1.2" />
     </>
   ),
+  /* Debt interest — a percent sign over a coin edge: what the borrowing costs, as
+     opposed to the borrowing itself. Distinct at 24px from the shield on the rail
+     and from the general-public-services colonnade it was lifted out of. */
+  gfint: (
+    <>
+      <circle cx="12" cy="12" r="8.6" />
+      <path d="M15.4 8.6 8.6 15.4" />
+      <circle cx="9.4" cy="9.4" r="1.5" />
+      <circle cx="14.6" cy="14.6" r="1.5" />
+    </>
+  ),
   total: totalGlyph,
 };

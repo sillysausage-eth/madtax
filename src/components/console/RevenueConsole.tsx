@@ -17,7 +17,6 @@ import { national2, regionRevenue, revYears } from "@/data/revenue";
 import { CANVAS_W, CB, H, labelNudge, regionAbbr, regions } from "@/data/map";
 import type { YearKey } from "@/lib/types";
 import ConsoleFooter from "./ConsoleFooter";
-import { SOURCE_LINKS } from "@/lib/sources";
 import Donut from "./Donut";
 import MapCoins, { COIN_RAIL_WIDTH, type MapCoin } from "./MapCoins";
 import PartCoins, { type PartCoin } from "./PartCoins";
@@ -253,12 +252,7 @@ export default function RevenueConsole({
         </aside>
       </div>
 
-      <ConsoleFooter
-        source={t.footRev1}
-        sourceLinks={{ Eurostat: SOURCE_LINKS.gov_10a_taxag }}
-        build={t.foot3}
-        repo={t.repo}
-      />
+      <ConsoleFooter mode="revenue" locale={locale} />
     </>
   );
 }

@@ -392,6 +392,42 @@ export interface SpendAggEntry {
   adj: Millions;
 }
 
+/**
+ * One tier's share of a division and of the sub-function lifted out of it. Both
+ * figures are Eurostat's own; `parent` is the whole division, `int` the part of it
+ * that is interest, so `parent - int` is the tier's services spending.
+ */
+export interface SpendIntTier {
+  parent: Millions;
+  int: Millions;
+}
+
+/**
+ * Debt interest, taken out of general public services and made a part of the
+ * spending composition in its own right.
+ *
+ * `GF0107` is a published child of `GF01` in the same Eurostat table, same sector,
+ * same basis, so the ring's eleventh part and the shortened first part are both
+ * published figures rather than a division of one. What is *not* published is any
+ * split of a COFOG sub-function by Autonomous Region — hence `noTerritorial`, which
+ * the map reads as "this part cannot be drawn" and the panel states in words.
+ */
+export interface SpendInterest {
+  /** `GF0107`, and the `GF01` it comes out of. */
+  code: string;
+  parent: string;
+  years: YearKey[];
+  /** Consolidated general government (S13), by year: the part's headline. */
+  nat: Record<YearKey, Millions>;
+  /** The whole division, same sector and years — what the part was lifted out of. */
+  parentNat: Record<YearKey, Millions>;
+  tiers: Record<YearKey, Record<string, SpendIntTier>>;
+  src: string;
+  updated: string;
+  /** Always true today: no source splits a COFOG sub-function by territory. */
+  noTerritorial: boolean;
+}
+
 export interface SpendingSection {
   spendYears: YearKey[];
   /** Index 0 is the total, 1..10 follow `divisions`. */
@@ -416,6 +452,8 @@ export interface SpendingSection {
   /** Keyed by year: the map-of-territories reconciliation. */
   spendTerr: Record<YearKey, SpendTerrEntry>;
   localAreas: LocalAreas;
+  /** Debt interest as a part of the composition in its own right. */
+  spendInt: SpendInterest;
   regions: Record<string, RegionSpending>;
 }
 

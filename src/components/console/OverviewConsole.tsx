@@ -90,12 +90,7 @@ export default function OverviewConsole({ locale }: { locale: Locale }) {
 
       </div>
 
-      <ConsoleFooter
-        source={X.foot1}
-        perimeter={X.foot2}
-        build={t.foot3}
-        repo={t.repo}
-      />
+      <ConsoleFooter mode="overview" locale={locale} />
     </>
   );
 }

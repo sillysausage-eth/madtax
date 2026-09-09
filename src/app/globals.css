@@ -172,10 +172,13 @@ body {
   text-transform: uppercase;
   white-space: nowrap;
 }
+/* The switch and the repository mark are two boxes on one row, so they take the
+   row's height rather than each its own: `stretch`, not `center`, is what keeps
+   their borders on the same two lines. */
 .mast-right {
   display: flex;
   gap: 10px;
-  align-items: center;
+  align-items: stretch;
   justify-content: flex-end;
   justify-self: end;
   flex-wrap: wrap;
@@ -200,6 +203,34 @@ body {
   background: var(--cy);
   color: #04181d;
   font-weight: 700;
+}
+
+/* The repository, in the masthead beside the language switch. The mark alone —
+   it is boxed to the same height as the switch beside it so the right end of
+   the masthead reads as two controls rather than as a control and a stray
+   glyph. */
+.mast-repo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border: 1px solid var(--rule2);
+  color: var(--mute);
+}
+.mast-repo svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  fill: currentColor;
+}
+.mast-repo:hover,
+.mast-repo:focus-visible {
+  color: var(--cy);
+  border-color: var(--cy-dim);
+}
+.mast-repo:focus-visible {
+  outline: 1px solid var(--cy);
+  outline-offset: 2px;
 }
 
 /* ---------- mode tabs: fused to the top of the composition panel ---------- */
@@ -818,9 +849,25 @@ svg.map {
   color: #cdb6e0;
 }
 
+/* ---------- the footer: where every figure on the screen comes from ----------
+   Two parts: the source list, folded behind its own heading, and the closing
+   line with the repository. The band is set in the same dim mono as the rest of
+   the chrome, but the source list itself is NOT uppercased — these are the names
+   of publications, and setting fifteen of them in spaced capitals is what made
+   the old caption unreadable. */
+footer.foot {
+  margin-top: 16px;
+  padding: 14px 2px 12px;
+  border-top: 1px solid var(--rule2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+}
+
 /* The source names are links to the published series. The rule under them is
    the mode's own dim accent, so the cue reads as chrome rather than as body
-   copy turned blue. */
+   copy turned blue. Every dataset is one, and they are meant to look it. */
 footer.foot a {
   color: inherit;
   text-decoration: none;
@@ -831,60 +878,132 @@ footer.foot a:focus-visible {
   color: var(--cy);
   border-bottom-color: var(--cy);
 }
-footer.foot {
-  margin-top: 16px;
-  padding: 12px 2px;
-  border-top: 1px solid var(--rule2);
+
+/* The disclosure. The summary is the heading row: the platform marker is off —
+   it is a different glyph in every browser and unstyleable in most — and the
+   chevron beside the heading is the affordance instead. The whole row is the
+   hit target, so it gets the pointer and the accent on hover. */
+.foot-src > summary {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 20px;
-  font-family: var(--font-mono);
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0 8px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--mute);
+}
+.foot-src > summary::-webkit-details-marker {
+  display: none;
+}
+.foot-src > summary:hover,
+.foot-src > summary:focus-visible {
+  color: var(--cy);
+}
+.foot-src > summary:focus-visible {
+  outline: 1px solid var(--cy);
+  outline-offset: 3px;
+}
+.foot-chev {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  transition: transform 0.12s ease;
+}
+.foot-src[open] > summary .foot-chev {
+  transform: rotate(90deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .foot-chev {
+    transition: none;
+  }
+}
+
+.foot-k {
+  margin: 0;
+  font-family: inherit;
   font-size: 11px;
-  letter-spacing: 0.1em;
-  color: var(--dim);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  color: inherit;
   text-transform: uppercase;
 }
 
-/* The wordmark and the repository travel together at the right end of the band:
-   pushed there rather than spaced apart, so when the caption is long enough to
-   take the whole row they wrap as one pair instead of the link being stranded
-   in the middle of the source line. */
-.foot-end {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px 16px;
-  flex-wrap: wrap;
-  margin-left: auto;
+/* A publisher and its datasets per row, ruled off like the rest of the console:
+   the publisher hangs in its own column so the datasets under it all start on
+   one edge, and the band grows downwards as a screen gains a source. */
+.foot-srcs {
+  margin: 0;
+  border-top: 1px solid var(--rule2);
 }
-/* Once the caption takes a row of its own on every line, the pair has nothing
-   to be pushed away from: it hangs off the same left edge as the rest of the
-   band rather than sitting alone against the right margin. */
-@media (max-width: 620px) {
-  .foot-end {
-    margin-left: 0;
+.foot-pub {
+  display: grid;
+  grid-template-columns: minmax(0, 250px) minmax(0, 1fr);
+  gap: 3px clamp(14px, 2.4vw, 32px);
+  padding: 7px 0 8px;
+  border-bottom: 1px solid var(--rule2);
+}
+/* Under the two-column measure the publisher would be a lone word beside a
+   crushed list, so it goes back above it. */
+@media (max-width: 700px) {
+  .foot-pub {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 }
-/* The mark is the link's own glyph, so the rule that marks a link as a link goes
-   under the label only — a line under an icon reads as a broken glyph. */
+.foot-pub dt {
+  margin: 0;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink2);
+}
+.foot-pub dd {
+  margin: 0;
+  letter-spacing: 0.01em;
+  line-height: 1.75;
+  color: var(--mute);
+}
+.foot-sep {
+  padding: 0 2px;
+  color: var(--rule);
+}
+/* The publisher's own code for the series, carried beside the name of it: the
+   citation a reader needs to find the table, set back so it reads as a
+   reference rather than as part of the title. */
+.foot-code {
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+
+/* The closing line: the wordmark and the repository, at the right end of the
+   band. */
+.foot-tail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px 14px;
+  margin-top: 12px;
+  text-transform: uppercase;
+}
+/* The mark is the whole of the link, so it takes no underline — a rule under an
+   icon reads as a broken glyph. It brightens to the mode's accent instead. */
 .foot-repo.foot-repo {
   display: inline-flex;
-  align-items: center;
-  gap: 7px;
   border-bottom: 0;
 }
 .foot-repo svg {
-  width: 13px;
-  height: 13px;
+  width: 15px;
+  height: 15px;
   flex: none;
   fill: currentColor;
 }
-.foot-repo > span {
-  border-bottom: 1px solid var(--cy-dim);
+.foot-repo:hover,
+.foot-repo:focus-visible {
+  color: var(--cy);
 }
-.foot-repo:hover > span,
-.foot-repo:focus-visible > span {
-  border-bottom-color: var(--cy);
+.foot-repo:focus-visible {
+  outline: 1px solid var(--cy);
+  outline-offset: 3px;
 }
 
 /* ---------- headline + breakdown, one block ----------
