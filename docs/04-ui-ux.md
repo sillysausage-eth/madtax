@@ -1,4 +1,4 @@
-# MadTax — UI/UX Direction
+# Tax Truth — UI/UX Direction
 
 > Working prototype with real data: `prototype/console.html`
 > Codename for the visual system: **OPEN SOURCE**.
@@ -71,7 +71,7 @@ more than any decoration does.
 ### Layout — the console
 ```
 ┌─ classification banner ─────────────────────────────┐
-│  MADTAX · codename            status readout · ES/EN│
+│  TAX TRUTH · codename         status readout · ES/EN│
 ├─────────────────────────────────────────────────────┤
 │  6 hero stats — the whole national picture in one row│
 ├──────────┬───────────────────────────┬──────────────┤

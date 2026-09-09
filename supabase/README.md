@@ -1,4 +1,4 @@
-# Supabase — MadTax data mirror
+# Supabase — Tax Truth data mirror
 
 The Supabase project (`aiompjijqoyjnighvgfv`) is a **read-only mirror** of
 `data/derived/es-fiscal-bundle.json`, the pipeline's single source of truth.

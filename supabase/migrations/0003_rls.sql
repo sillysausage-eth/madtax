@@ -1,6 +1,6 @@
 -- 0003_rls.sql — public read, nobody writes.
 --
--- MadTax stores published figures only. There is no user input, no
+-- Tax Truth stores published figures only. There is no user input, no
 -- personalisation and nothing user-generated (plan, pinned decisions), so the
 -- access model is the simplest one that exists: every row is world-readable and
 -- no client role may write anything, ever. Seeding runs with the service role,

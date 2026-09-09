@@ -50,8 +50,13 @@ export function siteJsonLd(locale: Locale) {
   };
 }
 
-/** `MadTax › Ingresos`, so a result carries the trail rather than a bare URL. */
-export function modeJsonLd(locale: Locale, mode: Mode) {
+/**
+ * `Tax Truth › Ingresos`, so a result carries the trail rather than a bare URL.
+ *
+ * Never called for the overview: it lives at the locale root, so its trail would be the
+ * site root twice. That page carries the layout's `WebSite` graph and nothing else.
+ */
+export function modeJsonLd(locale: Locale, mode: Exclude<Mode, "overview">) {
   const c = copy(locale);
   return {
     "@context": "https://schema.org",

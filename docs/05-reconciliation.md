@@ -5,7 +5,7 @@
 
 Spain's public finances produce several correct, mutually inconsistent totals for what
 sounds like the same thing. This is the single biggest source of misreading in fiscal
-journalism, and MadTax's job is to make it obvious rather than to pick one number and hope.
+journalism, and Tax Truth's job is to make it obvious rather than to pick one number and hope.
 
 ## Who actually generates the revenue
 
@@ -55,7 +55,7 @@ plus regional half. Rates are exact; Madrid has the lowest regional scale in Spa
 | Over €300,000 | 24.5% | 20.5% | **45.0%** |
 
 That tab also shows how many filers reach each threshold. **Those two columns are the only
-estimated figures in MadTax**, interpolated from the decile distribution, and are labelled
+estimated figures in Tax Truth**, interpolated from the decile distribution, and are labelled
 as such in the interface — AEAT publishes no headcount at these boundaries, and the scale
 applies to taxable base while the distribution is gross income.
 

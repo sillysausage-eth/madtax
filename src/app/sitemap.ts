@@ -9,8 +9,9 @@ import { modePath } from "@/lib/meta";
  * its translations so a crawler treats the pair as one page in two languages
  * rather than as duplicates.
  *
- * The redirects (`/` and `/{locale}`) are deliberately absent — they hold no
- * content, and the console they land on is the URL worth indexing.
+ * `/{locale}` is in the list because it is a screen now, not a redirect: the overview
+ * lives at the locale root. `/` is still absent — it redirects, and holds no content of
+ * its own.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   /* One timestamp for the whole file: the consoles ship as one bundle, so they

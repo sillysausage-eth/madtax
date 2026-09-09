@@ -35,3 +35,10 @@ export const SITE_URL = new URL(ORIGIN);
 export function abs(path: string): string {
   return `${ORIGIN}${path.startsWith("/") ? path : `/${path}`}`;
 }
+
+/**
+ * Where the source lives. The masthead has said OPEN SOURCE since the first build; this
+ * is the address that claim points at, and the footer of every screen is where it is
+ * made good.
+ */
+export const REPO_URL = "https://github.com/sillysausage-eth/madtax";

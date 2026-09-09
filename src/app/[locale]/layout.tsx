@@ -86,7 +86,7 @@ export default async function LocaleLayout({
               <div className="brand">
                 <h1>
                   <Link href={`/${locale}`}>
-                    MAD<em>TAX</em>
+                    TAX <em>TRUTH</em>
                   </Link>
                 </h1>
                 <span className="codename">OPEN SOURCE</span>

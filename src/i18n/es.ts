@@ -5,11 +5,57 @@
 
 export const es = {
   ctrl:'CONTROL',metric:'MÉTRICA',lo:'BAJO',hi:'ALTO',dos:'EXPEDIENTE',
-  modeRev:'Ingresos',modeExp:'Gasto',modeDebt:'Deuda',
+  modeAll:'Inicio',modeRev:'Ingresos',modeExp:'Gasto',modeDebt:'Deuda',
+  // The overview — the screen a reader lands on. Three published series and
+  // nothing else, so the copy here is a caption, a key and a source line.
+  ov:{
+    foot1:'Fuente: Eurostat — cuentas anuales de las administraciones públicas (gov_10a_main)',
+    foot2:'Conjunto de las administraciones públicas · SEC 2010 · el saldo es el B.9 publicado: negativo es déficit',
+    // The hero: the mission, one plain line saying what is on the screen, and the three
+    // figures the rest of the site decomposes — which move with the chart below.
+    //
+    // The mission is not a translation of the English line but the same claim as Spanish
+    // states it. Where English makes a gerund of the verb, Spanish makes a noun of it —
+    // "hacer transparentes" reads as an anglicism — and the subject is "las cuentas
+    // públicas", the term the rest of the site already uses, not "las finanzas".
+    // No full stop: it is a statement of purpose, not a sentence about the data.
+    head:'Transparencia en las cuentas públicas',
+    lead:'Lo que las administraciones públicas ingresan, gastan y piden prestado.',
+    k:'Las cuentas públicas en el tiempo',
+    // The three lines, named in the chart's key and read in the hero above it.
+    sRev:'Ingresos totales',        sExp:'Gasto total',
+    sDef:'Saldo',
+    // What the single axis counts, named once at the head of it.
+    unitBn:'€ MM',
+    // Said to a screen reader, and to anyone who tabs to the chart.
+    nav:'Usa las flechas izquierda y derecha para leer un año.',
+    noPub:'Sin dato publicado',
+    src:'Eurostat',
+    // The three doors. One line saying what the console answers, one saying what it
+    // covers — `{R}` is the range of years it carries, `{Y}` its reference year, both
+    // read from the bundle rather than written here, so neither can go stale.
+    door:{
+      revenue:['Qué recauda España y de dónde sale cada euro.',
+               '{R} · por figura tributaria y por comunidad autónoma'],
+      spending:['En qué se gasta, función por función.',
+                '{R} · por función del gasto y por comunidad autónoma'],
+      // The debt console is two things at once: a stock series that runs the whole of
+      // `{R}` — back to 1995, the first year of the Eurostat EDP series — and a shape
+      // read at the one date the stock is quoted for. The line says the range first,
+      // because that is what the reader is choosing between, and then dates the shape
+      // rather than letting the range imply it is drawn for every year.
+      debt:['Cuánto se debe, en qué forma y a quién.',
+            '{R} · instrumentos, tenedores y vencimientos al cierre de {Y}']
+    },
+    doorGo:'Abrir'
+  },
   footRev1:'Fuente: AEAT vía ISTAC · IGAE · CONPREL · OCTE · Hacienda Foral de Navarra · Ministerio de Hacienda (DGT) · Eurostat',
   footExp1:'Fuente: IGAE · Eurostat · INE',
   footExp2:'Gasto consolidado del conjunto de las administraciones (SEC 2010)',
-  foot3:'MadTax',
+  foot3:'Tax Truth',
+  // The footer's repository link. The mark beside it says GitHub, so the label
+  // says what is there instead of repeating the name of the host.
+  repo:'Código y datos',
   dbt:{
     foot1:'Fuente: Eurostat — Procedimiento de Déficit Excesivo (gov_10dd_edpt1, gov_10a_main)',
     foot2:'Deuda bruta consolidada a valor nominal · saldo vivo, no un flujo anual',
@@ -21,7 +67,6 @@ export const es = {
     sLv:'Deuda viva',                sInt:'Intereses pagados',
     sPc:'Deuda sobre PIB',
     trendPick:'Series del gráfico',
-    sIntN:'ejercicio {Y}',
     sLife:'Vida media',              sLifeN:'deuda del Estado',
     // The two axes the trend chart is read off, named once each on the chart.
     unitBn:'€ MM',                    unitPc:'% PIB',
@@ -68,7 +113,7 @@ export const es = {
        nontax:'Ingresos no tributarios',capital:'Impuestos sobre el capital'},
   expSub:'gasto consolidado de todas las AAPP · COFOG',
   fOfTotal:'% del total',fRank:'Puesto',fPerCap:'Por habitante',
-  fOnMap:'En el mapa {P}',fOffMap:'Sin reparto por comunidades autónomas',fYear:'Ejercicio',fClose:'Cerrar',
+  fOnMap:'En el mapa {P}',fOffMap:'Sin reparto por comunidades autónomas',fYear:'Año',fClose:'Cerrar',
   rvTotal:'TODOS los ingresos', rvTotalK:'INGRESOS PÚBLICOS TOTALES', rvTotalSub:'todas las AAPP · SEC 2010', rvPending:'detalle por figura aún no publicado',
   compTtl:'DE DÓNDE SALE CADA EURO',
   compNote:'Las partidas suman exactamente el total y ninguna se solapa con otra. Pulsa cualquiera para saber qué es — no filtra el mapa. Fuente: contabilidad nacional (SEC 2010), Eurostat; reparto por comunidades autónomas de AEAT, IGAE, CONPREL y las haciendas forales.',
@@ -98,7 +143,7 @@ export const es = {
   wMadIntro:'<b>La escala real que se aplica en Madrid.</b> El Estado fija una mitad y la Comunidad de Madrid la otra; el tipo marginal que pagas es la suma. Madrid tiene la escala autonómica más baja de España.',
   wMadBand:'Base liquidable',wMadState:'Estatal',wMadRegion:'Madrid',wMadTotal:'Marginal total',
   wMadPeople:'Personas que llegan',wMadPct:'% que llega',
-  wMadCaveat:'<b>Las dos últimas columnas son una estimación</b>, la única de todo MadTax. AEAT no publica cuántos contribuyentes hay en cada tramo de la escala, así que se interpola a partir de la distribución por deciles. Además la escala se aplica a la <b>base liquidable</b> y la distribución es de <b>renta bruta</b>: son magnitudes distintas, así que léelo como un orden de magnitud, no como un dato oficial. Los tipos sí son exactos.',
+  wMadCaveat:'<b>Las dos últimas columnas son una estimación</b>, la única de todo Tax Truth. AEAT no publica cuántos contribuyentes hay en cada tramo de la escala, así que se interpola a partir de la distribución por deciles. Además la escala se aplica a la <b>base liquidable</b> y la distribución es de <b>renta bruta</b>: son magnitudes distintas, así que léelo como un orden de magnitud, no como un dato oficial. Los tipos sí son exactos.',
   wPeoplePct:'% personas',wAvgTax:'Media por persona',wNegZero:'Renta negativa o cero',
   wTotalRow:'Total',
   wGap:'Los tramos son de renta anual (rendimientos e imputaciones) y suman <b>{R}</b>, la cuota de las declaraciones de IRPF presentadas. La cifra de cabecera es <b>{H}</b> porque la contabilidad nacional incluye además el IRPF de País Vasco y Navarra, que tienen su propio impuesto, y las retenciones de quienes no están obligados a declarar. Diferencia: <b>{G}</b>.',

@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "madtax-web",
+      "name": "taxtruth-web",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",

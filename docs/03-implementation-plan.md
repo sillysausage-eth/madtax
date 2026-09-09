@@ -1,4 +1,4 @@
-# MadTax — Implementation Plan
+# Tax Truth — Implementation Plan
 
 > Two tracks run in parallel and meet at the API boundary: **the pipeline** (getting
 > numbers right) and **the product** (making them feel obvious). Neither waits for the
@@ -89,7 +89,7 @@ src_snapshot    (id, source_id, fetched_at, url, sha256, storage_path, bytes)
 src_extraction  (id, snapshot_id, locator)   -- "sheet 'Cuadro 3', row 14, col F"
 ```
 
-Every single figure MadTax displays joins back through `extraction_id` to a file we still
+Every single figure Tax Truth displays joins back through `extraction_id` to a file we still
 hold, with a checksum. If we cannot show a citizen where a number came from, we do not
 publish the number.
 

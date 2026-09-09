@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { dict, type Locale } from "@/i18n";
-import { eur, fy, nf } from "@/lib/format";
+import { eur, nf } from "@/lib/format";
 import { fmtMetric, type Metric } from "@/lib/metric";
 import { RAMP_EXP, makeIntensity, makeRamp, makeScale, rampTop } from "@/lib/ramp";
 import {
@@ -205,7 +205,6 @@ export default function SpendingConsole({
             years={spendYears}
             year={year}
             label={t.fYear}
-            optionLabel={(y) => fy(locale, y)}
             onChange={onYear}
           />
         </div>
@@ -214,7 +213,7 @@ export default function SpendingConsole({
           total={M.total}
           floor={0.4}
           centre={eur(locale, M.total)}
-          aria={`${t.sExp.tot} ${fy(locale, sy)}: ${eur(locale, M.total)}`}
+          aria={`${t.sExp.tot} ${sy}: ${eur(locale, M.total)}`}
           locale={locale}
           focus={focus}
           onFocus={onFocus}
@@ -236,7 +235,7 @@ export default function SpendingConsole({
           <div className="pane-h">
             <span className="t">{t.mapExp}</span>
             <span className="x">
-              {fy(locale, sy)}
+              {sy}
               {fnName ? ` · ${fnName}` : ""}
             </span>
           </div>
@@ -288,6 +287,7 @@ export default function SpendingConsole({
         sourceLinks={{ Eurostat: SOURCE_LINKS.gov_10a_exp }}
         perimeter={t.footExp2}
         build={t.foot3}
+        repo={t.repo}
       />
     </>
   );

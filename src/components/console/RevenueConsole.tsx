@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { dict, type Locale } from "@/i18n";
-import { eur, fy, nf } from "@/lib/format";
+import { eur, nf } from "@/lib/format";
 import { RAMP_REV, makeIntensity, makeRamp, makeScale, rampTop } from "@/lib/ramp";
 import {
   REV_SLICES,
@@ -173,7 +173,6 @@ export default function RevenueConsole({
             years={revYears}
             year={year}
             label={t.fYear}
-            optionLabel={(y) => fy(locale, y)}
             onChange={onYear}
           />
         </div>
@@ -182,7 +181,7 @@ export default function RevenueConsole({
           total={M.total}
           floor={0.4}
           centre={eur(locale, M.total)}
-          aria={`${t.rvTotalK} ${fy(locale, year)}: ${eur(locale, M.total)}`}
+          aria={`${t.rvTotalK} ${year}: ${eur(locale, M.total)}`}
           locale={locale}
           focus={focus}
           onFocus={onFocus}
@@ -203,7 +202,7 @@ export default function RevenueConsole({
           <div className="pane-h">
             <span className="t">{t.mapRev}</span>
             <span className="x">
-              {fy(locale, year)}
+              {year}
               {partName ? ` · ${partName}` : ""}
             </span>
           </div>
@@ -258,6 +257,7 @@ export default function RevenueConsole({
         source={t.footRev1}
         sourceLinks={{ Eurostat: SOURCE_LINKS.gov_10a_taxag }}
         build={t.foot3}
+        repo={t.repo}
       />
     </>
   );

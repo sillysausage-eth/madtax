@@ -67,6 +67,12 @@ node merge17.js            # -> salesDetail; tiers = bucket, 17 communities = S1
 python3 extract_local_spend.py   # -> local_spend.json, local_spend_areas.json (CONPREL Tablas 2, 3, 4; step 5's files)
 node merge18.js                  # -> regions[].local, spendTerr; regions + State coin = S13, every year
 
+# 9. the headline as a series, unpruned — what the home screen draws
+#    Reads the gov_10a_main file extract_natsub.js already cached (step 4). Separate
+#    from `gg` because merge16's prune is about the revenue MAP: 2013, 2014 and 2025
+#    have a published headline and belong on a chart that has no map.
+node merge19.js            # -> headline (TR, TE, B9 by year); B9 asserted = TR - TE
+
 node verify.js             # tie-outs, must be 0 fail
 ```
 

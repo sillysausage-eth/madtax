@@ -1,4 +1,4 @@
-# MadTax — Supabase CLI project config.
+# Tax Truth — Supabase CLI project config.
 #
 # This project is NEVER run locally: every command targets the hosted project over
 # the direct Postgres connection, e.g.

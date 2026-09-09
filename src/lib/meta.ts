@@ -12,7 +12,7 @@ import { SITE_URL, abs } from "@/lib/site";
  */
 
 /** The wordmark, unlocalised — it is the name of the thing, not a word. */
-export const SITE_NAME = "MadTax";
+export const SITE_NAME = "Tax Truth";
 
 /** og:locale wants the BCP-47 tag with an underscore. */
 const OG_LOCALE: Record<Locale, string> = { es: "es_ES", en: "en_GB" };
@@ -34,6 +34,11 @@ const COPY: Record<Locale, Copy> = {
     mission:
       "Transparencia de las cuentas públicas de España, a partir de las cifras oficiales publicadas.",
     modes: {
+      overview: {
+        title: "Cuentas públicas de España",
+        description:
+          "Ingresos, gasto y déficit del conjunto de las administraciones públicas españolas, año a año, según las cifras oficiales publicadas.",
+      },
       revenue: {
         title: "Ingresos",
         description:
@@ -58,6 +63,11 @@ const COPY: Record<Locale, Copy> = {
     mission:
       "Transparency for Spain’s public accounts, from the official published figures.",
     modes: {
+      overview: {
+        title: "Spain’s public accounts",
+        description:
+          "Revenue, spending and the deficit for Spanish general government, year by year, from the official published figures.",
+      },
       revenue: {
         title: "Revenue",
         description:
@@ -81,9 +91,15 @@ export function copy(locale: Locale): Copy {
   return COPY[locale];
 }
 
-/** The path a locale/mode pair lives at. One definition, used by every URL below. */
+/**
+ * The path a locale/mode pair lives at. One definition, used by every URL below — and
+ * by the sitemap and the tab strip, so a mode has exactly one address.
+ *
+ * The overview is the locale root: it is the screen `/` redirects to, and giving it a
+ * segment as well would put the same page at two URLs.
+ */
 export function modePath(locale: Locale, mode: Mode): string {
-  return `/${locale}/${mode}`;
+  return mode === "overview" ? `/${locale}` : `/${locale}/${mode}`;
 }
 
 /**
@@ -126,7 +142,7 @@ const ROBOTS: Metadata["robots"] = {
 
 /**
  * The locale layout's metadata. `template` titles every mode below it as
- * `Ingresos · MadTax`; `default` covers the layout's own segment.
+ * `Ingresos · Tax Truth`; `default` covers the layout's own segment.
  *
  * `metadataBase` is set here rather than in the root layout because the root
  * layout never renders — `/` redirects — so this is the highest segment that

@@ -1,4 +1,4 @@
-# MadTax — Spain source registry
+# Tax Truth — Spain source registry
 #
 # This file is the single source of truth for ingestion. Every connector reads its
 # definition from here; nothing about a source is hardcoded in Python.

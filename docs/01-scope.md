@@ -1,8 +1,8 @@
-# MadTax — Scope & Requirements (v1, Spain)
+# Tax Truth — Scope & Requirements (v1, Spain)
 
 > Status: draft for approval · Owner: Alex · Last updated: 2026-08-29
 
-## 1. What MadTax is
+## 1. What Tax Truth is
 
 A public transparency dashboard that lets a citizen answer, without any prior knowledge
 of public accounting:
@@ -126,7 +126,7 @@ absent from most AEAT series); **social contributions** (collected by Social Sec
 AEAT); and **cash versus accrual**.
 
 **Our answer: `perspective` is a first-class dimension of the data model.** Every figure
-in MadTax carries the lens it was measured through, and the UI never mixes two lenses in
+in Tax Truth carries the lens it was measured through, and the UI never mixes two lenses in
 one chart without saying so. This is the single most important accuracy decision in the
 project.
 

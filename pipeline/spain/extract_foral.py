@@ -94,7 +94,7 @@ import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "foral.json")
-UA = {"User-Agent": "Mozilla/5.0 (compatible; MadTax pipeline)"}
+UA = {"User-Agent": "Mozilla/5.0 (compatible; Tax Truth pipeline)"}
 
 # --------------------------------------------------------------- the sources --
 

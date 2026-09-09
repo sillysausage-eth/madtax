@@ -1,7 +1,7 @@
 "use client";
 
 import type { Dict, Locale } from "@/i18n";
-import { eur, fy, nf } from "@/lib/format";
+import { eur, nf } from "@/lib/format";
 import { fmtMetric, type Metric } from "@/lib/metric";
 import { gdpRow, popRow } from "@/lib/macro";
 import { RAMP_EXP, rampTop } from "@/lib/ramp";
@@ -122,7 +122,7 @@ export default function SpendingDossier({
     <>
       <h2 className="name">{locale === "es" ? geo.es : geo.en}</h2>
       <div className="sub">
-        {geo.nuts} · {fy(locale, year)} · {t.fnAll}
+        {geo.nuts} · {year} · {t.fnAll}
       </div>
       {/* The national share sits beside the figure it is a share of, rather than
           as the first row of a table below it. */}

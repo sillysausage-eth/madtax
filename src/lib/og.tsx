@@ -27,6 +27,9 @@ const RULE = "#1b2e3a";
 
 /** The same accent each console wears on screen. */
 const ACCENT: Record<Mode, string> = {
+  /* The overview invents no accent: it keeps the palette's own cyan, which is what
+     the screen wears when no mode has remapped it. */
+  overview: "#3fc8dc",
   revenue: "#3fc8dc",
   spending: "#f0a82e",
   debt: "#b47be8",
@@ -77,8 +80,8 @@ function Card({
               letterSpacing: 6,
             }}
           >
-            <span style={{ color: INK }}>MAD</span>
-            <span style={{ color: accent }}>TAX</span>
+            <span style={{ color: INK, paddingRight: 16 }}>TAX</span>
+            <span style={{ color: accent }}>TRUTH</span>
           </div>
         </div>
 
@@ -148,18 +151,21 @@ export function modeOgImage(locale: Locale, mode: Mode) {
 }
 
 /**
- * The card for the site itself, shared when no console is named. The strap
- * names every console the card can send a reader to.
+ * The card for the site itself — the one the locale root shares, which is also the
+ * overview's own screen. The strap names the three consoles the card can send a reader
+ * on to; the overview is not one of them, because it is the card.
  */
 export function siteOgImage(locale: Locale) {
   const c = copy(locale);
   return new ImageResponse(
     (
       <Card
-        accent={ACCENT.revenue}
+        accent={ACCENT.overview}
         title={c.title}
         description={c.description}
-        strap={MODES.map((m) => c.modes[m].title).join(" · ")}
+        strap={MODES.filter((m) => m !== "overview")
+          .map((m) => c.modes[m].title)
+          .join(" · ")}
         tag={locale}
       />
     ),

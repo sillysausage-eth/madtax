@@ -1,4 +1,4 @@
-# MadTax
+# Tax Truth
 
 **A public transparency dashboard for national public finances.** Where the money comes
 from, who contributes it, and where it goes — for any citizen, without prior knowledge of
@@ -35,12 +35,12 @@ bundle rather than shown with holes.
 
 **No country publishes every cent.** Spain publishes budget lines plus certain classes of
 individual transaction (contracts, grants) — not its general ledger. Instead of faking a
-complete reconciliation, MadTax publishes a **Traceability Score** for every branch of
+complete reconciliation, Tax Truth publishes a **Traceability Score** for every branch of
 spending: how much is traceable to named transactions, and an honest account of the rest.
 
 **There is no single true number for "revenue."** National accounts, the central
 government budget, and tax-agency collection measure different things and disagree by
-hundreds of billions. Every figure in MadTax carries the lens it was measured through, and
+hundreds of billions. Every figure in Tax Truth carries the lens it was measured through, and
 the site never mixes two lenses in one chart without saying so.
 
 ## Anchor figures (Spain 2024, general government, source: Eurostat)
@@ -96,21 +96,24 @@ is **frozen at the pre-foral bundle** and is no longer the reference — the app
 tie-outs (`pipeline/spain/verify.js`) are. Nothing in `pipeline/` or `data/` is edited to
 make the app easier to write.
 
-All three consoles are ported: **revenue** (map, off-map coins, dossier, composition ring
-with the ESA drill and the who-pays tables), **spending** (COFOG composition and its 69
-sub-functions, regional spending map, the four remainder coins, per-region dossier) and
-**debt** (stock, five stats, the 31-year debt/GDP trend, four rings, the 28-year maturity
-ladder). Debt is behind a flag and off in production builds — see [Feature flags](#feature-flags).
+Four modes ship. The landing screen is the **overview**: the mission, the three
+general-government headline figures — total revenue, total spending and the published
+balance — the 2012-2025 chart they are read off, a door to each console and a note on
+where the figures come from. The three consoles under it are
+**revenue** (map, off-map coins, dossier, composition ring with the ESA drill and the
+who-pays tables), **spending** (COFOG composition and its 69 sub-functions, regional
+spending map, the four remainder coins, per-region dossier) and **debt** (stock, five
+stats, the 31-year debt/GDP trend, four rings, the 28-year maturity ladder).
 
 ### Dev loop
 
 ```bash
 npm install
-npm run dev            # http://localhost:3000 → /es/revenue
+npm run dev            # http://localhost:3000 → /es
 ```
 
 `predev` splits the bundle if `src/data/generated/` is missing; it does not re-run the
-156 tie-outs on every restart. `npm run build` does, through `prebuild`.
+194 tie-outs on every restart. `npm run build` does, through `prebuild`.
 
 | Script | What it does |
 |---|---|
@@ -118,7 +121,7 @@ npm run dev            # http://localhost:3000 → /es/revenue
 | `npm run build` | `data:verify` → `data:split` → `next build` |
 | `npm run lint` | ESLint (app only; `pipeline/`, `prototype/`, `data/` are ignored) |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run data:verify` | `node pipeline/spain/verify.js` — the 156-check gate |
+| `npm run data:verify` | `node pipeline/spain/verify.js` — the 194-check gate |
 | `npm run data:split` | Bundle → `src/data/generated/*.json` |
 
 ### How data reaches the screen
@@ -126,9 +129,10 @@ npm run dev            # http://localhost:3000 → /es/revenue
 ```
 pipeline/spain/*            extractors and merges (read-only here)
   └─ data/derived/es-fiscal-bundle.json      the single source of truth, committed
-       └─ pipeline/spain/verify.js           156 tie-outs — the gate
+       └─ pipeline/spain/verify.js           194 tie-outs — the gate
             └─ scripts/split-bundle.mjs      partition, no arithmetic
                  └─ src/data/generated/{map,revenue,spending,debt,who,meta}.json
+                      └─ src/app/[locale]/                         the overview
                       └─ src/app/[locale]/{revenue,spending,debt}   static pages
 ```
 
@@ -137,8 +141,8 @@ and each route code-splits on its own section. The split performs no arithmetic,
 or defaulting — a key missing from the bundle fails the build loudly rather than rendering
 an empty panel. The site reads no database at runtime or build time.
 
-Routing is path-prefix locales with no middleware — `/` → `/es` → `/es/revenue`; `es` and
-`en` are prerendered. UI strings live in `src/i18n/{es,en}.ts`, extracted verbatim from the
+Routing is path-prefix locales with no middleware — `/` → `/es`, which is the overview
+itself rather than another redirect; `es` and `en` are prerendered. UI strings live in `src/i18n/{es,en}.ts`, extracted verbatim from the
 prototype's `T` table.
 
 Copy `.env.example` to `.env.local` for Supabase credentials. The V1 app makes zero
@@ -148,6 +152,7 @@ PostgREST calls; the DB is a mirror (see the migration plan).
 
 | Route | What it shows | State in the URL |
 |---|---|---|
+| `/[locale]` | Total revenue, total spending and the balance between them, year by year, and the way in to the other three | none — the chart is the only control |
 | `/[locale]/revenue` | Public revenue by component, its territorial split, and who generates each one | `?y=` year · `?r=` region or coin · `?f=` component |
 | `/[locale]/spending` | General-government spending by COFOG function and its regional tier | `?y=` year · `?r=` region or coin · `?f=` function |
 | `/[locale]/debt` | What is owed on one reference date, to whom, when it falls due and at what rate | none — debt is a stock, so the screen carries no fiscal year and no picker |

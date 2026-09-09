@@ -1,4 +1,4 @@
-# MadTax — Spain Data Source Map
+# Tax Truth — Spain Data Source Map
 
 > Every source below was probed on 2026-08-29 and re-probed on 2026-09-08. "Verified"
 > means I hit the endpoint or page myself and confirmed the response, format and coverage
@@ -259,7 +259,7 @@ discovering breakage by accident.
 covers central administration and Social Security, budget and execution, built on code
 originally opened by Aragón Open Data. It is good, and it defines the bar.
 
-Where MadTax should differ:
+Where Tax Truth should differ:
 1. **Revenue is a first-class product**, not a footnote to spending.
 2. **Who pays**, via income and turnover brackets — Civio does not really do this.
 3. **Transaction-level traceability** from budget line to named contract and grant.

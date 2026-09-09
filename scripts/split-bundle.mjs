@@ -59,6 +59,9 @@ const SECTION_KEYS = {
   ],
   who: ["who", "irpfScale", "madridScale"],
   debt: ["debt"],
+  /* The home screen's whole payload: three numbers a year. It travels in meta.json
+   * rather than in a section of its own, because every route already loads meta. */
+  meta: ["headline"],
 };
 
 const missing = [];
@@ -116,7 +119,11 @@ const debtJson = pick(B, SECTION_KEYS.debt);
 /* Sorted year lists, so a page can name "the latest year" without scanning object
  * keys at render time. These are the bundle's own keys, ordered — not derived data.
  * `gg` is duplicated here (it also lives in revenue.json, its home section) because
- * the spending headline reads gg.exp and must not pull the whole revenue section in. */
+ * the spending headline reads gg.exp and must not pull the whole revenue section in.
+ *
+ * `headline` is the same three figures unpruned — see pipeline/spain/merge19.js. It is
+ * not a second opinion about a year: verify.js asserts the two agree wherever both
+ * carry one. */
 const yearsOf = (obj) => Object.keys(obj).sort();
 
 const metaJson = {
@@ -131,6 +138,7 @@ const metaJson = {
   },
   debtRef: B.debt.ref,
   gg: B.gg,
+  headline: B.headline,
 };
 
 mkdirSync(OUT_DIR, { recursive: true });

@@ -1,7 +1,7 @@
 "use client";
 
 import type { Dict, Locale } from "@/i18n";
-import { fy, nf } from "@/lib/format";
+import { nf } from "@/lib/format";
 import { gdpRow, popRow } from "@/lib/macro";
 import {
   PART_COLOR,
@@ -114,7 +114,7 @@ export default function RevenueDossier({
     <>
       <h2 className="name">{locale === "es" ? geo.es : geo.en}</h2>
       <div className="sub">
-        {geo.nuts} · {fy(locale, year)} · {sliceLabel(t, slice)}
+        {geo.nuts} · {year} · {sliceLabel(t, slice)}
       </div>
       {/* The national share sits beside the figure it is a share of, rather
           than as the first row of a table below it. */}
@@ -135,7 +135,7 @@ export default function RevenueDossier({
           gdpRow(t, locale, r.macro, year),
         ]}
       />
-      <BarBlock caption={`${t.regWhat} ${fy(locale, year)}`}>
+      <BarBlock caption={`${t.regWhat} ${year}`}>
         <PartBars rows={rows} total={collected} locale={locale} />
       </BarBlock>
       <RegionAdvisories geo={geo} t={t} year={year} />

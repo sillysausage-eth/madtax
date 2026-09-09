@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { isMode, DEFAULT_MODE, type Mode } from "@/lib/modes";
+import { modeFromPath } from "@/lib/modes";
 
 /**
  * Carries the active mode as a `data-mode` attribute so one CSS rule remaps the
@@ -14,8 +14,5 @@ import { isMode, DEFAULT_MODE, type Mode } from "@/lib/modes";
  * no flash on load.
  */
 export default function ModeFrame({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname() ?? "";
-  const segment = pathname.split("/")[2] ?? "";
-  const mode: Mode = isMode(segment) ? segment : DEFAULT_MODE;
-  return <div data-mode={mode}>{children}</div>;
+  return <div data-mode={modeFromPath(usePathname() ?? "")}>{children}</div>;
 }

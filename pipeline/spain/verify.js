@@ -1,4 +1,4 @@
-/* MadTax tie-out harness — every published figure must survive these.
+/* Tax Truth tie-out harness — every published figure must survive these.
    Exit code 1 if any FAIL. Run: node verify.js                        */
 const fs=require('fs'), path=require('path');
 // Resolve the bundle whether run from the repo root or from this directory.
@@ -917,6 +917,58 @@ console.log('\n=== U. THE SPENDING MAP IS A MAP OF TERRITORIES ===');
     const cells2=D.regions.length*D.spendYears.length;
     check('no other territory-year lacks the local layer', cells===cells2-gaps.length, `${cells} of ${cells2}`);
   }
+}
+
+console.log('\n=== V. THE GENERAL-GOVERNMENT HEADLINE OVER TIME ===');
+if(!D.headline){ check('headline present', false, 'missing — run merge19.js'); }
+else {
+  /* The home screen draws one series: what all of government took in, what it spent,
+     and the balance Eurostat publishes between them. It is the same accrual basis and
+     the same sector as `gg`; it differs only in that merge16 has not pruned it, because
+     the prune is about the revenue map and this chart has no map. */
+  const H=D.headline, HY=H.years;
+  check('the headline series is a contiguous run of years',
+    Array.isArray(HY)&&HY.length>=10&&Number(HY[HY.length-1])-Number(HY[0])+1===HY.length,
+    HY?`${HY[0]}-${HY[HY.length-1]} (${HY.length} years)`:'no years');
+  check('every year in the series carries all three figures',
+    HY.every(y=>typeof H.rev[y]==='number'&&typeof H.exp[y]==='number'&&typeof H.def[y]==='number'),
+    HY.filter(y=>H.rev[y]==null||H.exp[y]==null||H.def[y]==null).join(', ')||'no year is short of one');
+  /* B9 is Eurostat's own published balance. It is asserted to equal revenue minus
+     expenditure, never computed as it: if the identity broke we would be reading the
+     wrong sector, not rounding. */
+  const off=HY.filter(y=>Math.abs(H.rev[y]-H.exp[y]-H.def[y])>0.5);
+  check('the published deficit is exactly revenue minus expenditure, every year',
+    off.length===0, off.join(', ')||`${HY.length} years to the euro`);
+  /* One year, one figure, whichever screen states it. */
+  const gy=Object.keys(D.gg);
+  const clash=gy.filter(y=>H.rev[y]==null||Math.abs(D.gg[y].rev-H.rev[y])>0.5||Math.abs(D.gg[y].exp-H.exp[y])>0.5);
+  check('it agrees with gg on every year gg still has',
+    clash.length===0, clash.join(', ')||`${gy.length} years shared`);
+  /* The years the revenue console drops are on this chart, because their headline is
+     published — the prune took them out of the map, not out of the national accounts.
+     Naming them here is what stops a silent re-prune from shortening the chart. */
+  const extra=HY.filter(y=>!gy.includes(y));
+  check('it carries the headline years merge16 prunes from the revenue map',
+    extra.join(',')==='2013,2014,2025', extra.join(', ')||'none');
+  const drop=D.dropped&&D.dropped.revenue?Object.keys(D.dropped.revenue).sort():[];
+  check('and those years are exactly the ones merge16 recorded a reason for',
+    extra.every(y=>drop.includes(y)), drop.join(', ')||'no dropped years recorded');
+  /* Plausibility, in the shape section A uses for one year: nothing here is a ratio to
+     GDP, so the band is against the series' own revenue. */
+  check('revenue and expenditure are positive in every year',
+    HY.every(y=>H.rev[y]>0&&H.exp[y]>0), `${bn(H.rev[HY[0]])}-${bn(H.rev[HY[HY.length-1]])} revenue`);
+  /* 2012 is the widest at 30.5%: the bank recapitalisation put €119bn of deficit
+     against €391bn of revenue. The band is set to admit that year and little else. */
+  check('the balance stays inside 40% of revenue in every year',
+    HY.every(y=>Math.abs(H.def[y])<H.rev[y]*0.40),
+    HY.map(y=>Math.abs(H.def[y])/H.rev[y]*100).reduce((a,b)=>Math.max(a,b),0).toFixed(1)+'% at worst');
+  check('the series names the dataset it was read from',
+    typeof H.src==='string'&&H.src.includes('gov_10a_main')&&typeof H.updated==='string',
+    `${H.src} (updated ${H.updated})`);
+  /* The debt screen quotes a reference year; a home screen that stopped short of it
+     would look stale next to it. */
+  check('it reaches the year the debt screen is quoted at',
+    HY.includes(D.debt.ref), `headline to ${HY[HY.length-1]} · debt at ${D.debt.ref}`);
 }
 
 console.log(`\n=== RESULT: ${pass} pass · ${warn} warn · ${fail} fail ===\n`);

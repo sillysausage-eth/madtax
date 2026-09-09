@@ -7,7 +7,7 @@
  * worse than an honest `unknown` — it invites the compiler to bless a shape the
  * bundle never had.
  *
- * `verify.js` (156 checks) is the contract these types describe.
+ * `verify.js` (194 checks) is the contract these types describe.
  */
 
 /** A four-digit year used as an object key throughout the bundle. */
@@ -41,6 +41,36 @@ export interface MetaSection {
   /** The year the debt stock is quoted at; debt has no fiscal-year picker. */
   debtRef: YearKey;
   gg: Gg;
+  headline: HeadlineSeries;
+}
+
+/**
+ * The general-government headline as a series — what the home screen draws.
+ *
+ * The same sector, unit and accrual basis as `gg`, and the same figures wherever both
+ * carry a year. It exists separately because `gg` is pruned by `merge16.js` down to the
+ * years the revenue MAP can show in full, and 2013, 2014 and 2025 have a published
+ * headline that no map question should hide.
+ *
+ * `def` is Eurostat's own published balance (B.9), carried rather than subtracted;
+ * `verify.js` asserts it equals `rev − exp` in every year. It is negative in every year
+ * the series covers, which is a fact about Spain, not a sign convention.
+ *
+ * `years` is contiguous and ascending — the pipeline refuses to write a series with a
+ * hole in it — so the chart's x axis is the list itself.
+ */
+export interface HeadlineSeries {
+  years: YearKey[];
+  /** Total revenue, ESA 2010 TR. */
+  rev: Record<YearKey, Millions>;
+  /** Total expenditure, ESA 2010 TE. */
+  exp: Record<YearKey, Millions>;
+  /** Net lending (+) / net borrowing (−), ESA 2010 B.9. */
+  def: Record<YearKey, Millions>;
+  /** The dataset, sector, unit and items the series was read from. */
+  src: string;
+  /** Eurostat's `updated` stamp on the dataset at extraction. */
+  updated: string;
 }
 
 /* --------------------------------------------------------------------- map -- */

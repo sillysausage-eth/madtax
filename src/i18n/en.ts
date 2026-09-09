@@ -7,11 +7,34 @@ import type { Dict } from "./es";
 
 export const en = {
   ctrl:'CONTROL',metric:'METRIC',lo:'LOW',hi:'HIGH',dos:'DOSSIER',
-  modeRev:'Revenue',modeExp:'Spending',modeDebt:'Debt',
+  modeAll:'Home',modeRev:'Revenue',modeExp:'Spending',modeDebt:'Debt',
+  ov:{
+    foot1:'Source: Eurostat — annual government finance accounts (gov_10a_main)',
+    foot2:'General government · ESA 2010 · the balance is the published B.9: negative is a deficit',
+    head:'Making public finances transparent',
+    lead:'What government earns, spends, and borrows.',
+    k:'The public accounts over time',
+    sRev:'Total revenue',           sExp:'Total spending',
+    sDef:'Balance',
+    unitBn:'€bn',
+    nav:'Use the left and right arrow keys to read a year.',
+    noPub:'No published figure',
+    src:'Eurostat',
+    door:{
+      revenue:['What Spain collects, and where every euro of it comes from.',
+               '{R} · by tax and by Autonomous Region'],
+      spending:['Where the money goes, function by function.',
+                '{R} · by function of government and by Autonomous Region'],
+      debt:['How much is owed, in what form and to whom.',
+            '{R} · instruments, holders and maturities at the end of {Y}']
+    },
+    doorGo:'Open'
+  },
   footRev1:'Source: AEAT via ISTAC · IGAE · CONPREL · OCTE · Hacienda Foral de Navarra · Ministerio de Hacienda (DGT) · Eurostat',
   footExp1:'Source: IGAE · Eurostat · INE',
   footExp2:'Consolidated general government expenditure (ESA 2010)',
-  foot3:'MadTax',
+  foot3:'Tax Truth',
+  repo:'Code and data',
   dbt:{
     foot1:'Source: Eurostat — Excessive Deficit Procedure (gov_10dd_edpt1, gov_10a_main)',
     foot2:'Consolidated gross debt at face value · a stock outstanding, not an annual flow',
@@ -23,7 +46,6 @@ export const en = {
     sLv:'Debt outstanding',          sInt:'Interest paid',
     sPc:'Debt / GDP',
     trendPick:'Series on the chart',
-    sIntN:'in {Y}',
     sLife:'Average life',            sLifeN:'State debt',
     // The two axes the trend chart is read off, named once each on the chart.
     unitBn:'€bn',                     unitPc:'% GDP',
@@ -100,7 +122,7 @@ export const en = {
   wMadIntro:'<b>The scale actually applied in Madrid.</b> The state sets one half and the Comunidad de Madrid the other; the marginal rate you pay is the sum. Madrid has the lowest Autonomous Region scale in Spain.',
   wMadBand:'Taxable base',wMadState:'State',wMadRegion:'Madrid',wMadTotal:'Total marginal',
   wMadPeople:'People reaching it',wMadPct:'% reaching it',
-  wMadCaveat:'<b>The last two columns are an estimate</b> — the only one in MadTax. AEAT does not publish how many taxpayers sit in each band of the scale, so it is interpolated from the decile distribution. The scale also applies to <b>taxable base</b> while the distribution is <b>gross income</b>: different measures, so read it as an order of magnitude, not an official figure. The rates themselves are exact.',
+  wMadCaveat:'<b>The last two columns are an estimate</b> — the only one in Tax Truth. AEAT does not publish how many taxpayers sit in each band of the scale, so it is interpolated from the decile distribution. The scale also applies to <b>taxable base</b> while the distribution is <b>gross income</b>: different measures, so read it as an order of magnitude, not an official figure. The rates themselves are exact.',
   wPeoplePct:'% of people',wAvgTax:'Average per person',wNegZero:'Negative or zero income',
   wTotalRow:'Total',
   wGap:'Bands are annual income (earnings and imputations) and add up to <b>{R}</b>, the tax settled on filed income tax returns. The headline figure is <b>{H}</b> because national accounts also include income tax in the Basque Country and Navarre, which run their own, and tax withheld from people not required to file. Difference: <b>{G}</b>.',
